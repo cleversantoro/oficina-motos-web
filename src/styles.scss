@@ -1,1 +1,14 @@
-/* You can add global styles to this file, and also import other style files */
+/* Tailwind (Já estava aqui) */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* PrimeNG - tema/core removidos (PrimeNG 21 não exporta mais CSS em /resources) */
+/* Ícones */
+@import "primeicons/primeicons.css";
+
+/* Ajustes globais para fontes (opcional, mas recomendado) */
+html, body {
+    font-family: var(--font-family);
+    -webkit-font-smoothing: antialiased;
+}
