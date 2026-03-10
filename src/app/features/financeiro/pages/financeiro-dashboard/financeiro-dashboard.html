@@ -1,0 +1,144 @@
+<section class="fin-shell">
+  <div class="kpi-grid">
+    @for (k of kpis; track k.label) {
+      <div
+        class="kpi-card"
+        [class.entrada]="k.tipo === 'entrada'"
+        [class.saida]="k.tipo === 'saida'"
+        [class.alerta]="k.tipo === 'alerta'"
+      >
+        <p class="kpi-label">{{ k.label }}</p>
+        <p class="kpi-value">R$ {{ k.valor | number:'1.2-2' }}</p>
+      </div>
+    }
+  </div>
+
+  <div class="toolbar-tabs">
+    <nav class="tabs">
+      <button class="tab" [class.active]="activeTab === 'pagar'" (click)="setTab('pagar')">
+        Contas a Pagar
+      </button>
+      <button class="tab" [class.active]="activeTab === 'receber'" (click)="setTab('receber')">
+        Contas a Receber
+      </button>
+      <button class="tab" [class.active]="activeTab === 'lancamentos'" (click)="setTab('lancamentos')">
+        Lançamentos (Conciliação)
+      </button>
+      <button class="tab" [class.active]="activeTab === 'metodos'" (click)="setTab('metodos')">
+        Métodos
+      </button>
+    </nav>
+    <button class="cta primary">+ Novo lançamento</button>
+  </div>
+
+  @if (activeTab === 'pagar') {
+  <div class="list-area">
+    <div class="list-head">
+      <h2>Contas a Pagar (Em aberto)</h2>
+      <div class="filters">
+        <button class="ghost">Filtrar vencimento</button>
+        <button class="ghost">Fornecedor</button>
+      </div>
+    </div>
+    <div class="table">
+      <div class="table-row table-head">
+        <span class="w-date">Vencimento</span>
+        <span>Tipo</span>
+        <span>Descrição / Fornecedor</span>
+        <span>Status</span>
+        <span class="right">Valor</span>
+        <span>Ações</span>
+      </div>
+      @for (c of pagar; track c.id) {
+        <div class="table-row">
+          <span class="w-date">{{ c.vencimento | date:'dd/MM/yyyy' }}</span>
+          <span>{{ c.fornecedorId ? 'Fornecedor #' + c.fornecedorId : '-' }}</span>
+          <span>{{ c.descricao }}</span>
+          <span><span class="status" [class.vencido]="c.status === 'vencido'" [class.pago]="c.status === 'pago'">{{ c.status }}</span></span>
+          <span class="right valor saida">R$ {{ c.valor | number:'1.2-2' }}</span>
+          <span></span>
+        </div>
+      }
+    </div>
+  </div>
+  }
+
+  @if (activeTab === 'receber') {
+  <div class="list-area">
+    <div class="list-head">
+      <h2>Contas a Receber</h2>
+      <div class="filters">
+        <button class="ghost">Filtrar cliente</button>
+        <button class="ghost">Status</button>
+      </div>
+    </div>
+    <div class="table">
+      <div class="table-row table-head">
+        <span class="w-date">Vencimento</span>
+        <span>Tipo</span>
+        <span>Descrição</span>
+        <span>Status</span>
+        <span class="right">Valor</span>
+        <span>Ações</span>
+      </div>
+      @for (c of receber; track c.id) {
+        <div class="table-row">
+          <span class="w-date">{{ c.vencimento | date:'dd/MM/yyyy' }}</span>
+          <span>{{ c.clienteId ? 'Cliente #' + c.clienteId : '-' }}</span>
+          <span>{{ c.descricao }}</span>
+          <span><span class="status" [class.pago]="c.status === 'pago'">{{ c.status }}</span></span>
+          <span class="right valor entrada">R$ {{ c.valor | number:'1.2-2' }}</span>
+          <span></span>
+        </div>
+      }
+    </div>
+  </div>
+  }
+
+  @if (activeTab === 'lancamentos') {
+  <div class="list-area">
+    <div class="list-head">
+      <h2>Lançamentos (Conciliação)</h2>
+      <div class="filters">
+        <button class="ghost">Importar extrato</button>
+        <button class="ghost">Filtrar conta</button>
+      </div>
+    </div>
+    <div class="table">
+      <div class="table-row table-head">
+        <span class="w-date">Data</span>
+        <span>Tipo</span>
+        <span>Descrição</span>
+        <span>Status</span>
+        <span class="right">Valor</span>
+        <span>Ações</span>
+      </div>
+      @for (c of lancamentos; track c.id) {
+        <div class="table-row">
+          <span class="w-date">{{ c.dataLancamento | date:'dd/MM/yyyy' }}</span>
+          <span>{{ c.tipo }}</span>
+          <span>{{ c.descricao }}</span>
+          <span>-</span>
+          <span class="right valor">R$ {{ c.valor | number:'1.2-2' }}</span>
+          <span></span>
+        </div>
+      }
+    </div>
+  </div>
+  }
+
+  @if (activeTab === 'metodos') {
+  <div class="list-area">
+    <div class="list-head">
+      <h2>Métodos de Pagamento</h2>
+      <button class="ghost">+ Adicionar método</button>
+    </div>
+    <div class="tags">
+      @for (m of metodos; track m.id) {
+        <span class="tag">{{ m.nome }}</span>
+      }
+    </div>
+    <p class="muted">Vincule baixas/recebimentos a um método para facilitar conciliação.</p>
+  </div>
+  }
+</section>

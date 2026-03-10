@@ -1,0 +1,141 @@
+.sidebar {
+  width: 100%;
+  max-width: 260px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  position: sticky;
+  top: 82px;
+  max-height: calc(100vh - 120px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.nav {
+  display: flex;
+  gap: 0.65rem;
+  padding: 0.25rem;
+  overflow-x: auto;
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.nav-link {
+  flex: 1 1 auto;
+  display: grid;
+  align-items: center;
+  grid-template-columns: auto 1fr auto;
+  gap: 0.65rem;
+  padding: 0.75rem 0.85rem;
+  border-radius: 0.95rem;
+  color: #cbd5e1;
+  border: 1px solid transparent;
+  transition: border-color 140ms ease, background 140ms ease, transform 140ms ease;
+  min-width: 220px;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.05);
+    transform: translateY(-1px);
+  }
+
+  &.active {
+    background: linear-gradient(135deg, rgba(249, 115, 22, 0.08), rgba(248, 180, 87, 0.05));
+    border-color: rgba(249, 115, 22, 0.4);
+    color: #f8fafc;
+
+    .label {
+      color: #f8fafc;
+    }
+
+    .caret {
+      opacity: 1;
+    }
+  }
+}
+
+.nav-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.label {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: #e2e8f0;
+}
+
+.hint {
+  color: #94a3b8;
+  font-size: 0.82rem;
+}
+
+.pi {
+  color: #f97316;
+}
+
+.caret {
+  color: #e2e8f0;
+  opacity: 0.15;
+}
+
+.callout {
+  display: none;
+  padding: 1.1rem;
+  border-radius: 1rem;
+  background: rgba(249, 115, 22, 0.08);
+  border: 1px solid rgba(249, 115, 22, 0.25);
+  color: #ffedd5;
+}
+
+.callout-title {
+  margin: 0.35rem 0 0.25rem;
+  font-weight: 700;
+  color: #fed7aa;
+}
+
+.callout-text {
+  margin: 0;
+  color: #f8fafc;
+  opacity: 0.8;
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff7ed;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.cta {
+  margin-top: 0.7rem;
+  padding: 0.5rem 0.8rem;
+  border-radius: 0.85rem;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff7ed;
+  cursor: pointer;
+}
+
+@media (min-width: 1024px) {
+  .nav {
+    flex-direction: column;
+    overflow: visible;
+    padding: 0.5rem;
+  }
+
+  .nav-link {
+    min-width: 0;
+  }
+
+  .callout {
+    display: block;
+  }
+}

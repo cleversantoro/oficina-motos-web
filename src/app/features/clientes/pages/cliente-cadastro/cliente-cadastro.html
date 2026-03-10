@@ -1,0 +1,260 @@
+<section class="cadastro-shell">
+  <aside class="tab-nav">
+    <div class="nav-header">
+      <p class="eyebrow">Cadastro</p>
+      <h2>Cliente 360°</h2>
+      <p class="muted">Divida em etapas para reduzir fadiga cognitiva.</p>
+    </div>
+
+    <div class="mobile-select">
+      <label for="tabSelect">Etapa</label>
+      <select
+        id="tabSelect"
+        [value]="activeTab"
+        (change)="onTabSelect($event)"
+      >
+        @for (tab of tabs; track tab.id) {
+          <option [value]="tab.id">{{ tab.label }}</option>
+        }
+      </select>
+    </div>
+
+    <nav class="nav-list">
+      @for (tab of tabs; track tab.id) {
+        <button
+          (click)="setTab(tab.id)"
+          [class.active]="activeTab === tab.id"
+          class="nav-item"
+        >
+          <div>
+            <p class="nav-label">{{ tab.label }}</p>
+            <p class="nav-desc">{{ tab.desc }}</p>
+          </div>
+          <span class="pi pi-chevron-right"></span>
+        </button>
+      }
+    </nav>
+  </aside>
+
+  <main class="tab-content">
+    <header class="content-head">
+      <div>
+        <p class="eyebrow">Novo cliente</p>
+        <h1>Ficha completa</h1>
+        <p class="muted">Preencha apenas o necessário; você pode salvar e continuar depois.</p>
+      </div>
+      <div class="actions">
+        <button class="ghost" routerLink="/clientes">Cancelar</button>
+        <button class="cta primary">Salvar cadastro</button>
+      </div>
+    </header>
+
+    @if (activeTab === 'perfil') {
+    <section class="card">
+      <div class="card-head">
+        <h2>Perfil & Identidade</h2>
+        <div class="pill">Obrigatorio</div>
+      </div>
+
+      <div class="toggle">
+        <button [class.active]="isPessoaFisica" (click)="setTipo('pf')">Pessoa Física</button>
+        <button [class.active]="!isPessoaFisica" (click)="setTipo('pj')">Pessoa Jurídica</button>
+      </div>
+
+      <div class="grid">
+        <label class="field span-2">
+          <span>Nome completo / Razão social</span>
+          <input type="text" placeholder="Ex: João da Silva" />
+        </label>
+
+        <label class="field">
+          <span>Status</span>
+          <select>
+            <option>Ativo</option>
+            <option>Inativo</option>
+            <option>Prospect</option>
+          </select>
+        </label>
+
+        @if (isPessoaFisica) {
+          <label class="field">
+            <span>CPF</span>
+            <input type="text" placeholder="000.000.000-00" />
+          </label>
+          <label class="field">
+            <span>RG</span>
+            <input type="text" placeholder="00.000.000-0" />
+          </label>
+          <label class="field">
+            <span>Data de nascimento</span>
+            <input type="date" />
+          </label>
+        } @else {
+          <label class="field">
+            <span>CNPJ</span>
+            <input type="text" placeholder="00.000.000/0001-00" />
+          </label>
+          <label class="field">
+            <span>Inscrição estadual</span>
+            <input type="text" />
+          </label>
+          <label class="field">
+            <span>Fundação</span>
+            <input type="date" />
+          </label>
+        }
+
+        <label class="field">
+          <span>Origem do lead</span>
+          <select>
+            <option>Google Ads</option>
+            <option>Indicação</option>
+            <option>Instagram</option>
+          </select>
+        </label>
+      </div>
+    </section>
+    }
+
+    <!-- Contato -->
+    @if (activeTab === 'contato') {
+    <section class="card">
+      <div class="card-head">
+        <h2>Contato & Localização</h2>
+        <button class="ghost small">+ Adicionar contato</button>
+      </div>
+
+      <h3>Meios de contato</h3>
+      <div class="list">
+      @for (contato of contatos; track $index) {
+          <div class="list-row">
+            <div>
+              <p class="label-strong">{{ contato.tipo }}</p>
+              <p class="muted">{{ contato.obs }}</p>
+            </div>
+            <span class="pill pill-neutral">{{ contato.valor }}</span>
+          </div>
+        }
+      </div>
+
+      <h3>Endereços</h3>
+      <div class="address-grid">
+      @for (end of enderecos; track $index) {
+          <div class="address-card">
+            <div class="address-head">
+              <p class="label-strong">{{ end.logradouro }}</p>
+              <span class="pill pill-success">{{ end.tag }}</span>
+            </div>
+            <p class="muted">{{ end.bairro }} • {{ end.cidade }} - {{ end.uf }}</p>
+            <div class="address-meta">
+              <span>CEP {{ end.cep }}</span>
+              <span>Nº {{ end.numero }}</span>
+            </div>
+          </div>
+        }
+      </div>
+    </section>
+    }
+
+    <!-- Financeiro -->
+    @if (activeTab === 'financeiro') {
+    <section class="card">
+      <div class="card-head">
+        <h2>Financeiro & Comercial</h2>
+        <div class="pill">Preferencial</div>
+      </div>
+
+      <div class="grid">
+        <label class="field">
+          <span>Limite de crédito (R$)</span>
+          <input type="number" placeholder="5.000,00" />
+        </label>
+        <label class="field">
+          <span>Dia de vencimento</span>
+          <select>
+            <option>Dia 5</option>
+            <option>Dia 10</option>
+            <option>Dia 15</option>
+          </select>
+        </label>
+        <label class="field">
+          <span>Bloquear crédito</span>
+          <select>
+            <option>Não</option>
+            <option>Sim</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="card-sub">
+        <h3>Indicações</h3>
+        <div class="grid">
+          <label class="field span-2">
+            <span>Quem indicou?</span>
+            <input type="text" placeholder="Buscar cliente..." />
+          </label>
+          <label class="field span-2">
+            <span>Observações</span>
+            <textarea rows="3" placeholder="Detalhes sobre a indicação"></textarea>
+          </label>
+        </div>
+      </div>
+    </section>
+    }
+
+    <!-- Legal -->
+    @if (activeTab === 'legal') {
+    <section class="card">
+      <div class="card-head">
+        <h2>Legal & Compliance</h2>
+        <div class="pill pill-neutral">Auditar</div>
+      </div>
+
+      <h3>Documentos</h3>
+      <div class="list">
+      @for (doc of documentos; track $index) {
+          <div class="list-row">
+            <div>
+              <p class="label-strong">{{ doc.nome }}</p>
+              <p class="muted">Validade: {{ doc.validade }}</p>
+            </div>
+            <span class="pill pill-neutral">{{ doc.numero }}</span>
+          </div>
+        }
+      </div>
+
+      <h3>Consentimentos LGPD</h3>
+      <div class="checks">
+        <label class="check">
+          <input type="checkbox" checked />
+          <span>Aceitou termos de uso e política de dados</span>
+        </label>
+        <label class="check">
+          <input type="checkbox" />
+          <span>Aceitou receber comunicações de marketing</span>
+        </label>
+      </div>
+    </section>
+    }
+
+    <!-- Anexos -->
+    @if (activeTab === 'anexos') {
+    <section class="card">
+      <div class="card-head">
+        <h2>Arquivos</h2>
+        <div class="pill">Upload</div>
+      </div>
+
+      <div class="upload">
+        <p>Arraste e solte aqui RG, CNH, contratos ou comprovantes</p>
+        <button class="ghost small">Selecionar arquivos</button>
+      </div>
+
+      <div class="tag-list">
+        <span class="tag">cnh_motorista.pdf ✕</span>
+        <span class="tag">comprovante_residencia.jpg ✕</span>
+      </div>
+    </section>
+    }
+  </main>
+</section>

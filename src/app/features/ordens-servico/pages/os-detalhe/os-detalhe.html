@@ -1,0 +1,189 @@
+﻿<section class="os-shell">
+  <!-- List Table -->
+  <div class="card">
+    <div class="card-head">
+      <span>Ordens de Servico</span>
+      <button class="ghost">+ Nova OS</button>
+    </div>
+    <p-table [value]="ordens" [loading]="loading" [tableStyle]="{ 'min-width': '50rem' }"
+      [paginator]="true" [rows]="10" [rowsPerPageOptions]="[5, 10, 20]" [showCurrentPageReport]="true"
+      currentPageReportTemplate="Exibindo {first} ate {last} de {totalRecords} registros">
+      <ng-template pTemplate="header">
+        <tr>
+          <th>ID</th>
+          <th>Status</th>
+          <th>Abertura</th>
+          <th>Cliente</th>
+          <th>Mecanico</th>
+          <th>Descricao</th>
+          <th class="right">Acoes</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-os>
+        <tr>
+          <td><span class="os-id">#{{ os.id }}</span></td>
+          <td><span class="status">{{ os.status }}</span></td>
+          <td>{{ os.dataAbertura ? (os.dataAbertura | date:'dd/MM/yyyy') : '-' }}</td>
+          <td>{{ os.clienteId }}</td>
+          <td>{{ os.mecanicoId }}</td>
+          <td class="desc-cell">{{ os.descricaoProblema }}</td>
+          <td class="right">
+            <p-button icon="pi pi-search" severity="info" (onClick)="openDetails(os)" rounded></p-button>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+
+  <!-- Detail Dialog -->
+  <p-dialog header="Detalhes da OS" [visible]="selected !== null" [modal]="true" [style]="{ width: '900px' }"
+    [contentStyle]="{ 'max-height': '75vh', 'overflow': 'auto' }" (onHide)="closeDetails()">
+    @if (selected; as os) {
+      <div class="dialog-os-head">
+        <div>
+          <p class="eyebrow">Ordem de Servico</p>
+          <h2>#{{ os.id }}</h2>
+          <span class="status">{{ os.status }}</span>
+        </div>
+        <div>
+          <p class="muted">Abertura</p>
+          <p class="strong">{{ os.dataAbertura ? (os.dataAbertura | date:'dd/MM/yyyy') : '-' }}</p>
+        </div>
+        <div>
+          <p class="muted">Conclusao</p>
+          <p class="strong">{{ os.dataConclusao ? (os.dataConclusao | date:'dd/MM/yyyy') : 'Em andamento' }}</p>
+        </div>
+        <div>
+          <p class="muted">Total itens</p>
+          <p class="strong">R$ {{ totalItens(os) | number:'1.2-2' }}</p>
+        </div>
+      </div>
+
+      <p-tabs value="0">
+        <p-tablist>
+          <p-tab value="0">Pecas e Servicos</p-tab>
+          <p-tab value="1">Checklist</p-tab>
+          <p-tab value="2">Historico e Obs</p-tab>
+          <p-tab value="3">Pagamentos</p-tab>
+          <p-tab value="4">Avaliacao</p-tab>
+          <p-tab value="5">Anexos</p-tab>
+        </p-tablist>
+        <p-tabpanels>
+
+          <p-tabpanel value="0">
+            <div class="dblock">
+              <p class="dlabel">Descricao do problema</p>
+              <p class="dvalue">{{ os.descricaoProblema }}</p>
+            </div>
+            @if (!os.itens?.length) { <p class="dvalue">Nenhum item.</p> }
+            @for (item of os.itens; track item.id) {
+              <div class="dlist">
+                <div class="dgrid">
+                  <div><p class="dlabel">Descricao</p><p class="dvalue">{{ item.descricao }}</p></div>
+                  <div><p class="dlabel">Qtd</p><p class="dvalue">{{ item.quantidade }}</p></div>
+                  <div><p class="dlabel">Unitario</p><p class="dvalue">R$ {{ item.valorUnitario | number:'1.2-2' }}</p></div>
+                  <div><p class="dlabel">Total</p><p class="dvalue">R$ {{ item.total | number:'1.2-2' }}</p></div>
+                </div>
+              </div>
+            }
+          </p-tabpanel>
+
+          <p-tabpanel value="1">
+            @if (!os.checklists?.length) { <p class="dvalue">Nenhum item de checklist.</p> }
+            @for (check of os.checklists; track check.id) {
+              <div class="dlist">
+                <div class="dgrid">
+                  <div><p class="dlabel">Item</p><p class="dvalue">{{ check.item }}</p></div>
+                  <div><p class="dlabel">Realizado</p><p class="dvalue">{{ check.realizado ? 'SIM' : 'NAO' }}</p></div>
+                  <div><p class="dlabel">Observacao</p><p class="dvalue">{{ check.observacao ?? '-' }}</p></div>
+                </div>
+              </div>
+            }
+          </p-tabpanel>
+
+          <p-tabpanel value="2">
+            @if (os.observacoes?.length) {
+              <p class="section-sub">Observacoes</p>
+              @for (obs of os.observacoes; track obs.id) {
+                <div class="dlist">
+                  <div class="dgrid">
+                    <div><p class="dlabel">Usuario</p><p class="dvalue">{{ obs.usuario ?? '-' }}</p></div>
+                    <div><p class="dlabel">Texto</p><p class="dvalue">{{ obs.texto }}</p></div>
+                  </div>
+                </div>
+              }
+            }
+            @if (os.historico?.length) {
+              <p class="section-sub">Historico</p>
+              @for (h of os.historico; track h.id) {
+                <div class="dlist">
+                  <div class="dgrid">
+                    <div><p class="dlabel">Data</p><p class="dvalue">{{ h.dataAlteracao ? (h.dataAlteracao | date:'dd/MM/yyyy HH:mm') : '-' }}</p></div>
+                    <div><p class="dlabel">Usuario</p><p class="dvalue">{{ h.usuario ?? '-' }}</p></div>
+                    <div><p class="dlabel">Campo</p><p class="dvalue">{{ h.campo ?? '-' }}</p></div>
+                  </div>
+                  <div class="dgrid">
+                    <div><p class="dlabel">Valor anterior</p><p class="dvalue">{{ h.valorAntigo ?? '-' }}</p></div>
+                    <div><p class="dlabel">Valor novo</p><p class="dvalue">{{ h.valorNovo ?? '-' }}</p></div>
+                  </div>
+                </div>
+              }
+            }
+            @if (!os.observacoes?.length && !os.historico?.length) {
+              <p class="dvalue">Nenhum registro.</p>
+            }
+          </p-tabpanel>
+
+          <p-tabpanel value="3">
+            @if (!os.pagamentos?.length) { <p class="dvalue">Nenhum pagamento.</p> }
+            @for (pg of os.pagamentos; track pg.id) {
+              <div class="dlist">
+                <div class="dgrid">
+                  <div><p class="dlabel">Valor</p><p class="dvalue">R$ {{ pg.valor | number:'1.2-2' }}</p></div>
+                  <div><p class="dlabel">Status</p><p class="dvalue">{{ pg.status }}</p></div>
+                  <div><p class="dlabel">Metodo</p><p class="dvalue">{{ pg.metodo ?? '-' }}</p></div>
+                  <div><p class="dlabel">Data</p><p class="dvalue">{{ pg.dataPagamento ? (pg.dataPagamento | date:'dd/MM/yyyy') : '-' }}</p></div>
+                </div>
+                <div><p class="dlabel">Observacao</p><p class="dvalue">{{ pg.observacao ?? '-' }}</p></div>
+              </div>
+            }
+          </p-tabpanel>
+
+          <p-tabpanel value="4">
+            @if (!os.avaliacoes?.length) { <p class="dvalue">Sem avaliacao.</p> }
+            @for (av of os.avaliacoes; track av.id) {
+              <div class="dlist">
+                <div class="dgrid">
+                  <div><p class="dlabel">Nota</p><p class="dvalue">{{ av.nota }}/5</p></div>
+                  <div><p class="dlabel">Usuario</p><p class="dvalue">{{ av.usuario ?? '-' }}</p></div>
+                </div>
+                <div><p class="dlabel">Comentario</p><p class="dvalue">{{ av.comentario ?? '-' }}</p></div>
+              </div>
+            }
+          </p-tabpanel>
+
+          <p-tabpanel value="5">
+            @if (!os.anexos?.length) { <p class="dvalue">Sem anexos.</p> }
+            @for (anexo of os.anexos; track anexo.id) {
+              <div class="dlist">
+                <div class="dgrid">
+                  <div><p class="dlabel">Nome</p><p class="dvalue">{{ anexo.nome ?? '-' }}</p></div>
+                  <div><p class="dlabel">Tipo</p><p class="dvalue">{{ anexo.tipo ?? '-' }}</p></div>
+                </div>
+                <div>
+                  <p class="dlabel">URL</p>
+                  @if (anexo.url) {
+                    <a [href]="anexo.url" target="_blank" rel="noopener" class="dvalue">{{ anexo.url }}</a>
+                  } @else {
+                    <p class="dvalue">-</p>
+                  }
+                </div>
+              </div>
+            }
+          </p-tabpanel>
+
+        </p-tabpanels>
+      </p-tabs>
+    }
+  </p-dialog>
+</section>

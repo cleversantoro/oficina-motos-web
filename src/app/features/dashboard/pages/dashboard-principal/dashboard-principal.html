@@ -1,0 +1,96 @@
+<section class="dash-shell">
+  <header class="hero">
+    <div>
+      <p class="eyebrow">Visao geral</p>
+      <h1>Saude da oficina</h1>
+      <p class="muted">Alertas e previsibilidade para operacao, financeiro e suprimentos.</p>
+    </div>
+    <button class="ghost">Exportar planilha</button>
+  </header>
+
+  <div class="kpi-grid">
+    @for (k of kpis; track k.title) {
+      <div
+        class="kpi-card"
+        [class.success]="k.intent === 'success'"
+        [class.danger]="k.intent === 'danger'"
+        [class.warning]="k.intent === 'warning'"
+      >
+        <p class="kpi-title">{{ k.title }}</p>
+        <p class="kpi-value">{{ k.value }}</p>
+        <p class="kpi-footer">{{ k.footer }}</p>
+      </div>
+    }
+  </div>
+
+  <div class="tri-grid">
+    <section class="panel">
+      <div class="panel-head">
+        <h2>Operacional</h2>
+        <p class="muted">Produtividade e risco veicular</p>
+      </div>
+      <div class="split">
+        <div class="mini-kpi">
+          <p class="kpi-title">Veiculos em servico</p>
+          <p class="kpi-number">{{ operacao.veiculosServico }}</p>
+        </div>
+        <div class="mini-kpi alert">
+          <p class="kpi-title">Proxima revisao (alerta)</p>
+          <p class="kpi-number">{{ operacao.revisaoAlerta }} veiculos</p>
+        </div>
+      </div>
+      <h3>OS por etapa</h3>
+      <div class="bars">
+        @for (etapa of operacao.osEtapas; track etapa.label) {
+          <div class="bar" [style.background]="etapa.cor" [style.height.%]="etapa.valor * 8">
+            <span>{{ etapa.label }} ({{ etapa.valor }})</span>
+          </div>
+        }
+      </div>
+      <p class="kpi-footer">Distribuicao de OS em andamento</p>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <h2>Financeiro</h2>
+        <p class="muted">Fluxo de caixa e vencimentos</p>
+      </div>
+      <div class="table">
+        <div class="table-row table-head">
+          <span>Tipo</span>
+          <span class="right">Valor</span>
+          <span>Detalhes</span>
+        </div>
+        @for (f of financeiro; track f.rotulo) {
+          <div class="table-row">
+            <span [class.entrada]="f.tipo === 'entrada'" [class.saida]="f.tipo === 'saida'">{{ f.rotulo }}</span>
+            <span class="right" [class.entrada]="f.tipo === 'entrada'" [class.saida]="f.tipo === 'saida'">{{ f.valor }}</span>
+            <span>{{ f.detalhe }}</span>
+          </div>
+        }
+      </div>
+      <a class="link" routerLink="/financeiro">Ver financeiro »</a>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <h2>Suprimentos</h2>
+        <p class="muted">Reputacao e pedidos</p>
+      </div>
+      <div class="mini-kpi">
+        <p class="kpi-title">Score medio (ultimos 3 meses)</p>
+        <p class="kpi-number gold">{{ fornecedores.score }}</p>
+      </div>
+      <h3>Maiores gastos (mes)</h3>
+      <div class="table">
+        @for (g of fornecedores.gastos; track g.nome) {
+          <div class="table-row">
+            <span>{{ g.nome }}</span>
+            <span class="right">{{ g.valor }}</span>
+          </div>
+        }
+      </div>
+      <a class="link" routerLink="/fornecedores">Gerenciar parceiros »</a>
+    </section>
+  </div>
+</section>

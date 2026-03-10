@@ -1,0 +1,93 @@
+<section class="veiculo-shell">
+  <header class="veiculo-header">
+    <div class="info">
+      <div class="placa">{{ veiculo.placa }}</div>
+      <h1>{{ veiculo.modelo }}</h1>
+      <p class="owner">Proprietario: {{ veiculo.dono }} (Cliente {{ veiculo.donoId }})</p>
+    </div>
+
+    <div class="kpi-area">
+      @for (k of kpis; track k.label) {
+        <div class="kpi" [class.alert]="k.alerta">
+          <strong>{{ k.valor }}</strong>
+          <span>{{ k.label }}</span>
+        </div>
+      }
+    </div>
+  </header>
+
+  <nav class="tabs">
+    <button class="tab" [class.active]="activeTab === 'historico'" (click)="setTab('historico')">
+      Historico de Servico
+    </button>
+    <button class="tab" [class.active]="activeTab === 'dados'" (click)="setTab('dados')">
+      Dados Tecnicos
+    </button>
+    <button class="tab" [class.active]="activeTab === 'docs'" (click)="setTab('docs')">
+      Documentos & Pecas
+    </button>
+  </nav>
+
+  @if (activeTab === 'historico') {
+  <div class="card">
+    <div class="card-head">
+      <h2>Ultimas Ordens de Servico</h2>
+      <button class="ghost">Ver historico completo</button>
+    </div>
+
+    <div class="table">
+      <div class="table-row table-head">
+        <span>OS</span>
+        <span>Data</span>
+        <span>Servico</span>
+        <span>Valor</span>
+        <span>Status</span>
+      </div>
+
+      @for (os of historico; track os.id) {
+        <div class="table-row">
+          <span>{{ os.id }}</span>
+          <span>{{ os.data }}</span>
+          <span>{{ os.servico }}</span>
+          <span>{{ os.valor }}</span>
+          <span>
+            <span class="status" [class.ok]="os.status === 'concluida'">{{ os.status }}</span>
+          </span>
+        </div>
+      }
+    </div>
+  </div>
+  }
+
+  @if (activeTab === 'dados') {
+  <div class="card">
+    <div class="card-head">
+      <h2>Dados Tecnicos</h2>
+      <p class="muted">Use dropdowns dependentes para marca/modelo e mantenha km sempre atualizado a cada OS.</p>
+    </div>
+    <div class="grid">
+      @for (dado of dadosTecnicos; track dado.label) {
+        <div class="data">
+          <p class="label">{{ dado.label }}</p>
+          <p class="value">{{ dado.valor }}</p>
+        </div>
+      }
+    </div>
+  </div>
+  }
+
+  @if (activeTab === 'docs') {
+  <div class="card">
+    <div class="card-head">
+      <h2>Documentos & Anexos</h2>
+      <button class="ghost">Upload</button>
+    </div>
+    <p class="muted">Registre codigo de tinta, pneus, bateria e anexos como CRV ou fotos de OS.</p>
+    <div class="tags">
+      <span class="tag">Cor Tinta: Prata (Cód 1A)</span>
+      <span class="tag">Pneu: 225/45 R17</span>
+      <span class="tag">Bateria: H7 - trocada 01/2025</span>
+    </div>
+  </div>
+  }
+</section>

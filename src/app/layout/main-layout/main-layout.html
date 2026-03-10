@@ -1,0 +1,19 @@
+<div class="layout-bg">
+  <div class="shape shape-1"></div>
+  <div class="shape shape-2"></div>
+
+  <div class="layout-shell">
+    <app-header></app-header>
+
+    <div class="layout-grid">
+      <app-sidebar></app-sidebar>
+      <main class="main-slot">
+        <div class="main-panel glass-panel">
+          <router-outlet></router-outlet>
+        </div>
+      </main>
+    </div>
+
+    <!-- <app-footer></app-footer> -->
+  </div>
+</div>

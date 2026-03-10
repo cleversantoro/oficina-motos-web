@@ -1,0 +1,248 @@
+.forn-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  color: #e2e8f0;
+}
+
+.header-card {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: flex-start;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 1rem;
+  padding: 1.25rem;
+  border-bottom: 3px solid #0ea5e9;
+}
+
+h1 {
+  margin: 0;
+  color: #f8fafc;
+}
+
+.cnpj {
+  margin: 0.2rem 0;
+  color: #94a3b8;
+  font-family: monospace;
+}
+
+.segments {
+  display: flex;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+}
+
+.segment {
+  padding: 0.3rem 0.7rem;
+  border-radius: 999px;
+  background: rgba(14, 165, 233, 0.18);
+  border: 1px solid rgba(14, 165, 233, 0.4);
+  color: #e0f2fe;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.score {
+  text-align: right;
+}
+
+.stars {
+  color: #f59e0b;
+  font-size: 1.1rem;
+}
+
+.score-label {
+  display: inline-block;
+  background: rgba(244, 244, 245, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 0.5rem;
+  padding: 0.25rem 0.7rem;
+  color: #f8fafc;
+  font-weight: 700;
+}
+
+.muted {
+  margin: 0;
+  color: #cbd5e1;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 1rem;
+}
+
+.card {
+  background: rgba(12, 20, 35, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 1rem;
+  padding: 1rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+}
+
+.card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+h2 {
+  margin: 0;
+  color: #f8fafc;
+}
+
+.ghost {
+  border-radius: 0.75rem;
+  padding: 0.5rem 0.8rem;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.05);
+  color: #f8fafc;
+  cursor: pointer;
+}
+
+.rep {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.8rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.rep-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: #0b1222;
+  font-weight: 800;
+}
+
+.rep-name {
+  display: block;
+  color: #f8fafc;
+  font-weight: 700;
+}
+
+.rep-role,
+.rep-contact {
+  color: #cbd5e1;
+  font-size: 0.9rem;
+}
+
+.cta {
+  border: none;
+  border-radius: 0.8rem;
+  padding: 0.55rem 0.9rem;
+  background: linear-gradient(135deg, rgba(249, 115, 22, 0.92), rgba(248, 180, 87, 0.95));
+  color: #0b1222;
+  font-weight: 800;
+  cursor: pointer;
+
+  &.small {
+    padding: 0.45rem 0.75rem;
+    font-size: 0.9rem;
+  }
+}
+
+.addr {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.badge {
+  padding: 0.3rem 0.65rem;
+  border-radius: 0.65rem;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  color: #e2e8f0;
+}
+
+.addr-text {
+  color: #f8fafc;
+}
+
+.icon {
+  padding: 0.4rem 0.65rem;
+}
+
+.bank-card {
+  margin-top: 0.5rem;
+  background: linear-gradient(135deg, #111827, #1f2937);
+  border-radius: 0.9rem;
+  padding: 0.9rem;
+  color: #f8fafc;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.bank-title {
+  font-weight: 800;
+  display: block;
+}
+
+.bank-grid {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 0.5rem;
+  font-family: monospace;
+}
+
+.pix {
+  margin-top: 0.75rem;
+  padding: 0.4rem 0.6rem;
+  border-radius: 0.6rem;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.cond {
+  margin-top: 0.8rem;
+}
+
+.doc-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.55rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  color: #f8fafc;
+}
+
+.doc-status {
+  padding: 0.25rem 0.6rem;
+  border-radius: 0.6rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+
+  &.ok {
+    background: rgba(34, 197, 94, 0.18);
+    border-color: rgba(34, 197, 94, 0.45);
+    color: #bbf7d0;
+  }
+
+  &.alert {
+    background: rgba(234, 179, 8, 0.18);
+    border-color: rgba(234, 179, 8, 0.45);
+    color: #fef3c7;
+  }
+}
+
+@media (max-width: 900px) {
+  .header-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .score {
+    text-align: left;
+  }
+
+  .layout {
+    grid-template-columns: 1fr;
+  }
+}

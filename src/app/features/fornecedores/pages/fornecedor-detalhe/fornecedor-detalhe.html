@@ -1,0 +1,92 @@
+<section class="forn-shell">
+  <header class="header-card">
+    <div class="company">
+      <h1>{{ fornecedor.nome }}</h1>
+      <p class="cnpj">CNPJ: {{ fornecedor.cnpj }}</p>
+      <div class="segments">
+          @for (seg of segmentos; track seg.label) {
+            <span class="segment">{{ seg.label }}</span>
+          }
+        </div>
+    </div>
+    <div class="score">
+      <div class="stars">★★★★☆ {{ fornecedor.score }}</div>
+      <span class="score-label">{{ fornecedor.scoreLabel }}</span>
+      <p class="muted">Baseado em {{ fornecedor.pedidos }} pedidos</p>
+    </div>
+  </header>
+
+  <div class="layout">
+    <main>
+      <section class="card">
+        <div class="card-head">
+          <h2>Representantes & Vendedores</h2>
+          <button class="ghost">+ Novo</button>
+        </div>
+        @for (rep of representantes; track rep.nome) {
+          <div class="rep">
+            <div class="rep-avatar" [style.background]="rep.cor">{{ rep.nome | slice:0:2 }}</div>
+            <div class="rep-body">
+              <span class="rep-name">{{ rep.nome }}</span>
+              <span class="rep-role">{{ rep.cargo }}</span>
+              <span class="rep-contact">{{ rep.contato }}</span>
+            </div>
+            <button class="cta small">{{ rep.acao }}</button>
+          </div>
+        }
+      </section>
+
+      <section class="card">
+        <div class="card-head">
+          <h2>Logística e Endereços</h2>
+        </div>
+        @for (end of enderecos; track $index) {
+          <div class="addr">
+            <span class="badge">{{ end.tipo }}</span>
+            <span class="addr-text">{{ end.texto }}</span>
+            <button class="ghost icon">Mapa</button>
+          </div>
+        }
+      </section>
+    </main>
+
+    <aside>
+      <section class="card">
+        <div class="card-head">
+          <h2>Dados Bancários</h2>
+        </div>
+        <p class="muted">Para transferências e TED</p>
+        <div class="bank-card">
+          <span class="bank-title">Banco Itaú (341)</span>
+          <div class="bank-grid">
+            <span>Ag: 1234</span>
+            <span>CC: 56789-0</span>
+          </div>
+          <div class="pix">PIX (CNPJ): {{ fornecedor.cnpj }}</div>
+        </div>
+        <div class="cond">
+          <strong>Condição de pagamento</strong>
+          <p class="muted">Boleto 28/56 dias (Limite: R$ 5.000)</p>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-head">
+          <h2>Documentos & ISO</h2>
+        </div>
+        @for (doc of documentos; track doc.nome) {
+          <div class="doc-row">
+            <span>{{ doc.nome }}</span>
+            <span
+              class="doc-status"
+              [class.ok]="doc.status === 'ok'"
+              [class.alert]="doc.status === 'alerta'"
+            >
+              {{ doc.detalhe || 'Ver' }}
+            </span>
+          </div>
+        }
+      </section>
+    </aside>
+  </div>
+</section>

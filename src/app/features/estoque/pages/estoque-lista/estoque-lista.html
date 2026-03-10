@@ -1,0 +1,88 @@
+<section class="estoque-shell">
+  <div class="stats-grid">
+    @for (stat of estatisticas; track stat.label) {
+      <div class="stat-card" [class.alert]="stat.alerta">
+        <p class="stat-label">{{ stat.label }}</p>
+        <p class="stat-value">{{ stat.valor }}</p>
+      </div>
+    }
+  </div>
+
+  <div class="main-layout">
+    <aside class="filters">
+      <div class="filter-group">
+        <p class="filter-title">Categorias</p>
+        @for (cat of categorias; track cat.id) {
+          <label class="checkbox-row">
+            <input type="checkbox" />
+            <span>{{ cat.nome }}</span>
+          </label>
+        }
+      </div>
+
+      <div class="filter-group">
+        <p class="filter-title">Fabricantes</p>
+        @for (fab of fabricantes; track fab.id) {
+          <label class="checkbox-row">
+            <input type="checkbox" />
+            <span>{{ fab.nome }}</span>
+          </label>
+        }
+      </div>
+
+      <div class="filter-group">
+        <p class="filter-title">Status</p>
+        @for (st of statusFiltros; track st.label) {
+          <label class="checkbox-row">
+            <input type="checkbox" [checked]="st.checked" />
+            <span>{{ st.label }}</span>
+          </label>
+        }
+      </div>
+    </aside>
+
+    <main class="content-area">
+      <div class="toolbar">
+        <input class="search" type="text" placeholder="Buscar por nome, codigo ou SKU..." />
+        <button class="cta primary">+ Nova peça</button>
+      </div>
+
+      <div class="table">
+        <div class="table-head table-row">
+          <span class="w-produto">Produto</span>
+          <span>Preço venda</span>
+          <span>Fabricante</span>
+          <span>Localização</span>
+          <span>Estoque</span>
+          <span class="right">Ações</span>
+        </div>
+
+        @for (item of itens; track item.id) {
+          <div class="table-row">
+            <div class="produto w-produto">
+              <div class="thumb"></div>
+              <div>
+                <p class="prod-name">{{ item.descricao }}</p>
+                <p class="sku">SKU: {{ item.codigo }} • {{ getCategoria(item.categoriaId) }}</p>
+              </div>
+            </div>
+            <span>R$ {{ item.precoUnitario | number : '1.0-2' }}</span>
+            <span>{{ getFabricante(item.fabricanteId) }}</span>
+            <span><span class="location">{{ getLocalizacao(item.localizacaoId) }}</span></span>
+            <span>
+              <span class="stock" [class.low]="isCritico(item)">
+                @if (isCritico(item)) {⚠}
+                {{ item.quantidade }} un
+              </span>
+            </span>
+            <span class="actions right">
+              <button class="ghost icon" title="Histórico">H</button>
+              <button class="ghost icon" title="Editar">✎</button>
+              <button class="ghost icon" title="Movimentar">+</button>
+            </span>
+          </div>
+        }
+      </div>
+    </main>
+  </div>
+</section>
