@@ -3,7 +3,7 @@ import { ClienteLista } from './features/clientes/pages/cliente-lista/cliente-li
 import { ClienteCadastro } from './features/clientes/pages/cliente-cadastro/cliente-cadastro';
 import { OsDetalhe } from './features/ordens-servico/pages/os-detalhe/os-detalhe';
 import { EstoqueLista } from './features/estoque/pages/estoque-lista/estoque-lista';
-import { MecanicoDetalhe } from './features/mecanicos/pages/mecanico-detalhe/mecanico-detalhe';
+import { MecanicoLista } from './features/mecanicos/pages/mecanico-lista/mecanico-lista';
 import { VeiculoDetalhe } from './features/motos/pages/veiculo-detalhe/veiculo-detalhe';
 import { FinanceiroDashboard } from './features/financeiro/pages/financeiro-dashboard/financeiro-dashboard';
 import { FornecedorDetalhe } from './features/fornecedores/pages/fornecedor-detalhe/fornecedor-detalhe';
@@ -37,7 +37,7 @@ export const routes: Routes = [
       },
       {
         path: 'mecanicos',
-        component: MecanicoDetalhe,
+        component: MecanicoLista,
       },
       {
         path: 'ordens',

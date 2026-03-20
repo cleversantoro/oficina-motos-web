@@ -1,57 +1,56 @@
-import { DatePipe } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { ButtonModule } from 'primeng/button';
-import { TableModule } from 'primeng/table';
 import { DialogModule } from 'primeng/dialog';
 import { TabsModule } from 'primeng/tabs';
-import { MecanicosService } from '../../../../core/services/mecanicos.service';
 import { Mecanico } from '../../../../core/models';
 
 @Component({
   selector: 'app-mecanico-detalhe',
   standalone: true,
-  imports: [DatePipe, ButtonModule, TableModule, DialogModule, TabsModule],
+  imports: [ButtonModule, DialogModule, TabsModule],
   templateUrl: './mecanico-detalhe.html',
   styleUrl: './mecanico-detalhe.scss',
-  providers: [MecanicosService]
 })
-export class MecanicoDetalhe implements OnInit {
-  mecanicos: any[] = [];
-  loading = false;
-  selected: Mecanico | null = null;
+export class MecanicoDetalhe {
+  @Input() mecanico: Mecanico | null = null;
+  @Input() visible = false;
+  @Output() closed = new EventEmitter<void>();
 
-  constructor(private mecanicosService: MecanicosService) {}
-
-  ngOnInit(): void {
-    this.fetchMecanicos();
+  close() {
+    this.closed.emit();
   }
 
-  fetchMecanicos() {
-    this.loading = true;
-    this.mecanicosService.list().subscribe({
-      next: (resp: any) => { this.mecanicos = resp; this.loading = false; },
-      error: () => { this.loading = false; }
-    });
+  get initials(): string {
+    if (!this.mecanico) return '?';
+    const s = this.mecanico.sobrenome?.[0] ?? '';
+    return (this.mecanico.nome[0] + s).toUpperCase();
   }
 
-  openDetails(item: any) {
-    this.loading = true;
-    this.mecanicosService.get(item.id).subscribe({
-      next: (resp: any) => { this.selected = resp; this.loading = false; },
-      error: () => { this.loading = false; }
-    });
+  get isAtivo(): boolean {
+    return this.mecanico?.status?.toLowerCase() === 'ativo';
   }
 
-  closeDetails() { this.selected = null; }
+  get primaryContact(): string {
+    const c = this.mecanico?.contatos?.find(ct => ct.principal);
+    return c?.valor ?? '-';
+  }
+
+  get primaryCity(): string {
+    const e = this.mecanico?.enderecos?.find(en => en.principal);
+    return e ? `${e.cidade}, ${e.estado}` : '-';
+  }
+
+  formatDate(d: string | null | undefined): string {
+    if (!d) return '-';
+    return new Date(d).toLocaleDateString('pt-BR');
+  }
 
   formatValue(value: any): string {
     if (value === null || value === undefined || value === '') return '-';
     return String(value);
   }
 
-  formatBoolean(value: any): string {
-    if (value === true) return 'SIM';
-    if (value === false) return 'NÃO';
-    return '-';
+  diaSemanaLabel(dia: number): string {
+    return ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'][dia] ?? String(dia);
   }
 }

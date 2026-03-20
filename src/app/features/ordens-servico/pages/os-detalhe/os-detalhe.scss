@@ -471,3 +471,30 @@ textarea {
 .dvalue { margin: 0.15rem 0 0; color: #f8fafc; font-weight: 600; font-size: 0.95rem; }
 
 a.dvalue { color: #fdba74; }
+
+:host ::ng-deep .p-dialog .p-dialog-header,
+:host ::ng-deep .p-dialog .p-dialog-content {
+  background: #0b1220;
+  color: #e2e8f0;
+}
+
+:host ::ng-deep .p-dialog .p-dialog-header {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+:host ::ng-deep .p-tabs .p-tablist {
+  background: rgba(255, 255, 255, 0.02);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+:host ::ng-deep .p-tabs .p-tab {
+  background: transparent;
+  color: #94a3b8;
+  border-color: transparent;
+}
+
+:host ::ng-deep .p-tabs .p-tab[aria-selected="true"] {
+  color: #fdba74;
+  border-color: #f97316;
+  background: transparent;
+}

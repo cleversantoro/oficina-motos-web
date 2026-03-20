@@ -1,217 +1,284 @@
-﻿<section class="mec-shell">
-  <header class="page-header">
-    <div class="header-actions">
-      <p-button label="Novo Mec\u00e2nico" icon="pi pi-plus" size="small"></p-button>
+﻿<p-dialog
+  [visible]="visible"
+  [modal]="true"
+  [showHeader]="false"
+  [style]="{ width: '980px' }"
+  [contentStyle]="{ padding: '0', overflow: 'hidden', 'border-radius': '1rem' }"
+  (onHide)="close()">
+
+  @if (mecanico; as m) {
+    <div class="detalhe-root">
+
+      <!-- Coluna esquerda: perfil -->
+      <aside class="profile-col">
+        <div class="avatar-wrap">
+          <div class="avatar-initials">{{ initials }}</div>
+          <div class="status-dot" [class.inactive]="!isAtivo"></div>
+        </div>
+
+        <h2 class="mec-name">{{ m.nome }} {{ m.sobrenome }}</h2>
+        <span class="mec-role">{{ m.nivel }}</span>
+        <span class="status-badge" [class.active]="isAtivo">{{ m.status }}</span>
+
+        <div class="kpi-row">
+          <div class="kpi">
+            <strong>R$ {{ m.valorHora.toFixed(2) }}</strong>
+            <span>Valor/Hora</span>
+          </div>
+          <div class="kpi">
+            <strong>{{ m.cargaHorariaSemanal }}h</strong>
+            <span>Semanal</span>
+          </div>
+        </div>
+
+        <div class="profile-info">
+          @if (primaryContact !== '-') {
+            <p class="info-row"><i class="pi pi-phone"></i> {{ primaryContact }}</p>
+          }
+          @if (primaryCity !== '-') {
+            <p class="info-row"><i class="pi pi-map-marker"></i> {{ primaryCity }}</p>
+          }
+          @if (m.dataAdmissao) {
+            <p class="info-row"><i class="pi pi-briefcase"></i> Admissão: {{ formatDate(m.dataAdmissao) }}</p>
+          }
+          @if (m.documentoPrincipal) {
+            <p class="info-row"><i class="pi pi-id-card"></i> {{ m.documentoPrincipal }}</p>
+          }
+          @if (m.codigo) {
+            <p class="info-row"><i class="pi pi-hashtag"></i> Cód: {{ m.codigo }}</p>
+          }
+        </div>
+
+        <button class="close-btn" (click)="close()">
+          <i class="pi pi-times"></i> Fechar
+        </button>
+      </aside>
+
+      <!-- Coluna direita: abas de detalhes -->
+      <main class="details-col">
+        <p-tabs value="0">
+          <p-tablist>
+            <p-tab value="0">Especialidades</p-tab>
+            <p-tab value="1">Disponibilidade</p-tab>
+            <p-tab value="2">Certificações</p-tab>
+            <p-tab value="3">Experiências</p-tab>
+            <p-tab value="4">Documentos</p-tab>
+            <p-tab value="5">Endereços</p-tab>
+            <p-tab value="6">Contatos</p-tab>
+          </p-tablist>
+
+          <p-tabpanels>
+
+            <!-- Especialidades -->
+            <p-tabpanel value="0">
+              <div class="tab-section">
+                <h3 class="section-title">Especialidades Técnicas</h3>
+                @if (!m.especialidades.length) {
+                  <p class="empty-msg">Nenhuma especialidade cadastrada.</p>
+                } @else {
+                  <div class="skills-wrap">
+                    @for (esp of m.especialidades; track esp.id) {
+                      <div class="skill-chip" [class.principal]="esp.principal">
+                        <span class="chip-nivel">{{ esp.nivel }}</span>
+                        <span class="chip-id">Esp. #{{ esp.especialidadeId }}</span>
+                        @if (esp.principal) {
+                          <span class="chip-badge">Principal</span>
+                        }
+                        @if (esp.anotacoes) {
+                          <span class="chip-note" title="{{ esp.anotacoes }}">
+                            <i class="pi pi-info-circle"></i>
+                          </span>
+                        }
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+            </p-tabpanel>
+
+            <!-- Disponibilidade -->
+            <p-tabpanel value="1">
+              <div class="tab-section">
+                <h3 class="section-title">Disponibilidade Semanal</h3>
+                @if (!m.disponibilidades.length) {
+                  <p class="empty-msg">Nenhuma disponibilidade cadastrada.</p>
+                } @else {
+                  <div class="schedule-grid">
+                    @for (d of m.disponibilidades; track d.id) {
+                      <div class="day-card">
+                        <p class="day-label">{{ diaSemanaLabel(d.diaSemana) }}</p>
+                        <div class="time-slot">
+                          <i class="pi pi-clock"></i>
+                          {{ d.horaInicio }} – {{ d.horaFim }}
+                        </div>
+                        @if (d.capacidadeAtendimentos) {
+                          <span class="cap-badge">{{ d.capacidadeAtendimentos }} atend.</span>
+                        }
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+            </p-tabpanel>
+
+            <!-- Certificações -->
+            <p-tabpanel value="2">
+              <div class="tab-section">
+                <h3 class="section-title">Certificações & Cursos</h3>
+                @if (!m.certificacoes.length) {
+                  <p class="empty-msg">Nenhuma certificação cadastrada.</p>
+                } @else {
+                  <div class="list-items">
+                    @for (cert of m.certificacoes; track cert.id) {
+                      <div class="list-item">
+                        <div class="list-icon">🎓</div>
+                        <div class="list-body">
+                          <strong>{{ cert.titulo }}</strong>
+                          @if (cert.instituicao) {
+                            <p class="meta">{{ cert.instituicao }}</p>
+                          }
+                          <p class="meta">
+                            Conclusão: {{ formatDate(cert.dataConclusao) }}
+                            @if (cert.dataValidade) {
+                              · Validade: {{ formatDate(cert.dataValidade) }}
+                            }
+                          </p>
+                          @if (cert.codigoCertificacao) {
+                            <span class="code-badge">{{ cert.codigoCertificacao }}</span>
+                          }
+                        </div>
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+            </p-tabpanel>
+
+            <!-- Experiências -->
+            <p-tabpanel value="3">
+              <div class="tab-section">
+                <h3 class="section-title">Experiência Profissional</h3>
+                @if (!m.experiencias.length) {
+                  <p class="empty-msg">Nenhuma experiência cadastrada.</p>
+                } @else {
+                  <div class="list-items">
+                    @for (exp of m.experiencias; track exp.id) {
+                      <div class="list-item">
+                        <div class="list-icon">💼</div>
+                        <div class="list-body">
+                          <strong>{{ exp.cargo }}</strong>
+                          <p class="meta company">{{ exp.empresa }}</p>
+                          <p class="meta">
+                            {{ formatDate(exp.dataInicio) }} – {{ exp.dataFim ? formatDate(exp.dataFim) : 'Atual' }}
+                          </p>
+                          @if (exp.resumoAtividades) {
+                            <p class="meta atividades">{{ exp.resumoAtividades }}</p>
+                          }
+                        </div>
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+            </p-tabpanel>
+
+            <!-- Documentos -->
+            <p-tabpanel value="4">
+              <div class="tab-section">
+                <h3 class="section-title">Documentos</h3>
+                @if (!m.documentos.length) {
+                  <p class="empty-msg">Nenhum documento cadastrado.</p>
+                } @else {
+                  <div class="list-items">
+                    @for (doc of m.documentos; track doc.id) {
+                      <div class="list-item">
+                        <div class="list-icon">📄</div>
+                        <div class="list-body">
+                          <strong>{{ doc.tipo }}</strong>
+                          <p class="meta">Nº {{ doc.numero }}</p>
+                          @if (doc.orgaoExpedidor) {
+                            <p class="meta">{{ doc.orgaoExpedidor }}</p>
+                          }
+                          <p class="meta">
+                            Emissão: {{ formatDate(doc.dataEmissao) }}
+                            @if (doc.dataValidade) {
+                              · Validade: {{ formatDate(doc.dataValidade) }}
+                            }
+                          </p>
+                        </div>
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+            </p-tabpanel>
+
+            <!-- Endereços -->
+            <p-tabpanel value="5">
+              <div class="tab-section">
+                <h3 class="section-title">Endereços</h3>
+                @if (!m.enderecos.length) {
+                  <p class="empty-msg">Nenhum endereço cadastrado.</p>
+                } @else {
+                  <div class="list-items">
+                    @for (end of m.enderecos; track end.id) {
+                      <div class="list-item">
+                        <div class="list-icon">📍</div>
+                        <div class="list-body">
+                          <strong>
+                            {{ end.tipo }}
+                            @if (end.principal) { <span class="principal-badge">Principal</span> }
+                          </strong>
+                          <p class="meta">{{ end.logradouro }}, {{ end.numero }}{{ end.complemento ? ' - ' + end.complemento : '' }}</p>
+                          <p class="meta">{{ end.bairro }} · {{ end.cidade }}/{{ end.estado }} · CEP {{ end.cep }}</p>
+                        </div>
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+            </p-tabpanel>
+
+            <!-- Contatos -->
+            <p-tabpanel value="6">
+              <div class="tab-section">
+                <h3 class="section-title">Contatos</h3>
+                @if (!m.contatos.length) {
+                  <p class="empty-msg">Nenhum contato cadastrado.</p>
+                } @else {
+                  <div class="list-items">
+                    @for (ct of m.contatos; track ct.id) {
+                      <div class="list-item">
+                        <div class="list-icon">
+                          @switch (ct.tipo.toLowerCase()) {
+                            @case ('celular') { 📱 }
+                            @case ('telefone') { 📞 }
+                            @case ('email') { 📧 }
+                            @default { 💬 }
+                          }
+                        </div>
+                        <div class="list-body">
+                          <strong>{{ ct.valor }}</strong>
+                          <p class="meta">
+                            {{ ct.tipo }}
+                            @if (ct.principal) { · <span class="principal-badge">Principal</span> }
+                          </p>
+                          @if (ct.observacao) {
+                            <p class="meta">{{ ct.observacao }}</p>
+                          }
+                        </div>
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+            </p-tabpanel>
+
+          </p-tabpanels>
+        </p-tabs>
+      </main>
+
     </div>
-  </header>
+  }
 
-  <div class="table-card card-surface">
-    <div class="table-head">
-      <div>
-        <p class="eyebrow">Listagem</p>
-        <h2>Mec\u00e2nicos</h2>
-      </div>
-    </div>
-
-    <p-table [value]="mecanicos" [loading]="loading" [tableStyle]="{ 'min-width': '50rem' }"
-      [paginator]="true" [rows]="10" [rowsPerPageOptions]="[5, 10, 20]" [showCurrentPageReport]="true"
-      currentPageReportTemplate="Exibindo {first} at\u00e9 {last} de {totalRecords} registros">
-      <ng-template pTemplate="header">
-        <tr>
-          <th>Nome</th>
-          <th>N\u00edvel</th>
-          <th>Status</th>
-          <th>Documento</th>
-          <th>Valor/Hora</th>
-          <th class="text-right">A\u00e7\u00f5es</th>
-        </tr>
-      </ng-template>
-      <ng-template pTemplate="body" let-mec>
-        <tr>
-          <td>
-            <div class="nome">
-              <span class="avatar-initial">{{ mec.nome[0] }}</span>
-              <div>
-                <p class="name">{{ mec.nome }} {{ mec.sobrenome }}</p>
-                <p class="sub">{{ mec.nivel }}</p>
-              </div>
-            </div>
-          </td>
-          <td>{{ mec.nivel }}</td>
-          <td>{{ mec.status }}</td>
-          <td>{{ mec.documentoPrincipal }}</td>
-          <td>R$ {{ mec.valorHora?.toFixed(2) }}</td>
-          <td class="text-right">
-            <p-button icon="pi pi-search" severity="info" (onClick)="openDetails(mec)" rounded></p-button>
-          </td>
-        </tr>
-      </ng-template>
-    </p-table>
-  </div>
-
-  <p-dialog header="Detalhes do Mecânico" [visible]="selected !== null" [modal]="true" [style]="{ width: '820px' }"
-    [contentStyle]="{ 'max-height': '70vh', 'overflow': 'auto' }" (onHide)="closeDetails()">
-    @if (selected; as m) {
-      <p-tabs value="0">
-        <p-tablist>
-          <p-tab value="0">Dados B\u00e1sicos</p-tab>
-          <p-tab value="1">Especialidades</p-tab>
-          <p-tab value="2">Disponibilidade</p-tab>
-          <p-tab value="3">Certifica\u00e7\u00f5es</p-tab>
-          <p-tab value="4">Contatos</p-tab>
-          <p-tab value="5">Endere\u00e7os</p-tab>
-          <p-tab value="6">Documentos</p-tab>
-          <p-tab value="7">Experi\u00eancias</p-tab>
-        </p-tablist>
-        <p-tabpanels>
-          <p-tabpanel value="0">
-            <div class="card-head">
-              <p class="label">Nome</p>
-              <p class="value">{{ formatValue(m.nome) }} {{ formatValue(m.sobrenome) }}</p>
-            </div>
-            <div class="detail-grid">
-              <div><p class="label">ID</p><p class="value">{{ formatValue(m.id) }}</p></div>
-              <div><p class="label">C\u00f3digo</p><p class="value">{{ formatValue(m.codigo) }}</p></div>
-            </div>
-            <div class="detail-grid">
-              <div><p class="label">Nome Social</p><p class="value">{{ formatValue(m.nomeSocial) }}</p></div>
-              <div><p class="label">Documento</p><p class="value">{{ formatValue(m.documentoPrincipal) }}</p></div>
-            </div>
-            <div class="detail-grid">
-              <div><p class="label">N\u00edvel</p><p class="value">{{ formatValue(m.nivel) }}</p></div>
-              <div><p class="label">Status</p><p class="value">{{ formatValue(m.status) }}</p></div>
-            </div>
-            <div class="detail-grid">
-              <div><p class="label">Valor/Hora</p><p class="value">R$ {{ m.valorHora?.toFixed(2) ?? '-' }}</p></div>
-              <div><p class="label">Carga Hor\u00e1ria Semanal</p><p class="value">{{ formatValue(m.cargaHorariaSemanal) }}h</p></div>
-            </div>
-            <div class="detail-grid">
-              <div><p class="label">Admiss\u00e3o</p><p class="value">{{ m.dataAdmissao ? (m.dataAdmissao | date:'dd/MM/yyyy') : '-' }}</p></div>
-              <div><p class="label">Demiss\u00e3o</p><p class="value">{{ m.dataDemissao ? (m.dataDemissao | date:'dd/MM/yyyy') : '-' }}</p></div>
-            </div>
-            <div class="detail-block">
-              <p class="label">Observa\u00e7\u00f5es</p>
-              <p class="value">{{ formatValue(m.observacoes) }}</p>
-            </div>
-          </p-tabpanel>
-
-          <p-tabpanel value="1">
-            @if (!m.especialidades?.length) { <p class="value">-</p> }
-            @for (esp of m.especialidades; track esp.id) {
-              <div class="detail-list">
-                <div class="detail-grid">
-                  <div><p class="label">Especialidade ID</p><p class="value">{{ formatValue(esp.especialidadeId) }}</p></div>
-                  <div><p class="label">N\u00edvel</p><p class="value">{{ formatValue(esp.nivel) }}</p></div>
-                  <div><p class="label">Principal</p><p class="value">{{ formatBoolean(esp.principal) }}</p></div>
-                </div>
-                <div class="detail-block"><p class="label">Anota\u00e7\u00f5es</p><p class="value">{{ formatValue(esp.anotacoes) }}</p></div>
-              </div>
-            }
-          </p-tabpanel>
-
-          <p-tabpanel value="2">
-            @if (!m.disponibilidades?.length) { <p class="value">-</p> }
-            @for (d of m.disponibilidades; track d.id) {
-              <div class="detail-list">
-                <div class="detail-grid">
-                  <div><p class="label">Dia semana</p><p class="value">{{ formatValue(d.diaSemana) }}</p></div>
-                  <div><p class="label">In\u00edcio</p><p class="value">{{ formatValue(d.horaInicio) }}</p></div>
-                  <div><p class="label">Fim</p><p class="value">{{ formatValue(d.horaFim) }}</p></div>
-                  <div><p class="label">Capacidade</p><p class="value">{{ formatValue(d.capacidadeAtendimentos) }}</p></div>
-                </div>
-              </div>
-            }
-          </p-tabpanel>
-
-          <p-tabpanel value="3">
-            @if (!m.certificacoes?.length) { <p class="value">-</p> }
-            @for (cert of m.certificacoes; track cert.id) {
-              <div class="detail-list">
-                <div class="detail-grid">
-                  <div><p class="label">T\u00edtulo</p><p class="value">{{ formatValue(cert.titulo) }}</p></div>
-                  <div><p class="label">Institui\u00e7\u00e3o</p><p class="value">{{ formatValue(cert.instituicao) }}</p></div>
-                </div>
-                <div class="detail-grid">
-                  <div><p class="label">Conclus\u00e3o</p><p class="value">{{ cert.dataConclusao ? (cert.dataConclusao | date:'dd/MM/yyyy') : '-' }}</p></div>
-                  <div><p class="label">Validade</p><p class="value">{{ cert.dataValidade ? (cert.dataValidade | date:'dd/MM/yyyy') : '-' }}</p></div>
-                </div>
-                <div><p class="label">C\u00f3digo</p><p class="value">{{ formatValue(cert.codigoCertificacao) }}</p></div>
-              </div>
-            }
-          </p-tabpanel>
-
-          <p-tabpanel value="4">
-            @if (!m.contatos?.length) { <p class="value">-</p> }
-            @for (c of m.contatos; track c.id) {
-              <div class="detail-list">
-                <div class="detail-grid">
-                  <div><p class="label">Tipo</p><p class="value">{{ formatValue(c.tipo) }}</p></div>
-                  <div><p class="label">Valor</p><p class="value">{{ formatValue(c.valor) }}</p></div>
-                  <div><p class="label">Principal</p><p class="value">{{ formatBoolean(c.principal) }}</p></div>
-                </div>
-                <div><p class="label">Observa\u00e7\u00e3o</p><p class="value">{{ formatValue(c.observacao) }}</p></div>
-              </div>
-            }
-          </p-tabpanel>
-
-          <p-tabpanel value="5">
-            @if (!m.enderecos?.length) { <p class="value">-</p> }
-            @for (e of m.enderecos; track e.id) {
-              <div class="detail-list">
-                <div class="detail-grid">
-                  <div><p class="label">Tipo</p><p class="value">{{ formatValue(e.tipo) }}</p></div>
-                  <div><p class="label">CEP</p><p class="value">{{ formatValue(e.cep) }}</p></div>
-                  <div><p class="label">Principal</p><p class="value">{{ formatBoolean(e.principal) }}</p></div>
-                </div>
-                <div class="detail-grid">
-                  <div><p class="label">Logradouro</p><p class="value">{{ formatValue(e.logradouro) }}</p></div>
-                  <div><p class="label">N\u00famero</p><p class="value">{{ formatValue(e.numero) }}</p></div>
-                </div>
-                <div class="detail-grid">
-                  <div><p class="label">Bairro</p><p class="value">{{ formatValue(e.bairro) }}</p></div>
-                  <div><p class="label">Cidade</p><p class="value">{{ formatValue(e.cidade) }}</p></div>
-                  <div><p class="label">Estado</p><p class="value">{{ formatValue(e.estado) }}</p></div>
-                </div>
-              </div>
-            }
-          </p-tabpanel>
-
-          <p-tabpanel value="6">
-            @if (!m.documentos?.length) { <p class="value">-</p> }
-            @for (doc of m.documentos; track doc.id) {
-              <div class="detail-list">
-                <div class="detail-grid">
-                  <div><p class="label">Tipo</p><p class="value">{{ formatValue(doc.tipo) }}</p></div>
-                  <div><p class="label">N\u00famero</p><p class="value">{{ formatValue(doc.numero) }}</p></div>
-                </div>
-                <div class="detail-grid">
-                  <div><p class="label">Emiss\u00e3o</p><p class="value">{{ doc.dataEmissao ? (doc.dataEmissao | date:'dd/MM/yyyy') : '-' }}</p></div>
-                  <div><p class="label">Validade</p><p class="value">{{ doc.dataValidade ? (doc.dataValidade | date:'dd/MM/yyyy') : '-' }}</p></div>
-                  <div><p class="label">\u00d3rg\u00e3o expedidor</p><p class="value">{{ formatValue(doc.orgaoExpedidor) }}</p></div>
-                </div>
-              </div>
-            }
-          </p-tabpanel>
-
-          <p-tabpanel value="7">
-            @if (!m.experiencias?.length) { <p class="value">-</p> }
-            @for (exp of m.experiencias; track exp.id) {
-              <div class="detail-list">
-                <div class="detail-grid">
-                  <div><p class="label">Empresa</p><p class="value">{{ formatValue(exp.empresa) }}</p></div>
-                  <div><p class="label">Cargo</p><p class="value">{{ formatValue(exp.cargo) }}</p></div>
-                </div>
-                <div class="detail-grid">
-                  <div><p class="label">In\u00edcio</p><p class="value">{{ exp.dataInicio ? (exp.dataInicio | date:'dd/MM/yyyy') : '-' }}</p></div>
-                  <div><p class="label">Fim</p><p class="value">{{ exp.dataFim ? (exp.dataFim | date:'dd/MM/yyyy') : '-' }}</p></div>
-                </div>
-                <div class="detail-block"><p class="label">Atividades</p><p class="value">{{ formatValue(exp.resumoAtividades) }}</p></div>
-              </div>
-            }
-          </p-tabpanel>
-        </p-tabpanels>
-      </p-tabs>
-    }
-  </p-dialog>
-
-</section>
+</p-dialog>

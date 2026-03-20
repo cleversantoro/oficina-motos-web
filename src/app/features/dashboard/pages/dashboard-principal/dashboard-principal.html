@@ -1,12 +1,18 @@
 <section class="dash-shell">
   <header class="hero">
     <div>
-      <p class="eyebrow">Visao geral</p>
-      <h1>Saude da oficina</h1>
-      <p class="muted">Alertas e previsibilidade para operacao, financeiro e suprimentos.</p>
+      <p class="eyebrow">Visão geral</p>
+      <h1>Saúde da oficina</h1>
+      <p class="muted">Alertas e previsibilidade para operação, financeiro e suprimentos.</p>
     </div>
-    <button class="ghost">Exportar planilha</button>
   </header>
+
+  @if (loading) {
+    <div class="loading-state">
+      <span class="spinner"></span>
+      <p>Carregando dados...</p>
+    </div>
+  } @else {
 
   <div class="kpi-grid">
     @for (k of kpis; track k.title) {
@@ -24,32 +30,42 @@
   </div>
 
   <div class="tri-grid">
+    <!-- Operacional -->
     <section class="panel">
       <div class="panel-head">
         <h2>Operacional</h2>
-        <p class="muted">Produtividade e risco veicular</p>
+        <p class="muted">OS em aberto por etapa</p>
       </div>
       <div class="split">
         <div class="mini-kpi">
-          <p class="kpi-title">Veiculos em servico</p>
-          <p class="kpi-number">{{ operacao.veiculosServico }}</p>
+          <p class="kpi-title">OS em aberto</p>
+          <p class="kpi-number">{{ osEmAberto }}</p>
         </div>
-        <div class="mini-kpi alert">
-          <p class="kpi-title">Proxima revisao (alerta)</p>
-          <p class="kpi-number">{{ operacao.revisaoAlerta }} veiculos</p>
+        <div class="mini-kpi" [class.alert]="pecasAbaixoMinimo > 0">
+          <p class="kpi-title">Peças abaixo do mínimo</p>
+          <p class="kpi-number">{{ pecasAbaixoMinimo }}</p>
         </div>
       </div>
-      <h3>OS por etapa</h3>
-      <div class="bars">
-        @for (etapa of operacao.osEtapas; track etapa.label) {
-          <div class="bar" [style.background]="etapa.cor" [style.height.%]="etapa.valor * 8">
-            <span>{{ etapa.label }} ({{ etapa.valor }})</span>
-          </div>
-        }
-      </div>
-      <p class="kpi-footer">Distribuicao de OS em andamento</p>
+      @if (osEtapas.length) {
+        <h3>OS por etapa</h3>
+        <div class="bars">
+          @for (etapa of osEtapas; track etapa.label) {
+            <div
+              class="bar"
+              [style.background]="etapa.cor"
+              [style.height.%]="(etapa.valor / maxOsEtapa) * 80 + 10"
+            >
+              <span>{{ etapa.label }} ({{ etapa.valor }})</span>
+            </div>
+          }
+        </div>
+      } @else {
+        <p class="kpi-footer">Nenhuma OS em aberto.</p>
+      }
+      <a class="link" routerLink="/ordens">Ver ordens de serviço »</a>
     </section>
 
+    <!-- Financeiro -->
     <section class="panel">
       <div class="panel-head">
         <h2>Financeiro</h2>
@@ -72,25 +88,32 @@
       <a class="link" routerLink="/financeiro">Ver financeiro »</a>
     </section>
 
+    <!-- Suprimentos / Fornecedores -->
     <section class="panel">
       <div class="panel-head">
         <h2>Suprimentos</h2>
-        <p class="muted">Reputacao e pedidos</p>
+        <p class="muted">Reputação e maiores gastos</p>
       </div>
       <div class="mini-kpi">
-        <p class="kpi-title">Score medio (ultimos 3 meses)</p>
-        <p class="kpi-number gold">{{ fornecedores.score }}</p>
+        <p class="kpi-title">Score médio (avaliações)</p>
+        <p class="kpi-number gold">{{ fornecedorScore }}</p>
       </div>
-      <h3>Maiores gastos (mes)</h3>
-      <div class="table">
-        @for (g of fornecedores.gastos; track g.nome) {
-          <div class="table-row">
-            <span>{{ g.nome }}</span>
-            <span class="right">{{ g.valor }}</span>
-          </div>
-        }
-      </div>
+      @if (fornecedorGastos.length) {
+        <h3>Maiores gastos (contas a pagar)</h3>
+        <div class="table">
+          @for (g of fornecedorGastos; track g.nome) {
+            <div class="table-row">
+              <span>{{ g.nome }}</span>
+              <span class="right">{{ g.valor }}</span>
+            </div>
+          }
+        </div>
+      } @else {
+        <p class="kpi-footer">Sem contas a pagar por fornecedor.</p>
+      }
       <a class="link" routerLink="/fornecedores">Gerenciar parceiros »</a>
     </section>
   </div>
+
+  } <!-- /loading -->
 </section>

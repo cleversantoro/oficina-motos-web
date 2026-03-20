@@ -75,7 +75,7 @@
               <p class="dlabel">Descricao do problema</p>
               <p class="dvalue">{{ os.descricaoProblema }}</p>
             </div>
-            @if (!os.itens?.length) { <p class="dvalue">Nenhum item.</p> }
+            @if (!os.itens.length) { <p class="dvalue">Nenhum item.</p> }
             @for (item of os.itens; track item.id) {
               <div class="dlist">
                 <div class="dgrid">
@@ -89,7 +89,7 @@
           </p-tabpanel>
 
           <p-tabpanel value="1">
-            @if (!os.checklists?.length) { <p class="dvalue">Nenhum item de checklist.</p> }
+            @if (!os.checklists.length) { <p class="dvalue">Nenhum item de checklist.</p> }
             @for (check of os.checklists; track check.id) {
               <div class="dlist">
                 <div class="dgrid">
@@ -102,7 +102,7 @@
           </p-tabpanel>
 
           <p-tabpanel value="2">
-            @if (os.observacoes?.length) {
+            @if (os.observacoes.length) {
               <p class="section-sub">Observacoes</p>
               @for (obs of os.observacoes; track obs.id) {
                 <div class="dlist">
@@ -113,7 +113,7 @@
                 </div>
               }
             }
-            @if (os.historico?.length) {
+            @if (os.historico.length) {
               <p class="section-sub">Historico</p>
               @for (h of os.historico; track h.id) {
                 <div class="dlist">
@@ -129,13 +129,13 @@
                 </div>
               }
             }
-            @if (!os.observacoes?.length && !os.historico?.length) {
+            @if (!os.observacoes.length && !os.historico.length) {
               <p class="dvalue">Nenhum registro.</p>
             }
           </p-tabpanel>
 
           <p-tabpanel value="3">
-            @if (!os.pagamentos?.length) { <p class="dvalue">Nenhum pagamento.</p> }
+            @if (!os.pagamentos.length) { <p class="dvalue">Nenhum pagamento.</p> }
             @for (pg of os.pagamentos; track pg.id) {
               <div class="dlist">
                 <div class="dgrid">
@@ -150,7 +150,7 @@
           </p-tabpanel>
 
           <p-tabpanel value="4">
-            @if (!os.avaliacoes?.length) { <p class="dvalue">Sem avaliacao.</p> }
+            @if (!os.avaliacoes.length) { <p class="dvalue">Sem avaliacao.</p> }
             @for (av of os.avaliacoes; track av.id) {
               <div class="dlist">
                 <div class="dgrid">
@@ -163,7 +163,7 @@
           </p-tabpanel>
 
           <p-tabpanel value="5">
-            @if (!os.anexos?.length) { <p class="dvalue">Sem anexos.</p> }
+            @if (!os.anexos.length) { <p class="dvalue">Sem anexos.</p> }
             @for (anexo of os.anexos; track anexo.id) {
               <div class="dlist">
                 <div class="dgrid">
