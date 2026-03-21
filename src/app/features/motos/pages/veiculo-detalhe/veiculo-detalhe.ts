@@ -1,50 +1,92 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { forkJoin } from 'rxjs';
+import { VeiculosService } from '../../../../core/services/veiculos.service';
 
-type TabId = 'historico' | 'dados' | 'docs';
-
-type OsResumo = { id: string; data: string; servico: string; valor: string; status: 'concluida' | 'orcamento' };
-type Kpi = { label: string; valor: string; alerta?: boolean };
-type Dado = { label: string; valor: string };
+type TabId = 'dados' | 'docs';
 
 @Component({
   selector: 'app-veiculo-detalhe',
   standalone: true,
-  imports: [],
+  imports: [CommonModule, RouterLink],
   templateUrl: './veiculo-detalhe.html',
   styleUrl: './veiculo-detalhe.scss',
 })
-export class VeiculoDetalhe {
-  activeTab: TabId = 'historico';
+export class VeiculoDetalhe implements OnInit {
+  activeTab: TabId = 'dados';
+  loading = false;
+  error   = '';
 
-  readonly veiculo = {
-    placa: 'ABC-1234',
-    modelo: 'Honda Civic Sedan 2.0 (2020)',
-    dono: 'Maria da Silva',
-    donoId: '#456',
-  };
+  veiculo: any  = null;
+  marcas:  any[] = [];
+  modelos: any[] = [];
 
-  readonly kpis: Kpi[] = [
-    { label: 'Ultimo KM registrado', valor: '120.500 KM' },
-    { label: 'Proxima troca de oleo', valor: '10.000 KM', alerta: true },
-  ];
+  constructor(
+    private route:  ActivatedRoute,
+    private router: Router,
+    private svc:    VeiculosService,
+  ) {}
 
-  readonly historico: OsResumo[] = [
-    { id: '#1024', data: '15/11/2025', servico: 'Revisao completa (oleo, filtros)', valor: 'R$ 850,00', status: 'concluida' },
-    { id: '#0987', data: '01/08/2025', servico: 'Troca de pneus dianteiros', valor: 'R$ 1.200,00', status: 'orcamento' },
-    { id: '#0850', data: '20/03/2025', servico: 'Revisao freios e suspensao', valor: 'R$ 4.500,00', status: 'concluida' },
-  ];
+  ngOnInit(): void {
+    const id = this.route.snapshot.paramMap.get('id');
+    if (!id) {
+      this.error = 'ID do veículo não informado.';
+      return;
+    }
+    this.loadData(id);
+  }
 
-  readonly dadosTecnicos: Dado[] = [
-    { label: 'Marca', valor: 'Honda' },
-    { label: 'Modelo', valor: 'Civic Sedan 2.0' },
-    { label: 'Ano Fab/Modelo', valor: '2020/2020' },
-    { label: 'Cor', valor: 'Prata' },
-    { label: 'Motor', valor: '2.0L i-VTEC' },
-    { label: 'Combustivel', valor: 'Flex' },
-    { label: 'Chassi', valor: '9B775CXXXXXXXXXXXXX' },
-  ];
+  private loadData(id: string): void {
+    this.loading = true;
+    this.error   = '';
 
-  setTab(tab: TabId) {
+    forkJoin({
+      veiculo: this.svc.get(id),
+      marcas:  this.svc.marcas(),
+      modelos: this.svc.modelos(),
+    }).subscribe({
+      next: ({ veiculo, marcas, modelos }: any) => {
+        this.veiculo  = veiculo;
+        this.marcas   = Array.isArray(marcas)  ? marcas  : marcas?.data  ?? [];
+        this.modelos  = Array.isArray(modelos) ? modelos : modelos?.data ?? [];
+        this.loading  = false;
+      },
+      error: (err: any) => {
+        this.error   = err?.error?.message ?? 'Erro ao carregar veículo.';
+        this.loading = false;
+      },
+    });
+  }
+
+  get modeloObj(): any {
+    return this.modelos.find(m => m.id === this.veiculo?.modeloId) ?? null;
+  }
+
+  get marcaObj(): any {
+    return this.marcas.find(mk => mk.id === this.modeloObj?.marcaId) ?? null;
+  }
+
+  get displayName(): string {
+    const marca  = this.marcaObj?.nome ?? '';
+    const modelo = this.modeloObj?.nome ?? '';
+    if (!marca && !modelo) return this.veiculo?.placa ?? '—';
+    return [marca, modelo].filter(Boolean).join(' ');
+  }
+
+  get anoDisplay(): string {
+    const fab = this.veiculo?.anoFab;
+    const mod = this.veiculo?.anoMod;
+    if (!fab) return '—';
+    if (mod && mod !== fab) return `${fab}/${mod}`;
+    return String(fab);
+  }
+
+  setTab(tab: TabId): void {
     this.activeTab = tab;
+  }
+
+  goBack(): void {
+    this.router.navigate(['/motos']);
   }
 }

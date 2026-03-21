@@ -1,93 +1,134 @@
 <section class="veiculo-shell">
-  <header class="veiculo-header">
-    <div class="info">
-      <div class="placa">{{ veiculo.placa }}</div>
-      <h1>{{ veiculo.modelo }}</h1>
-      <p class="owner">Proprietario: {{ veiculo.dono }} (Cliente {{ veiculo.donoId }})</p>
+
+  @if (loading) {
+    <div class="state-card">
+      <div class="spinner"></div>
+      <p>Carregando veículo...</p>
     </div>
+  }
 
-    <div class="kpi-area">
-      @for (k of kpis; track k.label) {
-        <div class="kpi" [class.alert]="k.alerta">
-          <strong>{{ k.valor }}</strong>
-          <span>{{ k.label }}</span>
-        </div>
-      }
+  @if (!loading && error) {
+    <div class="state-card error">
+      <p>{{ error }}</p>
+      <button class="btn-back" (click)="goBack()">← Voltar para a lista</button>
     </div>
-  </header>
+  }
 
-  <nav class="tabs">
-    <button class="tab" [class.active]="activeTab === 'historico'" (click)="setTab('historico')">
-      Historico de Servico
-    </button>
-    <button class="tab" [class.active]="activeTab === 'dados'" (click)="setTab('dados')">
-      Dados Tecnicos
-    </button>
-    <button class="tab" [class.active]="activeTab === 'docs'" (click)="setTab('docs')">
-      Documentos & Pecas
-    </button>
-  </nav>
+  @if (!loading && !error && veiculo) {
+    <a class="back-link" routerLink="/motos">← Voltar para a lista</a>
 
-  @if (activeTab === 'historico') {
-  <div class="card">
-    <div class="card-head">
-      <h2>Ultimas Ordens de Servico</h2>
-      <button class="ghost">Ver historico completo</button>
-    </div>
-
-    <div class="table">
-      <div class="table-row table-head">
-        <span>OS</span>
-        <span>Data</span>
-        <span>Servico</span>
-        <span>Valor</span>
-        <span>Status</span>
+    <header class="veiculo-header">
+      <div class="info">
+        <div class="placa">{{ veiculo.placa }}</div>
+        <h1>{{ displayName }}</h1>
+        <p class="owner">
+          Ano: {{ anoDisplay }}
+          @if (veiculo.cor) { &nbsp;·&nbsp; {{ veiculo.cor }} }
+          @if (veiculo.combustivel) { &nbsp;·&nbsp; {{ veiculo.combustivel }} }
+        </p>
       </div>
 
-      @for (os of historico; track os.id) {
-        <div class="table-row">
-          <span>{{ os.id }}</span>
-          <span>{{ os.data }}</span>
-          <span>{{ os.servico }}</span>
-          <span>{{ os.valor }}</span>
-          <span>
-            <span class="status" [class.ok]="os.status === 'concluida'">{{ os.status }}</span>
+      <div class="kpi-area">
+        @if (veiculo.km) {
+          <div class="kpi">
+            <strong>{{ veiculo.km }}</strong>
+            <span>Último KM</span>
+          </div>
+        }
+        <div class="kpi status-kpi">
+          <span class="status-pill" [class.ativo]="veiculo.ativo" [class.inativo]="!veiculo.ativo">
+            {{ veiculo.ativo ? 'Ativo' : 'Inativo' }}
           </span>
+          @if (veiculo.principal) {
+            <span class="badge-principal">Principal</span>
+          }
         </div>
-      }
-    </div>
-  </div>
+      </div>
+    </header>
+
+    <nav class="tabs">
+      <button class="tab" [class.active]="activeTab === 'dados'" (click)="setTab('dados')">
+        Dados Técnicos
+      </button>
+      <button class="tab" [class.active]="activeTab === 'docs'" (click)="setTab('docs')">
+        Documentos & Referências
+      </button>
+    </nav>
+
+    @if (activeTab === 'dados') {
+      <div class="card">
+        <div class="card-head">
+          <h2>Dados Técnicos</h2>
+        </div>
+        <div class="grid">
+          @if (marcaObj) {
+            <div class="data">
+              <p class="label">Marca</p>
+              <p class="value">{{ marcaObj.nome }}</p>
+            </div>
+          }
+          @if (modeloObj) {
+            <div class="data">
+              <p class="label">Modelo</p>
+              <p class="value">{{ modeloObj.nome }}</p>
+            </div>
+          }
+          <div class="data">
+            <p class="label">Ano Fab / Modelo</p>
+            <p class="value">{{ anoDisplay }}</p>
+          </div>
+          @if (veiculo.cor) {
+            <div class="data">
+              <p class="label">Cor</p>
+              <p class="value">{{ veiculo.cor }}</p>
+            </div>
+          }
+          @if (veiculo.combustivel) {
+            <div class="data">
+              <p class="label">Combustível</p>
+              <p class="value">{{ veiculo.combustivel }}</p>
+            </div>
+          }
+          @if (veiculo.km) {
+            <div class="data">
+              <p class="label">KM Atual</p>
+              <p class="value">{{ veiculo.km }}</p>
+            </div>
+          }
+          @if (veiculo.observacao) {
+            <div class="data full-width">
+              <p class="label">Observações</p>
+              <p class="value muted">{{ veiculo.observacao }}</p>
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+    @if (activeTab === 'docs') {
+      <div class="card">
+        <div class="card-head">
+          <h2>Documentos & Referências</h2>
+        </div>
+        <div class="grid">
+          @if (veiculo.chassi) {
+            <div class="data">
+              <p class="label">Chassi</p>
+              <p class="value mono">{{ veiculo.chassi }}</p>
+            </div>
+          }
+          @if (veiculo.renavam) {
+            <div class="data">
+              <p class="label">RENAVAM</p>
+              <p class="value mono">{{ veiculo.renavam }}</p>
+            </div>
+          }
+          @if (!veiculo.chassi && !veiculo.renavam) {
+            <p class="muted">Nenhum documento registrado para este veículo.</p>
+          }
+        </div>
+      </div>
+    }
   }
 
-  @if (activeTab === 'dados') {
-  <div class="card">
-    <div class="card-head">
-      <h2>Dados Tecnicos</h2>
-      <p class="muted">Use dropdowns dependentes para marca/modelo e mantenha km sempre atualizado a cada OS.</p>
-    </div>
-    <div class="grid">
-      @for (dado of dadosTecnicos; track dado.label) {
-        <div class="data">
-          <p class="label">{{ dado.label }}</p>
-          <p class="value">{{ dado.valor }}</p>
-        </div>
-      }
-    </div>
-  </div>
-  }
-
-  @if (activeTab === 'docs') {
-  <div class="card">
-    <div class="card-head">
-      <h2>Documentos & Anexos</h2>
-      <button class="ghost">Upload</button>
-    </div>
-    <p class="muted">Registre codigo de tinta, pneus, bateria e anexos como CRV ou fotos de OS.</p>
-    <div class="tags">
-      <span class="tag">Cor Tinta: Prata (Cód 1A)</span>
-      <span class="tag">Pneu: 225/45 R17</span>
-      <span class="tag">Bateria: H7 - trocada 01/2025</span>
-    </div>
-  </div>
-  }
 </section>

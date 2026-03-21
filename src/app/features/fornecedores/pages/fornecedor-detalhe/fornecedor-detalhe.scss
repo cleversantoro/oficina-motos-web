@@ -5,6 +5,33 @@
   color: #e2e8f0;
 }
 
+// ── State cards (loading / error) ─────────────────────────
+.state-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 4rem 2rem;
+  text-align: center;
+  color: #94a3b8;
+
+  &.error { color: #fca5a5; }
+}
+
+// ── Back link ─────────────────────────────────────────────
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: #94a3b8;
+  font-size: 0.88rem;
+  text-decoration: none;
+  transition: color 140ms ease;
+
+  &:hover { color: #e2e8f0; }
+}
+
+// ── Header ────────────────────────────────────────────────
 .header-card {
   display: flex;
   justify-content: space-between;
@@ -22,6 +49,12 @@ h1 {
   color: #f8fafc;
 }
 
+.razao {
+  margin: 0.15rem 0 0;
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
 .cnpj {
   margin: 0.2rem 0;
   color: #94a3b8;
@@ -32,6 +65,7 @@ h1 {
   display: flex;
   gap: 0.45rem;
   flex-wrap: wrap;
+  margin-top: 0.5rem;
 }
 
 .segment {
@@ -42,15 +76,34 @@ h1 {
   color: #e0f2fe;
   font-size: 0.85rem;
   font-weight: 700;
+
+  &.seg-neutral {
+    background: rgba(148, 163, 184, 0.15);
+    border-color: rgba(148, 163, 184, 0.3);
+    color: #cbd5e1;
+    font-weight: 400;
+  }
 }
 
-.score {
+.score-block {
   text-align: right;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.35rem;
 }
 
 .stars {
   color: #f59e0b;
   font-size: 1.1rem;
+
+  &.small { font-size: 0.9rem; }
+}
+
+.nota-num {
+  margin-left: 0.4rem;
+  color: #f8fafc;
+  font-weight: 700;
 }
 
 .score-label {
@@ -65,13 +118,60 @@ h1 {
 
 .muted {
   margin: 0;
-  color: #cbd5e1;
+  color: #94a3b8;
+
+  &.small-text { font-size: 0.85rem; }
 }
 
+.ratings-grid {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.25rem;
+}
+
+.rating-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.1rem;
+}
+
+.rating-label {
+  color: #64748b;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.rating-val {
+  color: #f8fafc;
+  font-weight: 700;
+}
+
+.status-pill {
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: rgba(148, 163, 184, 0.18);
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  color: #e2e8f0;
+
+  &.ativo {
+    background: rgba(34, 197, 94, 0.18);
+    border-color: rgba(34, 197, 94, 0.4);
+    color: #bbf7d0;
+  }
+}
+
+// ── Layout ────────────────────────────────────────────────
 .layout {
   display: grid;
   grid-template-columns: 2fr 1fr;
   gap: 1rem;
+  align-items: start;
 }
 
 .card {
@@ -80,6 +180,7 @@ h1 {
   border-radius: 1rem;
   padding: 1rem;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  margin-bottom: 1rem;
 }
 
 .card-head {
@@ -87,6 +188,7 @@ h1 {
   justify-content: space-between;
   align-items: center;
   gap: 0.75rem;
+  margin-bottom: 0.75rem;
 }
 
 h2 {
@@ -101,8 +203,21 @@ h2 {
   background: rgba(255, 255, 255, 0.05);
   color: #f8fafc;
   cursor: pointer;
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: border-color 140ms;
+
+  &:hover { border-color: rgba(14, 165, 233, 0.5); }
 }
 
+.empty-hint {
+  color: #475569;
+  font-size: 0.9rem;
+  font-style: italic;
+  padding: 0.5rem 0;
+}
+
+// ── Representatives ───────────────────────────────────────
 .rep {
   display: grid;
   grid-template-columns: auto 1fr auto;
@@ -110,52 +225,62 @@ h2 {
   gap: 0.75rem;
   padding: 0.8rem 0;
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+
+  &:last-child { border-bottom: none; }
 }
 
 .rep-avatar {
-  width: 48px;
-  height: 48px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   display: grid;
   place-items: center;
   color: #0b1222;
   font-weight: 800;
+  font-size: 0.9rem;
+}
+
+.rep-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
 }
 
 .rep-name {
-  display: block;
   color: #f8fafc;
   font-weight: 700;
 }
 
 .rep-role,
 .rep-contact {
-  color: #cbd5e1;
-  font-size: 0.9rem;
+  color: #94a3b8;
+  font-size: 0.88rem;
 }
 
 .cta {
   border: none;
-  border-radius: 0.8rem;
-  padding: 0.55rem 0.9rem;
+  border-radius: 0.75rem;
+  padding: 0.5rem 0.85rem;
   background: linear-gradient(135deg, rgba(249, 115, 22, 0.92), rgba(248, 180, 87, 0.95));
   color: #0b1222;
   font-weight: 800;
   cursor: pointer;
+  text-decoration: none;
+  font-size: 0.88rem;
+  white-space: nowrap;
 
-  &.small {
-    padding: 0.45rem 0.75rem;
-    font-size: 0.9rem;
-  }
+  &.small { padding: 0.4rem 0.7rem; font-size: 0.85rem; }
 }
 
+// ── Addresses ─────────────────────────────────────────────
 .addr {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  align-items: center;
+  display: flex;
+  align-items: flex-start;
   gap: 0.75rem;
   padding: 0.65rem 0;
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+
+  &:last-child { border-bottom: none; }
 }
 
 .badge {
@@ -163,16 +288,50 @@ h2 {
   border-radius: 0.65rem;
   border: 1px solid rgba(255, 255, 255, 0.16);
   color: #e2e8f0;
+  white-space: nowrap;
+  font-size: 0.82rem;
+  flex-shrink: 0;
+}
+
+.badge-principal {
+  background: rgba(14, 165, 233, 0.18);
+  border-color: rgba(14, 165, 233, 0.35);
+  color: #bae6fd;
 }
 
 .addr-text {
+  color: #e2e8f0;
+  flex: 1;
+  font-size: 0.92rem;
+}
+
+// ── Avaliações ─────────────────────────────────────────────
+.av-row {
+  padding: 0.75rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+
+  &:last-child { border-bottom: none; }
+}
+
+.av-head {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  flex-wrap: wrap;
+}
+
+.av-nota {
   color: #f8fafc;
+  font-weight: 700;
 }
 
-.icon {
-  padding: 0.4rem 0.65rem;
+.av-comment {
+  color: #cbd5e1;
+  font-size: 0.9rem;
+  margin: 0.35rem 0 0.2rem;
 }
 
+// ── Bank card ─────────────────────────────────────────────
 .bank-card {
   margin-top: 0.5rem;
   background: linear-gradient(135deg, #111827, #1f2937);
@@ -180,6 +339,121 @@ h2 {
   padding: 0.9rem;
   color: #f8fafc;
   border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.bank-title {
+  font-weight: 800;
+  display: block;
+  margin-bottom: 0.4rem;
+}
+
+.bank-grid {
+  display: flex;
+  justify-content: space-between;
+  font-family: monospace;
+  color: #cbd5e1;
+}
+
+.pix {
+  margin-top: 0.65rem;
+  padding: 0.4rem 0.6rem;
+  border-radius: 0.6rem;
+  background: rgba(255, 255, 255, 0.08);
+  font-family: monospace;
+  font-size: 0.88rem;
+}
+
+.cond {
+  margin-top: 0.8rem;
+  color: #f8fafc;
+
+  strong { display: block; margin-bottom: 0.2rem; }
+}
+
+// ── Documents ─────────────────────────────────────────────
+.doc-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.55rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  color: #f8fafc;
+  gap: 0.5rem;
+
+  &:last-child { border-bottom: none; }
+}
+
+.doc-nome { font-weight: 600; }
+
+.doc-num {
+  font-size: 0.85rem;
+}
+
+.doc-status {
+  padding: 0.25rem 0.6rem;
+  border-radius: 0.6rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  font-size: 0.82rem;
+  white-space: nowrap;
+
+  &.ok {
+    background: rgba(34, 197, 94, 0.18);
+    border-color: rgba(34, 197, 94, 0.45);
+    color: #bbf7d0;
+  }
+
+  &.alert {
+    background: rgba(234, 179, 8, 0.18);
+    border-color: rgba(234, 179, 8, 0.45);
+    color: #fef3c7;
+  }
+
+  &.danger {
+    background: rgba(239, 68, 68, 0.18);
+    border-color: rgba(239, 68, 68, 0.45);
+    color: #fca5a5;
+  }
+}
+
+// ── Info rows ─────────────────────────────────────────────
+.info-row {
+  display: flex;
+  gap: 0.75rem;
+  padding: 0.45rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  font-size: 0.9rem;
+  color: #e2e8f0;
+
+  &:last-child { border-bottom: none; }
+}
+
+.info-label {
+  color: #64748b;
+  min-width: 120px;
+  flex-shrink: 0;
+}
+
+.info-link {
+  color: #7dd3fc;
+  text-decoration: none;
+  &:hover { text-decoration: underline; }
+}
+
+// ── Responsive ────────────────────────────────────────────
+@media (max-width: 900px) {
+  .header-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .score-block {
+    align-items: flex-start;
+    text-align: left;
+  }
+
+  .layout {
+    grid-template-columns: 1fr;
+  }
 }
 
 .bank-title {

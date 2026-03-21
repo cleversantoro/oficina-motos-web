@@ -1,92 +1,291 @@
+<!-- Loading -->
+@if (loading) {
+  <div class="state-card">
+    <span class="pi pi-spin pi-spinner" style="font-size:1.75rem;color:#94a3b8"></span>
+    <p>Carregando fornecedor...</p>
+  </div>
+}
+
+<!-- Error -->
+@if (!loading && error) {
+  <div class="state-card error">
+    <span class="pi pi-exclamation-triangle" style="font-size:1.75rem;color:#f87171"></span>
+    <p>{{ error }}</p>
+    <button class="ghost" routerLink="/fornecedores">← Voltar à lista</button>
+  </div>
+}
+
+<!-- Content -->
+@if (!loading && !error && fornecedor) {
 <section class="forn-shell">
+
+  <!-- Back link -->
+  <a class="back-link" routerLink="/fornecedores">
+    <span class="pi pi-arrow-left"></span> Todos os fornecedores
+  </a>
+
   <header class="header-card">
     <div class="company">
-      <h1>{{ fornecedor.nome }}</h1>
-      <p class="cnpj">CNPJ: {{ fornecedor.cnpj }}</p>
+      <h1>{{ displayName }}</h1>
+      @if (fornecedor.nomeFantasia && fornecedor.nomeFantasia !== fornecedor.razaoSocial) {
+        <p class="razao">{{ fornecedor.razaoSocial }}</p>
+      }
+      <p class="cnpj">CNPJ: {{ fornecedor.documento }}</p>
       <div class="segments">
-          @for (seg of segmentos; track seg.label) {
-            <span class="segment">{{ seg.label }}</span>
-          }
-        </div>
+        @if (segmentoPrincipalNome) {
+          <span class="segment">{{ segmentoPrincipalNome }}</span>
+        }
+        @if (fornecedor.prazoEntregaMedio) {
+          <span class="segment seg-neutral">Entrega média: {{ fornecedor.prazoEntregaMedio }}d</span>
+        }
+        @if (fornecedor.atendimentoPersonalizado) {
+          <span class="segment seg-neutral">Atendimento personalizado</span>
+        }
+        @if (fornecedor.retiradaLocal) {
+          <span class="segment seg-neutral">Retirada local</span>
+        }
+      </div>
     </div>
-    <div class="score">
-      <div class="stars">★★★★☆ {{ fornecedor.score }}</div>
-      <span class="score-label">{{ fornecedor.scoreLabel }}</span>
-      <p class="muted">Baseado em {{ fornecedor.pedidos }} pedidos</p>
+    <div class="score-block">
+      <div class="stars">
+        {{ starsOf(fornecedor.notaMedia) }}
+        @if (fornecedor.notaMedia !== null) {
+          <span class="nota-num">{{ fornecedor.notaMedia | number:'1.1-1' }}</span>
+        }
+      </div>
+      <span class="score-label">{{ scoreLabel }}</span>
+      <p class="muted">Baseado em {{ avaliacoes.length }} avaliações</p>
+      <div class="ratings-grid">
+        @if (fornecedor.ratingLogistica !== null) {
+          <div class="rating-item">
+            <span class="rating-label">Logística</span>
+            <span class="rating-val">{{ fornecedor.ratingLogistica | number:'1.1-1' }}</span>
+          </div>
+        }
+        @if (fornecedor.ratingQualidade !== null) {
+          <div class="rating-item">
+            <span class="rating-label">Qualidade</span>
+            <span class="rating-val">{{ fornecedor.ratingQualidade | number:'1.1-1' }}</span>
+          </div>
+        }
+      </div>
+      <span class="status-pill" [class.ativo]="fornecedor.status === 'ATIVO'">
+        {{ fornecedor.status }}
+      </span>
     </div>
   </header>
 
   <div class="layout">
     <main>
+
+      <!-- Representantes -->
       <section class="card">
         <div class="card-head">
           <h2>Representantes & Vendedores</h2>
-          <button class="ghost">+ Novo</button>
         </div>
-        @for (rep of representantes; track rep.nome) {
+        @if (representantes.length === 0) {
+          <p class="empty-hint">Nenhum representante cadastrado.</p>
+        }
+        @for (rep of representantes; track rep.id) {
           <div class="rep">
-            <div class="rep-avatar" [style.background]="rep.cor">{{ rep.nome | slice:0:2 }}</div>
+            <div class="rep-avatar" [style.background]="avatarColor(rep.nome)">
+              {{ rep.nome | slice:0:2 }}
+            </div>
             <div class="rep-body">
               <span class="rep-name">{{ rep.nome }}</span>
-              <span class="rep-role">{{ rep.cargo }}</span>
-              <span class="rep-contact">{{ rep.contato }}</span>
+              <span class="rep-role">{{ rep.cargo ?? '—' }}</span>
+              <span class="rep-contact">
+                {{ rep.email ?? rep.celular ?? rep.telefone ?? '—' }}
+              </span>
             </div>
-            <button class="cta small">{{ rep.acao }}</button>
+            @if (rep.celular || rep.telefone) {
+              <a class="cta small" [href]="'tel:' + (rep.celular ?? rep.telefone)">
+                Ligar
+              </a>
+            }
           </div>
         }
       </section>
 
+      <!-- Endereços -->
       <section class="card">
         <div class="card-head">
           <h2>Logística e Endereços</h2>
         </div>
-        @for (end of enderecos; track $index) {
+        @if (enderecos.length === 0) {
+          <p class="empty-hint">Nenhum endereço cadastrado.</p>
+        }
+        @for (end of enderecos; track end.id) {
           <div class="addr">
             <span class="badge">{{ end.tipo }}</span>
-            <span class="addr-text">{{ end.texto }}</span>
-            <button class="ghost icon">Mapa</button>
+            <span class="addr-text">
+              {{ end.logradouro }}, {{ end.numero }}
+              @if (end.complemento) { – {{ end.complemento }} }
+              · {{ end.bairro }} · {{ end.cidade }} – {{ end.estado }}
+              @if (end.cep) { · CEP {{ end.cep }} }
+            </span>
+            @if (end.principal) {
+              <span class="badge badge-principal">Principal</span>
+            }
           </div>
         }
       </section>
+
+      <!-- Avaliações recentes -->
+      @if (avaliacoes.length > 0) {
+        <section class="card">
+          <div class="card-head">
+            <h2>Avaliações Recentes</h2>
+          </div>
+          @for (av of avaliacoes.slice(0, 5); track av.id) {
+            <div class="av-row">
+              <div class="av-head">
+                <span class="stars small">{{ starsOf(av.nota) }}</span>
+                <span class="av-nota">{{ av.nota | number:'1.1-1' }}</span>
+                <span class="muted">{{ av.dataAvaliacao | date:'dd/MM/yyyy' }}</span>
+                @if (av.categoria) {
+                  <span class="badge">{{ av.categoria }}</span>
+                }
+              </div>
+              @if (av.comentarios) {
+                <p class="av-comment">{{ av.comentarios }}</p>
+              }
+              @if (av.avaliadoPor) {
+                <p class="muted small-text">por {{ av.avaliadoPor }}</p>
+              }
+            </div>
+          }
+        </section>
+      }
+
     </main>
 
     <aside>
+
+      <!-- Dados Bancários -->
       <section class="card">
         <div class="card-head">
           <h2>Dados Bancários</h2>
         </div>
-        <p class="muted">Para transferências e TED</p>
-        <div class="bank-card">
-          <span class="bank-title">Banco Itaú (341)</span>
-          <div class="bank-grid">
-            <span>Ag: 1234</span>
-            <span>CC: 56789-0</span>
+        @if (!bancoPrincipal) {
+          <p class="empty-hint">Nenhum dado bancário cadastrado.</p>
+        } @else {
+          <p class="muted">{{ bancoPrincipal.tipoConta ?? 'Conta bancária' }}</p>
+          <div class="bank-card">
+            <span class="bank-title">{{ bancoPrincipal.banco }}</span>
+            <div class="bank-grid">
+              @if (bancoPrincipal.agencia) {
+                <span>Ag: {{ bancoPrincipal.agencia }}</span>
+              }
+              @if (bancoPrincipal.conta) {
+                <span>CC: {{ bancoPrincipal.conta }}{{ bancoPrincipal.digito ? '-' + bancoPrincipal.digito : '' }}</span>
+              }
+            </div>
+            @if (bancoPrincipal.pixChave) {
+              <div class="pix">PIX: {{ bancoPrincipal.pixChave }}</div>
+            }
           </div>
-          <div class="pix">PIX (CNPJ): {{ fornecedor.cnpj }}</div>
-        </div>
-        <div class="cond">
-          <strong>Condição de pagamento</strong>
-          <p class="muted">Boleto 28/56 dias (Limite: R$ 5.000)</p>
-        </div>
+
+          @if (bancos.length > 1) {
+            <p class="muted" style="margin-top:0.5rem;font-size:0.85rem;">
+              +{{ bancos.length - 1 }} conta(s) adicional(is)
+            </p>
+          }
+        }
+
+        @if (fornecedor.condicaoPagamentoPadrao) {
+          <div class="cond">
+            <strong>Condição de pagamento</strong>
+            <p class="muted">{{ fornecedor.condicaoPagamentoPadrao }}</p>
+          </div>
+        }
       </section>
 
+      <!-- Documentos -->
       <section class="card">
         <div class="card-head">
-          <h2>Documentos & ISO</h2>
+          <h2>Documentos</h2>
         </div>
-        @for (doc of documentos; track doc.nome) {
+        @if (documentos.length === 0 && certificacoes.length === 0) {
+          <p class="empty-hint">Nenhum documento cadastrado.</p>
+        }
+        @for (doc of documentos; track doc.id) {
           <div class="doc-row">
-            <span>{{ doc.nome }}</span>
+            <div>
+              <span class="doc-nome">{{ doc.tipo }}</span>
+              @if (doc.numero) { <span class="muted doc-num">· {{ doc.numero }}</span> }
+            </div>
             <span
               class="doc-status"
-              [class.ok]="doc.status === 'ok'"
-              [class.alert]="doc.status === 'alerta'"
+              [class.ok]="docValidity(doc.dataValidade) === 'ok'"
+              [class.alert]="docValidity(doc.dataValidade) === 'vencendo'"
+              [class.danger]="docValidity(doc.dataValidade) === 'vencido'"
             >
-              {{ doc.detalhe || 'Ver' }}
+              @switch (docValidity(doc.dataValidade)) {
+                @case ('ok') { Válido }
+                @case ('vencendo') { Vence em breve }
+                @case ('vencido') { Vencido }
+                @default { Sem validade }
+              }
+            </span>
+          </div>
+        }
+        @for (cert of certificacoes; track cert.id) {
+          <div class="doc-row">
+            <div>
+              <span class="doc-nome">{{ cert.titulo }}</span>
+              @if (cert.instituicao) { <span class="muted doc-num">· {{ cert.instituicao }}</span> }
+            </div>
+            <span
+              class="doc-status"
+              [class.ok]="docValidity(cert.dataValidade) === 'ok'"
+              [class.alert]="docValidity(cert.dataValidade) === 'vencendo'"
+              [class.danger]="docValidity(cert.dataValidade) === 'vencido'"
+            >
+              ISO / Cert.
             </span>
           </div>
         }
       </section>
+
+      <!-- Informações gerais -->
+      @if (fornecedor.observacoes || fornecedor.termosNegociados || fornecedor.prazoGarantiaPadrao || fornecedor.website) {
+        <section class="card">
+          <div class="card-head">
+            <h2>Informações Gerais</h2>
+          </div>
+          @if (fornecedor.website) {
+            <div class="info-row">
+              <span class="info-label">Website</span>
+              <a [href]="fornecedor.website" target="_blank" rel="noopener" class="info-link">{{ fornecedor.website }}</a>
+            </div>
+          }
+          @if (fornecedor.email) {
+            <div class="info-row">
+              <span class="info-label">E-mail</span>
+              <span>{{ fornecedor.email }}</span>
+            </div>
+          }
+          @if (fornecedor.prazoGarantiaPadrao) {
+            <div class="info-row">
+              <span class="info-label">Garantia padrão</span>
+              <span>{{ fornecedor.prazoGarantiaPadrao }}</span>
+            </div>
+          }
+          @if (fornecedor.termosNegociados) {
+            <div class="info-row">
+              <span class="info-label">Termos negociados</span>
+              <span>{{ fornecedor.termosNegociados }}</span>
+            </div>
+          }
+          @if (fornecedor.observacoes) {
+            <p class="muted" style="margin-top:0.5rem;font-size:0.9rem;">{{ fornecedor.observacoes }}</p>
+          }
+        </section>
+      }
+
     </aside>
   </div>
 </section>
+}
+

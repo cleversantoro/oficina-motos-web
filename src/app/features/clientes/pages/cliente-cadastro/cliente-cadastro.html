@@ -1,3 +1,4 @@
+<form [formGroup]="form" (ngSubmit)="onSave()" novalidate>
 <section class="cadastro-shell">
   <aside class="tab-nav">
     <div class="nav-header">
@@ -8,11 +9,7 @@
 
     <div class="mobile-select">
       <label for="tabSelect">Etapa</label>
-      <select
-        id="tabSelect"
-        [value]="activeTab"
-        (change)="onTabSelect($event)"
-      >
+      <select id="tabSelect" [value]="activeTab" (change)="onTabSelect($event)">
         @for (tab of tabs; track tab.id) {
           <option [value]="tab.id">{{ tab.label }}</option>
         }
@@ -22,6 +19,7 @@
     <nav class="nav-list">
       @for (tab of tabs; track tab.id) {
         <button
+          type="button"
           (click)="setTab(tab.id)"
           [class.active]="activeTab === tab.id"
           class="nav-item"
@@ -44,119 +42,275 @@
         <p class="muted">Preencha apenas o necessário; você pode salvar e continuar depois.</p>
       </div>
       <div class="actions">
-        <button class="ghost" routerLink="/clientes">Cancelar</button>
-        <button class="cta primary">Salvar cadastro</button>
+        <button type="button" class="ghost" routerLink="/clientes">Cancelar</button>
+        <button type="submit" class="cta primary" [disabled]="saving">
+          {{ saving ? 'Salvando...' : 'Salvar cadastro' }}
+        </button>
       </div>
     </header>
 
+    @if (saveError) {
+      <div class="alert alert-error">{{ saveError }}</div>
+    }
+
+    <!-- ── Perfil ─────────────────────────────────────────── -->
     @if (activeTab === 'perfil') {
     <section class="card">
       <div class="card-head">
         <h2>Perfil & Identidade</h2>
-        <div class="pill">Obrigatorio</div>
+        <div class="pill">Obrigatório</div>
       </div>
 
       <div class="toggle">
-        <button [class.active]="isPessoaFisica" (click)="setTipo('pf')">Pessoa Física</button>
-        <button [class.active]="!isPessoaFisica" (click)="setTipo('pj')">Pessoa Jurídica</button>
+        <button type="button" [class.active]="isPessoaFisica"  (click)="setTipo('pf')">Pessoa Física</button>
+        <button type="button" [class.active]="!isPessoaFisica" (click)="setTipo('pj')">Pessoa Jurídica</button>
       </div>
 
       <div class="grid">
-        <label class="field span-2">
-          <span>Nome completo / Razão social</span>
-          <input type="text" placeholder="Ex: João da Silva" />
+        <label class="field span-2" [class.invalid]="isInvalid(field('nome'))">
+          <span>Nome completo / Razão social <em>*</em></span>
+          <input type="text" formControlName="nome" placeholder="Ex: João da Silva" />
+          @if (isInvalid(field('nome'))) {
+            <span class="error-msg">Nome é obrigatório (mínimo 3 caracteres).</span>
+          }
+        </label>
+
+        <label class="field">
+          <span>Nome de exibição</span>
+          <input type="text" formControlName="nomeExibicao" placeholder="Apelido ou nome curto" />
         </label>
 
         <label class="field">
           <span>Status</span>
-          <select>
-            <option>Ativo</option>
-            <option>Inativo</option>
-            <option>Prospect</option>
+          <select formControlName="status">
+            <option [value]="1">Ativo</option>
+            <option [value]="0">Inativo</option>
+            <option [value]="2">Suspenso</option>
+            <option [value]="3">Bloqueado</option>
           </select>
         </label>
 
+        <label class="field check-field">
+          <span>Cliente VIP</span>
+          <label class="check">
+            <input type="checkbox" formControlName="vip" />
+            <span>Marcar como VIP</span>
+          </label>
+        </label>
+
         @if (isPessoaFisica) {
-          <label class="field">
-            <span>CPF</span>
-            <input type="text" placeholder="000.000.000-00" />
+          <label class="field" [class.invalid]="isInvalid(field('cpf'))">
+            <span>CPF <em>*</em></span>
+            <input type="text" formControlName="cpf" placeholder="000.000.000-00" />
+            @if (isInvalid(field('cpf'))) {
+              <span class="error-msg">CPF é obrigatório.</span>
+            }
           </label>
           <label class="field">
             <span>RG</span>
-            <input type="text" placeholder="00.000.000-0" />
+            <input type="text" formControlName="rg" placeholder="00.000.000-0" />
           </label>
           <label class="field">
             <span>Data de nascimento</span>
-            <input type="date" />
+            <input type="date" formControlName="dataNascimento" />
+          </label>
+          <label class="field">
+            <span>Gênero</span>
+            <select formControlName="genero">
+              <option value="">Não informado</option>
+              <option value="M">Masculino</option>
+              <option value="F">Feminino</option>
+              <option value="O">Outro</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>Estado civil</span>
+            <select formControlName="estadoCivil">
+              <option value="">Não informado</option>
+              <option value="Solteiro">Solteiro(a)</option>
+              <option value="Casado">Casado(a)</option>
+              <option value="Divorciado">Divorciado(a)</option>
+              <option value="Viúvo">Viúvo(a)</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>Profissão</span>
+            <input type="text" formControlName="profissao" placeholder="Ex: Mecânico" />
           </label>
         } @else {
           <label class="field">
             <span>CNPJ</span>
-            <input type="text" placeholder="00.000.000/0001-00" />
+            <input type="text" formControlName="cnpj" placeholder="00.000.000/0001-00" />
+          </label>
+          <label class="field">
+            <span>Razão social</span>
+            <input type="text" formControlName="razaoSocial" />
+          </label>
+          <label class="field">
+            <span>Nome fantasia</span>
+            <input type="text" formControlName="nomeFantasia" />
           </label>
           <label class="field">
             <span>Inscrição estadual</span>
-            <input type="text" />
+            <input type="text" formControlName="inscricaoEstadual" />
           </label>
           <label class="field">
-            <span>Fundação</span>
-            <input type="date" />
+            <span>Inscrição municipal</span>
+            <input type="text" formControlName="inscricaoMunicipal" />
+          </label>
+          <label class="field">
+            <span>Responsável</span>
+            <input type="text" formControlName="responsavel" />
           </label>
         }
 
-        <label class="field">
-          <span>Origem do lead</span>
-          <select>
-            <option>Google Ads</option>
-            <option>Indicação</option>
-            <option>Instagram</option>
-          </select>
+        <label class="field span-2">
+          <span>Observações gerais</span>
+          <textarea rows="2" formControlName="observacoes" placeholder="Notas internas"></textarea>
         </label>
       </div>
     </section>
     }
 
-    <!-- Contato -->
+    <!-- ── Contato ──────────────────────────────────────────── -->
     @if (activeTab === 'contato') {
     <section class="card">
       <div class="card-head">
         <h2>Contato & Localização</h2>
-        <button class="ghost small">+ Adicionar contato</button>
       </div>
 
-      <h3>Meios de contato</h3>
-      <div class="list">
-      @for (contato of contatos; track $index) {
-          <div class="list-row">
-            <div>
-              <p class="label-strong">{{ contato.tipo }}</p>
-              <p class="muted">{{ contato.obs }}</p>
-            </div>
-            <span class="pill pill-neutral">{{ contato.valor }}</span>
-          </div>
-        }
+      <!-- E-mail e telefone principal -->
+      <div class="grid">
+        <label class="field" [class.invalid]="isInvalid(field('email'))">
+          <span>E-mail</span>
+          <input type="email" formControlName="email" placeholder="cliente@email.com" />
+          @if (isInvalid(field('email'))) {
+            <span class="error-msg">E-mail inválido.</span>
+          }
+        </label>
+        <label class="field">
+          <span>Telefone principal</span>
+          <input type="text" formControlName="telefone" placeholder="(11) 99999-9999" />
+        </label>
       </div>
 
-      <h3>Endereços</h3>
-      <div class="address-grid">
-      @for (end of enderecos; track $index) {
-          <div class="address-card">
-            <div class="address-head">
-              <p class="label-strong">{{ end.logradouro }}</p>
-              <span class="pill pill-success">{{ end.tag }}</span>
+      <!-- Contatos adicionais -->
+      <div class="card-sub">
+        <div class="card-head">
+          <h3>Contatos adicionais</h3>
+          <button type="button" class="ghost small" (click)="addContato()">+ Adicionar</button>
+        </div>
+
+        <div formArrayName="contatos" class="list">
+          @for (cg of contatos.controls; track $index) {
+            <div [formGroupName]="$index" class="list-row list-form-row">
+              <div class="grid sub-grid">
+                <label class="field">
+                  <span>Tipo</span>
+                  <select formControlName="tipo">
+                    <option [value]="1">Telefone</option>
+                    <option [value]="2">Celular</option>
+                    <option [value]="3">E-mail</option>
+                    <option [value]="4">WhatsApp</option>
+                    <option [value]="5">Outro</option>
+                  </select>
+                </label>
+                <label class="field">
+                  <span>Valor</span>
+                  <input type="text" formControlName="valor" placeholder="(11) 99999-0000" />
+                </label>
+                <label class="field">
+                  <span>Observação</span>
+                  <input type="text" formControlName="observacao" placeholder="Ex: Preferencial" />
+                </label>
+                <label class="field check-field">
+                  <span>Principal</span>
+                  <label class="check">
+                    <input type="checkbox" formControlName="principal" />
+                    <span>Sim</span>
+                  </label>
+                </label>
+              </div>
+              <button type="button" class="ghost small remove-btn" (click)="removeContato($index)">✕</button>
             </div>
-            <p class="muted">{{ end.bairro }} • {{ end.cidade }} - {{ end.uf }}</p>
-            <div class="address-meta">
-              <span>CEP {{ end.cep }}</span>
-              <span>Nº {{ end.numero }}</span>
+          }
+          @if (contatos.length === 0) {
+            <p class="muted empty-hint">Nenhum contato adicional. Clique em "+ Adicionar".</p>
+          }
+        </div>
+      </div>
+
+      <!-- Endereços -->
+      <div class="card-sub">
+        <div class="card-head">
+          <h3>Endereços</h3>
+          <button type="button" class="ghost small" (click)="addEndereco()">+ Adicionar</button>
+        </div>
+
+        <div formArrayName="enderecos" class="address-grid">
+          @for (eg of enderecos.controls; track $index) {
+            <div [formGroupName]="$index" class="address-card address-form-card">
+              <div class="address-head">
+                <p class="label-strong">Endereço {{ $index + 1 }}</p>
+                <button type="button" class="ghost small remove-btn" (click)="removeEndereco($index)">✕</button>
+              </div>
+              <div class="grid sub-grid">
+                <label class="field">
+                  <span>Tipo</span>
+                  <select formControlName="tipo">
+                    <option [value]="1">Residencial</option>
+                    <option [value]="2">Comercial</option>
+                    <option [value]="3">Correspondência</option>
+                    <option [value]="4">Outro</option>
+                  </select>
+                </label>
+                <label class="field">
+                  <span>CEP</span>
+                  <input type="text" formControlName="cep" placeholder="00000-000" />
+                </label>
+                <label class="field span-2">
+                  <span>Logradouro</span>
+                  <input type="text" formControlName="logradouro" placeholder="Rua, Avenida..." />
+                </label>
+                <label class="field">
+                  <span>Número</span>
+                  <input type="text" formControlName="numero" />
+                </label>
+                <label class="field">
+                  <span>Complemento</span>
+                  <input type="text" formControlName="complemento" placeholder="Apto, Bloco..." />
+                </label>
+                <label class="field">
+                  <span>Bairro</span>
+                  <input type="text" formControlName="bairro" />
+                </label>
+                <label class="field">
+                  <span>Cidade</span>
+                  <input type="text" formControlName="cidade" />
+                </label>
+                <label class="field">
+                  <span>Estado (UF)</span>
+                  <input type="text" formControlName="estado" maxlength="2" placeholder="SP" />
+                </label>
+                <label class="field check-field">
+                  <span>Endereço principal</span>
+                  <label class="check">
+                    <input type="checkbox" formControlName="principal" />
+                    <span>Sim</span>
+                  </label>
+                </label>
+              </div>
             </div>
-          </div>
-        }
+          }
+          @if (enderecos.length === 0) {
+            <p class="muted empty-hint">Nenhum endereço cadastrado. Clique em "+ Adicionar".</p>
+          }
+        </div>
       </div>
     </section>
     }
 
-    <!-- Financeiro -->
+    <!-- ── Financeiro ───────────────────────────────────────── -->
     @if (activeTab === 'financeiro') {
     <section class="card">
       <div class="card-head">
@@ -167,77 +321,71 @@
       <div class="grid">
         <label class="field">
           <span>Limite de crédito (R$)</span>
-          <input type="number" placeholder="5.000,00" />
+          <input type="number" formControlName="limiteCredito" placeholder="0,00" min="0" />
         </label>
         <label class="field">
-          <span>Dia de vencimento</span>
-          <select>
-            <option>Dia 5</option>
-            <option>Dia 10</option>
-            <option>Dia 15</option>
-          </select>
+          <span>Prazo de pagamento (dias)</span>
+          <input type="number" formControlName="prazoPagamento" placeholder="30" min="0" />
         </label>
-        <label class="field">
+        <label class="field check-field">
           <span>Bloquear crédito</span>
-          <select>
-            <option>Não</option>
-            <option>Sim</option>
-          </select>
+          <label class="check">
+            <input type="checkbox" formControlName="bloqueado" />
+            <span>Crédito bloqueado</span>
+          </label>
+        </label>
+        <label class="field span-2">
+          <span>Observações financeiras</span>
+          <textarea rows="2" formControlName="financeiroObservacoes"></textarea>
         </label>
       </div>
 
       <div class="card-sub">
-        <h3>Indicações</h3>
+        <h3>Indicação</h3>
         <div class="grid">
           <label class="field span-2">
             <span>Quem indicou?</span>
-            <input type="text" placeholder="Buscar cliente..." />
+            <input type="text" formControlName="indicadorNome" placeholder="Nome do indicador" />
+          </label>
+          <label class="field">
+            <span>Telefone do indicador</span>
+            <input type="text" formControlName="indicadorTelefone" placeholder="(11) 99999-0000" />
           </label>
           <label class="field span-2">
-            <span>Observações</span>
-            <textarea rows="3" placeholder="Detalhes sobre a indicação"></textarea>
+            <span>Observações da indicação</span>
+            <textarea rows="2" formControlName="indicacaoObservacao"></textarea>
           </label>
         </div>
       </div>
     </section>
     }
 
-    <!-- Legal -->
+    <!-- ── Legal ───────────────────────────────────────────── -->
     @if (activeTab === 'legal') {
     <section class="card">
       <div class="card-head">
         <h2>Legal & Compliance</h2>
-        <div class="pill pill-neutral">Auditar</div>
-      </div>
-
-      <h3>Documentos</h3>
-      <div class="list">
-      @for (doc of documentos; track $index) {
-          <div class="list-row">
-            <div>
-              <p class="label-strong">{{ doc.nome }}</p>
-              <p class="muted">Validade: {{ doc.validade }}</p>
-            </div>
-            <span class="pill pill-neutral">{{ doc.numero }}</span>
-          </div>
-        }
+        <div class="pill pill-neutral">LGPD</div>
       </div>
 
       <h3>Consentimentos LGPD</h3>
       <div class="checks">
         <label class="check">
-          <input type="checkbox" checked />
+          <input type="checkbox" formControlName="lgpdTermos" />
           <span>Aceitou termos de uso e política de dados</span>
         </label>
         <label class="check">
-          <input type="checkbox" />
+          <input type="checkbox" formControlName="lgpdMarketing" />
           <span>Aceitou receber comunicações de marketing</span>
         </label>
       </div>
+      <p class="muted" style="margin-top:0.75rem;font-size:0.85rem;">
+        Os consentimentos são registrados com data e canal de origem (Web) conforme a LGPD.
+      </p>
     </section>
     }
 
-    <!-- Anexos -->
+    <!-- ── Anexos ───────────────────────────────────────────── -->
     @if (activeTab === 'anexos') {
     <section class="card">
       <div class="card-head">
@@ -247,14 +395,11 @@
 
       <div class="upload">
         <p>Arraste e solte aqui RG, CNH, contratos ou comprovantes</p>
-        <button class="ghost small">Selecionar arquivos</button>
-      </div>
-
-      <div class="tag-list">
-        <span class="tag">cnh_motorista.pdf ✕</span>
-        <span class="tag">comprovante_residencia.jpg ✕</span>
+        <p class="muted" style="font-size:0.85rem;">O upload de anexos estará disponível após salvar o cadastro.</p>
+        <button type="button" class="ghost small" disabled>Selecionar arquivos</button>
       </div>
     </section>
     }
   </main>
 </section>
+</form>

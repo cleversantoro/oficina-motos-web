@@ -23,6 +23,20 @@
     <button class="cta ghost" aria-label="Sincronizar">
       <span class="pi pi-refresh"></span>
     </button>
-    <div class="avatar">CL</div>
+
+    @if (currentUser(); as user) {
+      <div class="user-info">
+        <span class="user-name">{{ user.name }}</span>
+        <span class="user-role">{{ user.role }}</span>
+      </div>
+    }
+
+    <div class="avatar" [title]="currentUser()?.name ?? ''">
+      {{ initials() }}
+    </div>
+
+    <button class="cta ghost logout-btn" (click)="logout()" aria-label="Sair">
+      <span class="pi pi-sign-out"></span>
+    </button>
   </div>
 </header>

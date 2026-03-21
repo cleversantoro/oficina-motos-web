@@ -1,8 +1,8 @@
-import { DatePipe, JsonPipe } from '@angular/common';
+import { CommonModule, DatePipe, JsonPipe } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
-import { TableModule } from 'primeng/table';
 import { DialogModule } from 'primeng/dialog';
 import { TabsModule } from 'primeng/tabs';
 import { ClientesService } from '../../../../core/services/clientes.service';
@@ -10,7 +10,7 @@ import { ClientesService } from '../../../../core/services/clientes.service';
 @Component({
   selector: 'app-cliente-lista',
   standalone: true,
-  imports: [DatePipe, JsonPipe, ButtonModule, TableModule, DialogModule, TabsModule, RouterLink],
+  imports: [CommonModule, DatePipe, JsonPipe, FormsModule, ButtonModule, DialogModule, TabsModule, RouterLink],
   templateUrl: './cliente-lista.html',
   styleUrl: './cliente-lista.scss',
   providers: [ClientesService]
@@ -19,6 +19,7 @@ export class ClienteLista implements OnInit {
   clientes: any[] = [];
   loading = false;
   selectedCliente: any | null = null;
+  filterText = '';
 
   readonly resumo = {
     ativos: 128,
@@ -28,7 +29,18 @@ export class ClienteLista implements OnInit {
   };
 
   first = 0;
-  rows = 10;
+  rows = 5;
+
+  get filtered(): any[] {
+    const q = this.filterText.trim().toLowerCase();
+    if (!q) return this.clientes;
+    return this.clientes.filter(c =>
+      (c.nome      ?? '').toLowerCase().includes(q) ||
+      (c.documento ?? '').includes(q) ||
+      (c.email     ?? '').toLowerCase().includes(q) ||
+      (c.telefone  ?? '').includes(q)
+    );
+  }
 
   constructor(private clientesService: ClientesService) { }
 
@@ -122,6 +134,14 @@ export class ClienteLista implements OnInit {
     this.selectedCliente = null;
   }
 
+  confirmDelete(id: number): void {
+    if (!confirm('Tem certeza que deseja excluir este cliente?')) return;
+    this.clientesService.delete(id).subscribe({
+      next: () => { this.clientes = this.clientes.filter(c => c.id !== id); },
+      error: () => alert('Erro ao excluir cliente.'),
+    });
+  }
+
   next() {
     this.first = this.first + this.rows;
   }
@@ -140,10 +160,10 @@ export class ClienteLista implements OnInit {
   // }
 
   isLastPage(): boolean {
-    return this.clientes ? this.first + this.rows >= this.clientes.length : true;
+    return this.filtered ? this.first + this.rows >= this.filtered.length : true;
   }
 
   isFirstPage(): boolean {
-    return this.clientes ? this.first === 0 : true;
+    return this.filtered ? this.first === 0 : true;
   }
 }

@@ -1,7 +1,6 @@
-﻿import { DatePipe, DecimalPipe } from '@angular/common';
+﻿import { CommonModule, DatePipe, DecimalPipe } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
-import { ButtonModule } from 'primeng/button';
-import { TableModule } from 'primeng/table';
+import { FormsModule } from '@angular/forms';
 import { DialogModule } from 'primeng/dialog';
 import { TabsModule } from 'primeng/tabs';
 import { OrdensService } from '../../../../core/services/ordens.service';
@@ -10,7 +9,7 @@ import { OrdemServico } from '../../../../core/models';
 @Component({
   selector: 'app-os-detalhe',
   standalone: true,
-  imports: [DatePipe, DecimalPipe, ButtonModule, TableModule, DialogModule, TabsModule],
+  imports: [CommonModule, DatePipe, DecimalPipe, FormsModule, DialogModule, TabsModule],
   templateUrl: './os-detalhe.html',
   styleUrl: './os-detalhe.scss',
   providers: [OrdensService]
@@ -19,6 +18,10 @@ export class OsDetalhe implements OnInit {
   ordens: any[] = [];
   loading = false;
   selected: OrdemServico | null = null;
+
+  filterText = '';
+  first = 0;
+  rows = 5;
 
   constructor(private ordensService: OrdensService) {}
 
@@ -34,6 +37,18 @@ export class OsDetalhe implements OnInit {
     });
   }
 
+  get filtered(): any[] {
+    const q = this.filterText.trim().toLowerCase();
+    if (!q) return this.ordens;
+    return this.ordens.filter(os =>
+      String(os.id ?? '').includes(q) ||
+      (os.status            ?? '').toLowerCase().includes(q) ||
+      (os.descricaoProblema ?? '').toLowerCase().includes(q) ||
+      String(os.clienteId  ?? '').includes(q) ||
+      String(os.mecanicoId ?? '').includes(q)
+    );
+  }
+
   openDetails(item: any) {
     this.loading = true;
     this.ordensService.get(item.id).subscribe({
@@ -43,6 +58,22 @@ export class OsDetalhe implements OnInit {
   }
 
   closeDetails() { this.selected = null; }
+
+  confirmDelete(id: number): void {
+    if (!confirm('Tem certeza que deseja excluir esta OS?')) return;
+    this.ordensService.delete(id).subscribe({
+      next: () => { this.ordens = this.ordens.filter(os => os.id !== id); },
+      error: () => alert('Erro ao excluir OS.'),
+    });
+  }
+
+  prevPage(): void { this.first = Math.max(0, this.first - this.rows); }
+  nextPage(): void { if (this.first + this.rows < this.filtered.length) this.first += this.rows; }
+
+  get pageEnd(): number {
+    const end = this.first + this.rows;
+    return end > this.filtered.length ? this.filtered.length : end;
+  }
 
   totalItens(os: OrdemServico): number {
     return os.itens?.reduce((s, i) => s + i.total, 0) ?? 0;

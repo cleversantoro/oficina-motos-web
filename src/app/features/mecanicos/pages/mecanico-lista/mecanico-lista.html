@@ -1,58 +1,107 @@
 ﻿<section class="mec-shell">
-  <header class="page-header">
+  <header class="lista-header">
+    <div class="header-title">
+      <h1>Mecânicos</h1>
+      <span class="count-pill">{{ filtered.length }} registros</span>
+    </div>
     <div class="header-actions">
-      <p-button label="Novo Mecânico" icon="pi pi-plus" size="small"></p-button>
+      <div class="search-wrap">
+        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+        </svg>
+        <input
+          class="search-input"
+          type="text"
+          placeholder="Buscar por nome, nível, status..."
+          [(ngModel)]="filterText"
+          (ngModelChange)="first = 0"
+        />
+      </div>
+      <button class="btn-cta">+ Novo Mecânico</button>
     </div>
   </header>
 
-  <div class="table-card card-surface">
-    <div class="table-head">
-      <div>
-        <p class="eyebrow">Listagem</p>
-        <h2>Mecânicos</h2>
-      </div>
+  @if (loading) {
+    <div class="state-card">
+      <div class="spinner"></div>
+      <p>Carregando mecânicos...</p>
+    </div>
+  }
+
+  @if (!loading) {
+    <div class="table-card">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Nome</th>
+            <th>Nível</th>
+            <th>Status</th>
+            <th class="hide-sm">Documento</th>
+            <th class="hide-sm">Valor/Hora</th>
+            <th class="action-th">Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          @if (filtered.length === 0) {
+            <tr>
+              <td colspan="6" class="empty-cell">
+                @if (filterText) { Nenhum mecânico encontrado para "{{ filterText }}". }
+                @else { Nenhum mecânico cadastrado. }
+              </td>
+            </tr>
+          }
+          @for (m of filtered.slice(first, first + rows); track m.id) {
+            <tr class="data-row">
+              <td>
+                <div class="nome-cell">
+                  <span class="avatar">{{ (m.nome ?? '?')[0] }}</span>
+                  <div>
+                    <p class="name">{{ m.nome }} {{ m.sobrenome }}</p>
+                    <p class="sub">{{ m.nivel }}</p>
+                  </div>
+                </div>
+              </td>
+              <td>{{ m.nivel ?? '—' }}</td>
+              <td>
+                <span class="status-pill" [class.ativo]="m.status === 'ATIVO'" [class.inativo]="m.status !== 'ATIVO'">
+                  {{ m.status ?? '—' }}
+                </span>
+              </td>
+              <td class="hide-sm mono">{{ m.documentoPrincipal ?? '—' }}</td>
+              <td class="hide-sm">{{ m.valorHora != null ? 'R$ ' + m.valorHora.toFixed(2) : '—' }}</td>
+              <td class="action-cell">
+                <button class="icon-btn view-btn" (click)="openDetails(m); $event.stopPropagation()" title="Visualizar">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                    <circle cx="12" cy="12" r="3"/>
+                  </svg>
+                </button>
+                <button class="icon-btn delete-btn" (click)="confirmDelete(m.id); $event.stopPropagation()" title="Excluir">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="3 6 5 6 21 6"/>
+                    <path d="m19 6-.867 14.142A2 2 0 0 1 16.138 22H7.862a2 2 0 0 1-1.995-1.858L5 6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                  </svg>
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
     </div>
 
-    <p-table [value]="mecanicos" [loading]="loading" [tableStyle]="{ 'min-width': '50rem' }"
-      [paginator]="true" [rows]="10" [rowsPerPageOptions]="[5, 10, 20]" [showCurrentPageReport]="true"
-      currentPageReportTemplate="Exibindo {first} até {last} de {totalRecords} registros">
-      <ng-template pTemplate="header">
-        <tr>
-          <th>Nome</th>
-          <th>Nível</th>
-          <th>Status</th>
-          <th>Documento</th>
-          <th>Valor/Hora</th>
-          <th class="text-right">Ações</th>
-        </tr>
-      </ng-template>
-      <ng-template pTemplate="body" let-mec>
-        <tr>
-          <td>
-            <div class="nome">
-              <span class="avatar-initial">{{ mec.nome[0] }}</span>
-              <div>
-                <p class="name">{{ mec.nome }} {{ mec.sobrenome }}</p>
-                <p class="sub">{{ mec.nivel }}</p>
-              </div>
-            </div>
-          </td>
-          <td>{{ mec.nivel }}</td>
-          <td>{{ mec.status }}</td>
-          <td>{{ mec.documentoPrincipal }}</td>
-          <td>R$ {{ mec.valorHora?.toFixed(2) }}</td>
-          <td class="text-right">
-            <p-button icon="pi pi-search" severity="info" (onClick)="openDetails(mec)" rounded></p-button>
-          </td>
-        </tr>
-      </ng-template>
-    </p-table>
-  </div>
+    @if (filtered.length > rows) {
+      <div class="pagination">
+        <button class="pg-btn" [disabled]="first === 0" (click)="prevPage()">← Anterior</button>
+        <span class="pg-info">{{ first + 1 }}–{{ pageEnd }} de {{ filtered.length }}</span>
+        <button class="pg-btn" [disabled]="first + rows >= filtered.length" (click)="nextPage()">Próximo →</button>
+      </div>
+    }
+  }
 
   <app-mecanico-detalhe
     [mecanico]="selected"
     [visible]="selected !== null"
     (closed)="closeDetails()">
   </app-mecanico-detalhe>
-
 </section>
+

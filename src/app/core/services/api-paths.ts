@@ -1,4 +1,7 @@
 export const apiPaths = {
+  auth: {
+    login: '/api/v1/Auth/login',
+  },
   clientes: {
     base: '/api/v1/Clientes',
     pf: '/api/v1/ClientePfs',

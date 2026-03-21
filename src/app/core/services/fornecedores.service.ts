@@ -22,8 +22,11 @@ export class FornecedoresService {
     return this.api.remove(apiPaths.fornecedores.base, id);
   }
 
-  segmentos() {
-    return this.api.list(apiPaths.fornecedores.segmentos);
+  segmentos(params?: Record<string, any>) {
+    return this.api.list(apiPaths.fornecedores.segmentos, params);
+  }
+  segmentosRel(params?: Record<string, any>) {
+    return this.api.list(apiPaths.fornecedores.segmentosRel, params);
   }
   vincularSegmento(body: any) {
     return this.api.create(apiPaths.fornecedores.segmentosRel, body);

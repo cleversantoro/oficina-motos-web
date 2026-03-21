@@ -1,0 +1,128 @@
+<section class="lista-shell">
+  <header class="lista-header">
+    <div class="header-title">
+      <h1>Veículos</h1>
+      <span class="count-pill">{{ filtered.length }} registros</span>
+    </div>
+    <div class="header-actions">
+      <div class="search-wrap">
+        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+        </svg>
+        <input
+          class="search-input"
+          type="text"
+          placeholder="Buscar por placa, marca, modelo, cor..."
+          [(ngModel)]="filterText"
+          (ngModelChange)="first = 0"
+        />
+      </div>
+    </div>
+  </header>
+
+  @if (loading) {
+    <div class="state-card">
+      <div class="spinner"></div>
+      <p>Carregando veículos...</p>
+    </div>
+  }
+
+  @if (!loading && error) {
+    <div class="state-card error">
+      <p>{{ error }}</p>
+      <button class="btn-ghost" (click)="load()">Tentar novamente</button>
+    </div>
+  }
+
+  @if (!loading && !error) {
+    <div class="table-card">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Placa</th>
+            <th>Marca / Modelo</th>
+            <th>Ano</th>
+            <th class="hide-sm">Cor</th>
+            <th class="hide-sm">Combustível</th>
+            <th class="hide-sm">KM</th>
+            <th>Status</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @if (filtered.length === 0) {
+            <tr>
+              <td colspan="8" class="empty-cell">
+                @if (filterText) {
+                  Nenhum veículo encontrado para "{{ filterText }}".
+                } @else {
+                  Nenhum veículo cadastrado.
+                }
+              </td>
+            </tr>
+          }
+          @for (v of filtered.slice(first, first + rows); track v.id) {
+            <tr class="data-row" (click)="openDetalhe(v.id)">
+              <td>
+                <span class="placa-pill">{{ v.placa }}</span>
+                @if (v.principal) {
+                  <span class="badge-principal">Principal</span>
+                }
+              </td>
+              <td>
+                <div class="modelo-cell">
+                  <span class="marca-nome">{{ marcaNome(v.modeloId) }}</span>
+                  <span class="modelo-nome">{{ modeloNome(v.modeloId) }}</span>
+                </div>
+              </td>
+              <td>{{ v.anoFab ? (v.anoMod && v.anoMod !== v.anoFab ? v.anoFab + '/' + v.anoMod : v.anoFab) : '—' }}</td>
+              <td class="hide-sm">
+                <div class="cor-cell">
+                  <span class="cor-dot" [style.background]="corHex(v.cor)"></span>
+                  {{ v.cor ?? '—' }}
+                </div>
+              </td>
+              <td class="hide-sm">{{ v.combustivel ?? '—' }}</td>
+              <td class="hide-sm mono">{{ v.km ?? '—' }}</td>
+              <td>
+                <span class="status-pill" [class.ativo]="v.ativo" [class.inativo]="!v.ativo">
+                  {{ v.ativo ? 'Ativo' : 'Inativo' }}
+                </span>
+              </td>
+              <td class="action-cell">
+                <button
+                  class="icon-btn view-btn"
+                  (click)="openDetalhe(v.id); $event.stopPropagation()"
+                  title="Visualizar"
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                    <circle cx="12" cy="12" r="3"/>
+                  </svg>
+                </button>
+                <button
+                  class="icon-btn delete-btn"
+                  (click)="confirmDelete(v.id); $event.stopPropagation()"
+                  title="Excluir"
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="3 6 5 6 21 6"/>
+                    <path d="m19 6-.867 14.142A2 2 0 0 1 16.138 22H7.862a2 2 0 0 1-1.995-1.858L5 6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                  </svg>
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    @if (filtered.length > rows) {
+      <div class="pagination">
+        <button class="pg-btn" [disabled]="first === 0" (click)="prevPage()">← Anterior</button>
+        <span class="pg-info">{{ first + 1 }}–{{ pageEnd }} de {{ filtered.length }}</span>
+        <button class="pg-btn" [disabled]="first + rows >= filtered.length" (click)="nextPage()">Próximo →</button>
+      </div>
+    }
+  }
+</section>

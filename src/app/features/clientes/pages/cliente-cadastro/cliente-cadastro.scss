@@ -347,6 +347,72 @@ h3 {
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+// ── Validation ───────────────────────────────────────────
+.field.invalid {
+  input,
+  select,
+  textarea {
+    border-color: rgba(239, 68, 68, 0.7);
+  }
+}
+
+.error-msg {
+  color: #f87171;
+  font-size: 0.8rem;
+  margin-top: 0.15rem;
+}
+
+.alert {
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  font-size: 0.9rem;
+  margin-bottom: 0.25rem;
+}
+
+.alert-error {
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.45);
+  color: #fca5a5;
+}
+
+// ── Dynamic sub-form rows ─────────────────────────────────
+.list-form-row {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.75rem;
+}
+
+.sub-grid {
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+.address-form-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.remove-btn {
+  align-self: flex-end;
+  color: #f87171;
+  border-color: rgba(239, 68, 68, 0.35);
+
+  &:hover {
+    border-color: rgba(239, 68, 68, 0.7);
+  }
+}
+
+.empty-hint {
+  font-size: 0.88rem;
+  font-style: italic;
+  padding: 0.5rem 0;
+}
+
+.check-field {
+  justify-content: flex-start;
+}
+
+// ── Mobile select ─────────────────────────────────────────
 .mobile-select {
   display: none;
 }

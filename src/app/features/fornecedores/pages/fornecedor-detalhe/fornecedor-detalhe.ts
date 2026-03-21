@@ -1,46 +1,124 @@
-import { SlicePipe } from '@angular/common';
-import { Component } from '@angular/core';
-
-type Segmento = { label: string };
-type Representante = { nome: string; cargo: string; contato: string; cor: string; acao: string };
-type Endereco = { tipo: string; texto: string };
-type Doc = { nome: string; status: 'ok' | 'alerta'; detalhe?: string; link?: string };
+import { CommonModule, DatePipe, SlicePipe } from '@angular/common';
+import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { forkJoin } from 'rxjs';
+import { FornecedoresService } from '../../../../core/services/fornecedores.service';
+import {
+  Fornecedor,
+  FornecedorAvaliacao,
+  FornecedorBanco,
+  FornecedorCertificacao,
+  FornecedorDocumento,
+  FornecedorEndereco,
+  FornecedorRepresentante,
+  FornecedorSegmento,
+} from '../../../../core/models/fornecedor';
 
 @Component({
   selector: 'app-fornecedor-detalhe',
   standalone: true,
-  imports: [SlicePipe],
+  imports: [CommonModule, SlicePipe, DatePipe, RouterLink],
   templateUrl: './fornecedor-detalhe.html',
   styleUrl: './fornecedor-detalhe.scss',
 })
-export class FornecedorDetalhe {
-  readonly fornecedor = {
-    nome: 'Distribuidora AutoParts Sul',
-    cnpj: '12.345.678/0001-90',
-    score: 4.5,
-    scoreLabel: 'Excelente entrega',
-    pedidos: 23,
-  };
+export class FornecedorDetalhe implements OnInit {
+  loading = true;
+  error: string | null = null;
 
-  readonly segmentos: Segmento[] = [
-    { label: 'Suspensao' },
-    { label: 'Freios' },
-    { label: 'Lubrificantes' },
-  ];
+  fornecedor: Fornecedor | null = null;
+  representantes: FornecedorRepresentante[] = [];
+  enderecos: FornecedorEndereco[] = [];
+  bancos: FornecedorBanco[] = [];
+  documentos: FornecedorDocumento[] = [];
+  certificacoes: FornecedorCertificacao[] = [];
+  avaliacoes: FornecedorAvaliacao[] = [];
+  todosSegmentos: FornecedorSegmento[] = [];
 
-  readonly representantes: Representante[] = [
-    { nome: 'Roberto Carlos', cargo: 'Gerente de Contas (Região Sul)', contato: 'roberto@autoparts.com.br', cor: '#0ea5e9', acao: 'WhatsApp' },
-    { nome: 'Central de Vendas', cargo: 'Televendas Geral', contato: '0800 777 9999', cor: '#64748b', acao: 'Ligar' },
-  ];
+  constructor(
+    private route: ActivatedRoute,
+    private router: Router,
+    private svc: FornecedoresService,
+  ) {}
 
-  readonly enderecos: Endereco[] = [
-    { tipo: 'Matriz', texto: 'Av. das Indústrias, 1000 - Galpão 4, São Paulo - SP' },
-    { tipo: 'Centro Dist.', texto: 'Rod. Anhanguera, KM 20 - Cajamar - SP' },
-  ];
+  ngOnInit(): void {
+    const id = this.route.snapshot.paramMap.get('id');
+    if (!id) {
+      this.router.navigate(['/fornecedores']);
+      return;
+    }
+    this.loadData(+id);
+  }
 
-  readonly documentos: Doc[] = [
-    { nome: 'Contrato Social', status: 'ok', detalhe: 'Válido' },
-    { nome: 'Certidão Negativa', status: 'alerta', detalhe: 'Vence hoje' },
-    { nome: 'Certificação ISO 9001', status: 'ok', link: '#' },
-  ];
+  private loadData(id: number): void {
+    this.loading = true;
+    forkJoin({
+      fornecedor: this.svc.get(id),
+      representantes: this.svc.representantes({ fornecedorId: id }),
+      enderecos: this.svc.enderecos({ fornecedorId: id }),
+      bancos: this.svc.bancos({ fornecedorId: id }),
+      documentos: this.svc.documentos({ fornecedorId: id }),
+      certificacoes: this.svc.certificacoes({ fornecedorId: id }),
+      avaliacoes: this.svc.avaliacoes({ fornecedorId: id }),
+      todosSegmentos: this.svc.segmentos(),
+    }).subscribe({
+      next: (data: any) => {
+        this.fornecedor = data.fornecedor as Fornecedor;
+        this.representantes = (data.representantes as FornecedorRepresentante[]) ?? [];
+        this.enderecos = (data.enderecos as FornecedorEndereco[]) ?? [];
+        this.bancos = (data.bancos as FornecedorBanco[]) ?? [];
+        this.documentos = (data.documentos as FornecedorDocumento[]) ?? [];
+        this.certificacoes = (data.certificacoes as FornecedorCertificacao[]) ?? [];
+        this.avaliacoes = (data.avaliacoes as FornecedorAvaliacao[]) ?? [];
+        this.todosSegmentos = (data.todosSegmentos as FornecedorSegmento[]) ?? [];
+        this.loading = false;
+      },
+      error: (err: any) => {
+        this.error = err?.error?.message ?? 'Erro ao carregar fornecedor.';
+        this.loading = false;
+      },
+    });
+  }
+
+  get displayName(): string {
+    return this.fornecedor?.nomeFantasia || this.fornecedor?.razaoSocial || '';
+  }
+
+  get segmentoPrincipalNome(): string | null {
+    if (!this.fornecedor?.segmentoPrincipalId) return null;
+    return (
+      this.todosSegmentos.find((s) => s.id === this.fornecedor!.segmentoPrincipalId)?.nome ?? null
+    );
+  }
+
+  get bancoPrincipal(): FornecedorBanco | null {
+    return this.bancos.find((b) => b.principal) ?? this.bancos[0] ?? null;
+  }
+
+  get scoreLabel(): string {
+    const n = this.fornecedor?.notaMedia ?? 0;
+    if (n >= 4.5) return 'Excelente';
+    if (n >= 3.5) return 'Bom';
+    if (n >= 2.5) return 'Regular';
+    return 'Abaixo da média';
+  }
+
+  starsOf(nota: number | null): string {
+    const n = Math.max(0, Math.min(5, Math.round(nota ?? 0)));
+    return '★'.repeat(n) + '☆'.repeat(5 - n);
+  }
+
+  avatarColor(nome: string): string {
+    const colors = ['#0ea5e9', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981'];
+    let hash = 0;
+    for (let i = 0; i < nome.length; i++) hash = nome.charCodeAt(i) + ((hash << 5) - hash);
+    return colors[Math.abs(hash) % colors.length];
+  }
+
+  docValidity(dataValidade: string | null): 'ok' | 'vencendo' | 'vencido' | 'sem-data' {
+    if (!dataValidade) return 'sem-data';
+    const diff = new Date(dataValidade).getTime() - Date.now();
+    if (diff < 0) return 'vencido';
+    if (diff < 30 * 24 * 60 * 60 * 1000) return 'vencendo';
+    return 'ok';
+  }
 }

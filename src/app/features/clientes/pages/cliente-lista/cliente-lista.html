@@ -62,56 +62,93 @@
       </div>
     </div>
 
-    <div class="mb-4">
-      <p-button type="button" icon="pi pi-chevron-left" (click)="prev()" [disabled]="isFirstPage()" text />
-      <p-button type="button" icon="pi pi-refresh" (click)="reset()" text />
-      <p-button type="button" icon="pi pi-chevron-right" (click)="next()" [disabled]="isLastPage()" text />
+    <div class="search-bar-row">
+      <div class="search-wrap">
+        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+        </svg>
+        <input
+          class="search-input"
+          type="text"
+          placeholder="Buscar por nome, CPF/CNPJ, email..."
+          [(ngModel)]="filterText"
+          (ngModelChange)="reset()"
+        />
+      </div>
     </div>
-    <p-table [value]="clientes" [loading]="loading" [tableStyle]="{ 'min-width': '50rem' }" [paginator]="true"
-      [rows]="10" [rowsPerPageOptions]="[5, 10, 20]" [first]="first" [showCurrentPageReport]="true"
-      currentPageReportTemplate="Exibindo {first} até {last} de {totalRecords} registros">
 
-      <ng-template pTemplate="header">
-        <tr>
-          <th pSortableColumn="nome">Nome</th>
-          <th>CPF/CNPJ</th>
-          <th>Email</th>
-          <th>Telefone</th>
-          <th>Tipo Cliente</th>
-          <th>Vip</th>
-          <th class="text-right">Acoes</th>
-        </tr>
-      </ng-template>
+    @if (loading) {
+      <div class="state-card">
+        <div class="spinner"></div>
+        <p>Carregando clientes...</p>
+      </div>
+    }
 
-      <ng-template pTemplate="body" let-cliente>
-        <tr>
-          <td>
-            <div class="nome">
-              <span class="avatar">{{ cliente.nome[0] }}</span>
-              <div>
-                <p class="name">{{ cliente.nome }}</p>
-                <p class="sub">{{cliente.statusDescricao}}</p>
-              </div>
-            </div>
-          </td>
-          <td>{{ cliente.documento }}</td>
-          <td>{{ cliente.email }}</td>
-          <td>{{ cliente.telefone }}</td>
-          <td>{{ cliente.tipoDescricao }}</td>
-          <td>{{ GetVip(cliente.vip) }}</td>
-          <td class="text-right">
-            <p-button icon="pi pi-search" severity="info" (onClick)="openDetails(cliente)" rounded></p-button>
-            <p-button icon="pi pi-pencil" [text]="true" severity="secondary"></p-button>
-          </td>
-        </tr>
-      </ng-template>
-      <ng-template #paginatorleft>
-        <p-button type="button" icon="pi pi-plus" text />
-      </ng-template>
-      <ng-template #paginatorright>
-        <p-button type="button" icon="pi pi-cloud" text />
-      </ng-template>
-    </p-table>
+    @if (!loading) {
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Nome</th>
+            <th>CPF/CNPJ</th>
+            <th class="hide-sm">Email</th>
+            <th class="hide-sm">Telefone</th>
+            <th class="hide-sm">Tipo</th>
+            <th class="hide-sm">VIP</th>
+            <th class="action-th">Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          @if (filtered.length === 0) {
+            <tr>
+              <td colspan="7" class="empty-cell">
+                @if (filterText) { Nenhum cliente encontrado para "{{ filterText }}". }
+                @else { Nenhum cliente cadastrado. }
+              </td>
+            </tr>
+          }
+          @for (cliente of filtered.slice(first, first + rows); track cliente.id) {
+            <tr class="data-row" (click)="openDetails(cliente)">
+              <td>
+                <div class="nome">
+                  <span class="avatar">{{ cliente.nome[0] }}</span>
+                  <div>
+                    <p class="name">{{ cliente.nome }}</p>
+                    <p class="sub">{{ cliente.statusDescricao }}</p>
+                  </div>
+                </div>
+              </td>
+              <td class="mono">{{ cliente.documento }}</td>
+              <td class="hide-sm">{{ cliente.email }}</td>
+              <td class="hide-sm">{{ cliente.telefone }}</td>
+              <td class="hide-sm">{{ cliente.tipoDescricao }}</td>
+              <td class="hide-sm">{{ GetVip(cliente.vip) }}</td>
+              <td class="action-cell">
+                <button class="icon-btn view-btn" (click)="openDetails(cliente); $event.stopPropagation()" title="Visualizar">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                    <circle cx="12" cy="12" r="3"/>
+                  </svg>
+                </button>
+                <button class="icon-btn delete-btn" (click)="confirmDelete(cliente.id); $event.stopPropagation()" title="Excluir">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="3 6 5 6 21 6"/>
+                    <path d="m19 6-.867 14.142A2 2 0 0 1 16.138 22H7.862a2 2 0 0 1-1.995-1.858L5 6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                  </svg>
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+
+      @if (filtered.length > rows) {
+        <div class="pagination">
+          <button class="pg-btn" [disabled]="isFirstPage()" (click)="prev()">← Anterior</button>
+          <span class="pg-info">{{ first + 1 }}–{{ first + rows > filtered.length ? filtered.length : first + rows }} de {{ filtered.length }}</span>
+          <button class="pg-btn" [disabled]="isLastPage()" (click)="next()">Próximo →</button>
+        </div>
+      }
+    }
   </div>
 
   <p-dialog header="Detalhes do cliente" [(visible)]="selectedCliente" [modal]="true" [style]="{ width: '820px' }"
