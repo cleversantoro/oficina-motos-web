@@ -1,0 +1,130 @@
+.data-table-container {
+  width: 100%;
+
+  .data-table-header {
+    padding: 1rem;
+    background: var(--surface-card);
+    border: 1px solid var(--surface-border);
+    border-bottom: 0;
+    border-radius: var(--border-radius) var(--border-radius) 0 0;
+  }
+
+  // Empty state
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+
+    .empty-icon {
+      font-size: 3rem;
+      color: var(--text-color-secondary);
+    }
+
+    .empty-text {
+      color: var(--text-color-secondary);
+    }
+  }
+
+  ::ng-deep {
+    .p-datatable {
+      .p-datatable-header {
+        padding: 1rem;
+        background: var(--surface-card);
+        border: 1px solid var(--surface-border);
+      }
+
+      .p-datatable-thead > tr > th {
+        background: var(--surface-section);
+        color: var(--text-color);
+        font-weight: 600;
+        padding: 1rem;
+        border: 1px solid var(--surface-border);
+
+        .flex {
+          justify-content: space-between;
+        }
+
+        // Filtros nas colunas
+        input {
+          margin-top: 0.5rem;
+        }
+      }
+
+      .p-datatable-tbody > tr {
+        &:hover {
+          background: var(--surface-hover);
+        }
+
+        > td {
+          padding: 1rem;
+          border: 1px solid var(--surface-border);
+        }
+
+        &.p-highlight {
+          background: var(--primary-color);
+          color: var(--primary-color-text);
+        }
+      }
+
+      // Empty state
+      .p-datatable-emptymessage td {
+        padding: 3rem 1rem;
+      }
+
+      // Loading
+      .p-datatable-loading-overlay {
+        background: rgba(255, 255, 255, 0.9);
+      }
+
+      // Paginador
+      .p-paginator {
+        padding: 1rem;
+        background: var(--surface-card);
+        border: 1px solid var(--surface-border);
+        border-top: 0;
+        border-radius: 0 0 var(--border-radius) var(--border-radius);
+
+        .p-paginator-current {
+          margin-left: auto;
+        }
+      }
+    }
+
+    // Responsivo
+    @media screen and (max-width: 960px) {
+      .p-datatable {
+        &.p-datatable-responsive-scroll {
+          .p-datatable-thead > tr > th,
+          .p-datatable-tfoot > tr > td {
+            display: none;
+          }
+
+          .p-datatable-tbody > tr {
+            border-bottom: 1px solid var(--surface-border);
+
+            > td {
+              text-align: left;
+              display: block;
+              border: 0;
+              width: 100% !important;
+              float: left;
+              clear: left;
+
+              &:before {
+                content: attr(data-label);
+                font-weight: 600;
+                width: 50%;
+                display: inline-block;
+              }
+
+              &:last-child {
+                border-bottom: 1px solid var(--surface-border);
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

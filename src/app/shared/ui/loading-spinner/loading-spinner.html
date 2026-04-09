@@ -1,0 +1,12 @@
+@if (loadingService.isLoading()) {
+  <div class="loading-overlay">
+    <div class="loading-content">
+      <p-progressSpinner
+        styleClass="loading-spinner"
+        strokeWidth="4"
+        animationDuration="1s"
+      />
+      <p class="loading-text">Carregando...</p>
+    </div>
+  </div>
+}

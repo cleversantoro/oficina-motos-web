@@ -1,0 +1,219 @@
+<div class="data-table-container">
+  <!-- Header customizado ou padrão -->
+  @if (headerTemplate) {
+    <ng-container *ngTemplateOutlet="headerTemplate"></ng-container>
+  } @else if (config.globalFilter) {
+    <div class="data-table-header">
+      <div class="flex justify-content-between align-items-center">
+        <div class="flex gap-2">
+          <!-- Filtro Global -->
+          <span class="p-input-icon-left">
+            <i class="pi pi-search"></i>
+            <input
+              pInputText
+              type="text"
+              [(ngModel)]="globalFilterValue"
+              (input)="applyGlobalFilter($event)"
+              [placeholder]="config.globalFilterPlaceholder || 'Buscar...'"
+              [title]="config.globalFilterPlaceholder || 'Buscar...'"
+              class="w-full"
+            />
+          </span>
+
+          <!-- Botão Limpar Filtros -->
+          @if (globalFilterValue) {
+            <button
+              pButton
+              type="button"
+              icon="pi pi-filter-slash"
+              label="Limpar"
+              aria-label="Limpar filtros"
+              class="p-button-outlined"
+              (click)="clearFilters()"
+            ></button>
+          }
+        </div>
+
+        <!-- Botão Exportar -->
+        @if (config.exportable) {
+          <button
+            pButton
+            type="button"
+            icon="pi pi-download"
+            label="Exportar CSV"
+            aria-label="Exportar dados para CSV"
+            class="p-button-outlined"
+            (click)="exportCSV()"
+          ></button>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- Tabela PrimeNG -->
+  <p-table
+    #dt
+    [value]="data"
+    [columns]="columns"
+    [loading]="loading"
+    [paginator]="paginationConfig.showPaginator ?? true"
+    [rows]="paginationConfig.rows ?? 10"
+    [rowsPerPageOptions]="paginationConfig.rowsPerPageOptions ?? [10, 25, 50]"
+    [showCurrentPageReport]="true"
+    currentPageReportTemplate="Exibindo {first} a {last} de {totalRecords} registros"
+    [selectionMode]="config.selectable ? config.selectionMode : undefined"
+    [(selection)]="selectedRows"
+    [dataKey]="'id'"
+    [styleClass]="getTableClass()"
+    [globalFilterFields]="globalFilterFields"
+    (onRowSelect)="onRowSelect($event)"
+    (onRowUnselect)="onRowUnselect($event)"
+    (onPage)="onPageChange($event)"
+    (onSort)="onSort($event)"
+  >
+    <!-- Caption (se houver loading) -->
+    <ng-template pTemplate="caption">
+      @if (loading) {
+        <div class="flex align-items-center gap-2">
+          <i class="pi pi-spin pi-spinner"></i>
+          <span>Carregando dados...</span>
+        </div>
+      }
+    </ng-template>
+
+    <!-- Header -->
+    <ng-template pTemplate="header" let-columns>
+      <tr>
+        <!-- Coluna de seleção -->
+        @if (config.selectable && config.selectionMode === 'multiple') {
+          <th style="width: 3rem">
+            <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
+          </th>
+        }
+
+        <!-- Colunas de dados -->
+        @for (col of columns; track col.field) {
+          @if (!col.hidden) {
+            <th
+              [pSortableColumn]="getSortableColumn(col)"
+              [ngStyle]="{ width: col.width }"
+              [ngClass]="col.styleClass"
+            >
+              <div class="flex align-items-center gap-2">
+                {{ col.header }}
+                @if (col.sortable !== false) {
+                  <p-sortIcon [field]="getFieldAsString(col)"></p-sortIcon>
+                }
+              </div>
+
+              <!-- Filtro por coluna -->
+              @if (col.filterable) {
+                <div class="mt-2">
+                  @if (col.filterType === 'text' || !col.filterType) {
+                    <input
+                      pInputText
+                      type="text"
+                      class="w-full p-inputtext-sm"
+                      [placeholder]="'Filtrar ' + col.header"
+                      [title]="'Filtrar ' + col.header"
+                      (input)="onColumnFilter($event, col, 'contains')"
+                    />
+                  } @else if (col.filterType === 'numeric') {
+                    <input
+                      pInputText
+                      type="number"
+                      class="w-full p-inputtext-sm"
+                      [placeholder]="'Filtrar ' + col.header"
+                      [title]="'Filtrar ' + col.header"
+                      (input)="onColumnFilter($event, col, 'equals')"
+                    />
+                  }
+                </div>
+              }
+            </th>
+          }
+        }
+
+        <!-- Coluna de ações -->
+        @if (actions.length > 0) {
+          <th style="width: auto; text-align: center">Ações</th>
+        }
+      </tr>
+    </ng-template>
+
+    <!-- Body -->
+    <ng-template pTemplate="body" let-row let-columns="columns">
+      <tr [pSelectableRow]="row">
+        <!-- Checkbox de seleção -->
+        @if (config.selectable && config.selectionMode === 'multiple') {
+          <td>
+            <p-tableCheckbox [value]="row"></p-tableCheckbox>
+          </td>
+        }
+
+        <!-- Células de dados -->
+        @for (col of columns; track col.field) {
+          @if (!col.hidden) {
+            <td
+              [ngClass]="col.styleClass"
+              [ngStyle]="{ 'text-align': col.align || 'left' }"
+            >
+              <!-- Template customizado ou valor formatado -->
+              @if (col.cellTemplate) {
+                <ng-container
+                  *ngTemplateOutlet="col.cellTemplate; context: { $implicit: row }"
+                ></ng-container>
+              } @else {
+                {{ getCellValue(row, col) }}
+              }
+            </td>
+          }
+        }
+
+        <!-- Ações -->
+        @if (actions.length > 0) {
+          <td style="text-align: center">
+            <div class="flex gap-2 justify-content-center">
+              @for (action of actions; track action.icon) {
+                @if (isActionVisible(action, row)) {
+                  <button
+                    pButton
+                    [icon]="action.icon"
+                    [label]="action.label || ''"
+                    [pTooltip]="action.tooltip"
+                    [attr.aria-label]="action.tooltip || action.label || 'Ação'"
+                    [ngClass]="action.styleClass || 'p-button-rounded p-button-text'"
+                    [disabled]="isActionDisabled(action, row)"
+                    (click)="action.onClick(row)"
+                  ></button>
+                }
+              }
+            </div>
+          </td>
+        }
+      </tr>
+    </ng-template>
+
+    <!-- Empty State -->
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td [attr.colspan]="getTotalColumns()" class="text-center p-4">
+          <div class="empty-state">
+            <i class="pi pi-inbox empty-icon"></i>
+            <span class="empty-text">{{
+              config.emptyMessage || 'Nenhum registro encontrado'
+            }}</span>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+
+    <!-- Footer customizado -->
+    @if (footerTemplate) {
+      <ng-template pTemplate="footer">
+        <ng-container *ngTemplateOutlet="footerTemplate"></ng-container>
+      </ng-template>
+    }
+  </p-table>
+</div>
+
