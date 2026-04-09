@@ -4,7 +4,9 @@
 @tailwind components;
 @tailwind utilities;
 
+// PrimeNG Styles (o tema já inclui todos os estilos base)
 @import 'primeicons/primeicons.css';
+//@import 'primeng/resources/themes/lara-dark-blue/theme.css';
 
 :root {
   --font-family: 'Space Grotesk', 'Manrope', system-ui, -apple-system, sans-serif;

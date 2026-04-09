@@ -5,7 +5,6 @@ import { AppSidebar } from '../sidebar/sidebar';
 import { ToastComponent } from '../../shared/ui/toast/toast';
 import { LoadingSpinner } from '../../shared/ui/loading-spinner/loading-spinner';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
-import { ConfirmationService } from 'primeng/api';
 //import { AppFooter } from '../footer/footer';
 
 @Component({
@@ -20,7 +19,6 @@ import { ConfirmationService } from 'primeng/api';
     ConfirmDialogModule,
     //AppFooter
   ],
-  providers: [ConfirmationService],
   templateUrl: './main-layout.html',
   styleUrl: './main-layout.scss',
 })
