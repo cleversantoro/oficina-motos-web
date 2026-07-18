@@ -1,1 +1,544 @@
-<p>cliente-detalhe works!</p>
+<div class="detalhe-page">
+
+  <!-- Breadcrumb / navegação -->
+  <nav class="breadcrumb">
+    <a routerLink="/clientes" class="back-link">
+      <i class="pi pi-arrow-left"></i>
+      Clientes
+    </a>
+    @if (cliente) {
+      <span class="breadcrumb-sep">›</span>
+      <span class="breadcrumb-current">{{ cliente.nome }}</span>
+    }
+  </nav>
+
+  <!-- Estado: carregando -->
+  @if (loading) {
+    <div class="state-container">
+      <i class="pi pi-spin pi-spinner state-icon"></i>
+      <p>Carregando dados do cliente…</p>
+    </div>
+  }
+
+  <!-- Estado: erro -->
+  @else if (error) {
+    <div class="state-container state-error">
+      <i class="pi pi-exclamation-triangle state-icon"></i>
+      <p>{{ error }}</p>
+      <button class="btn-retry" (click)="load()">
+        <i class="pi pi-refresh"></i> Tentar novamente
+      </button>
+    </div>
+  }
+
+  <!-- Conteúdo -->
+  @else if (cliente) {
+
+    <!-- Hero card -->
+    <div class="hero-card">
+      <div class="hero-avatar" [class.vip]="cliente.vip">
+        {{ getInitials(cliente.nome) }}
+      </div>
+
+      <div class="hero-info">
+        <div class="hero-name-row">
+          <h1 class="hero-name">{{ cliente.nome }}</h1>
+          @if (cliente.vip) {
+            <span class="vip-badge"><i class="pi pi-star-fill"></i> VIP</span>
+          }
+        </div>
+
+        @if (cliente.nomeExibicao && cliente.nomeExibicao !== cliente.nome) {
+          <p class="hero-sub">{{ cliente.nomeExibicao }}</p>
+        }
+
+        <div class="hero-meta">
+          @if (cliente.documento) {
+            <span class="meta-item"><i class="pi pi-id-card"></i>{{ cliente.documento }}</span>
+          }
+          @if (cliente.email) {
+            <span class="meta-item"><i class="pi pi-envelope"></i>{{ cliente.email }}</span>
+          }
+          @if (cliente.telefone) {
+            <span class="meta-item"><i class="pi pi-phone"></i>{{ cliente.telefone }}</span>
+          }
+        </div>
+
+        <div class="hero-badges">
+          <p-tag
+            [value]="getStatusLabel(cliente.status, cliente.statusDescricao)"
+            [severity]="getStatusSeverity(cliente.status)">
+          </p-tag>
+          @if (cliente.tipoDescricao || cliente.tipo) {
+            <p-tag [value]="cliente.tipoDescricao || cliente.tipo" severity="info"></p-tag>
+          }
+          @if (cliente.origemDescricao) {
+            <p-tag [value]="cliente.origemDescricao" severity="secondary"></p-tag>
+          }
+        </div>
+      </div>
+
+      <div class="hero-actions">
+        <p-button
+          label="Editar"
+          icon="pi pi-pencil"
+          size="small"
+          (onClick)="editarCliente()">
+        </p-button>
+        <p-button
+          label="Excluir"
+          icon="pi pi-trash"
+          size="small"
+          severity="danger"
+          [outlined]="true"
+          (onClick)="excluirCliente()">
+        </p-button>
+      </div>
+    </div>
+
+    <!-- Abas de detalhes -->
+    <div class="tabs-card">
+      <p-tabs value="0">
+        <p-tablist>
+          <p-tab value="0"><i class="pi pi-user tab-icon"></i>Geral</p-tab>
+          <p-tab value="1"><i class="pi pi-map-marker tab-icon"></i>Endereços</p-tab>
+          <p-tab value="2"><i class="pi pi-phone tab-icon"></i>Contatos</p-tab>
+          <p-tab value="3"><i class="pi pi-wallet tab-icon"></i>Financeiro</p-tab>
+          <p-tab value="4"><i class="pi pi-file tab-icon"></i>Documentos</p-tab>
+          <p-tab value="5"><i class="pi pi-paperclip tab-icon"></i>Anexos</p-tab>
+          <p-tab value="6"><i class="pi pi-users tab-icon"></i>Indicações</p-tab>
+          <p-tab value="7"><i class="pi pi-shield tab-icon"></i>LGPD</p-tab>
+          <p-tab value="8"><i class="pi pi-info-circle tab-icon"></i>Cadastro</p-tab>
+        </p-tablist>
+
+        <p-tabpanels>
+
+          <!-- ABA: Geral -->
+          <p-tabpanel value="0">
+            <div class="tab-content">
+
+              <div class="section-card">
+                <h3 class="section-title">Dados Básicos</h3>
+                <div class="field-grid">
+                  <div class="field">
+                    <span class="field-label">Nome completo</span>
+                    <span class="field-value">{{ fmt(cliente.nome) }}</span>
+                  </div>
+                  @if (cliente.nomeExibicao) {
+                    <div class="field">
+                      <span class="field-label">Nome de exibição</span>
+                      <span class="field-value">{{ fmt(cliente.nomeExibicao) }}</span>
+                    </div>
+                  }
+                  <div class="field">
+                    <span class="field-label">CPF / CNPJ</span>
+                    <span class="field-value">{{ fmt(cliente.documento) }}</span>
+                  </div>
+                  <div class="field">
+                    <span class="field-label">E-mail</span>
+                    <span class="field-value">{{ fmt(cliente.email) }}</span>
+                  </div>
+                  <div class="field">
+                    <span class="field-label">Telefone</span>
+                    <span class="field-value">{{ fmt(cliente.telefone) }}</span>
+                  </div>
+                  <div class="field">
+                    <span class="field-label">Tipo de cliente</span>
+                    <span class="field-value">{{ fmt(cliente.tipoDescricao || cliente.tipo) }}</span>
+                  </div>
+                  <div class="field">
+                    <span class="field-label">Status</span>
+                    <span class="field-value">{{ getStatusLabel(cliente.status, cliente.statusDescricao) }}</span>
+                  </div>
+                  <div class="field">
+                    <span class="field-label">VIP</span>
+                    <span class="field-value">{{ fmtBool(cliente.vip) }}</span>
+                  </div>
+                </div>
+                @if (cliente.observacoes) {
+                  <div class="field field-full" style="margin-top: 0.75rem;">
+                    <span class="field-label">Observações</span>
+                    <span class="field-value">{{ cliente.observacoes }}</span>
+                  </div>
+                }
+              </div>
+
+              @if (cliente.origem || cliente.origemDescricao || cliente.origemCadastroId) {
+                <div class="section-card">
+                  <h3 class="section-title">Origem</h3>
+                  <div class="field-grid">
+                    @if (cliente.origemDescricao) {
+                      <div class="field">
+                        <span class="field-label">Origem</span>
+                        <span class="field-value">{{ fmt(cliente.origemDescricao) }}</span>
+                      </div>
+                    }
+                    @if (cliente.origem?.nome) {
+                      <div class="field">
+                        <span class="field-label">Nome</span>
+                        <span class="field-value">{{ fmt(cliente.origem.nome) }}</span>
+                      </div>
+                    }
+                    @if (cliente.origem?.descricao) {
+                      <div class="field">
+                        <span class="field-label">Descrição</span>
+                        <span class="field-value">{{ fmt(cliente.origem.descricao) }}</span>
+                      </div>
+                    }
+                  </div>
+                </div>
+              }
+
+              @if (cliente.pessoaFisica) {
+                <div class="section-card">
+                  <h3 class="section-title">Pessoa Física</h3>
+                  <div class="field-grid">
+                    <div class="field">
+                      <span class="field-label">CPF</span>
+                      <span class="field-value">{{ fmt(cliente.pessoaFisica.cpf) }}</span>
+                    </div>
+                    <div class="field">
+                      <span class="field-label">RG</span>
+                      <span class="field-value">{{ fmt(cliente.pessoaFisica.rg) }}</span>
+                    </div>
+                    <div class="field">
+                      <span class="field-label">Data de Nascimento</span>
+                      <span class="field-value">
+                        {{ cliente.pessoaFisica.dataNascimento ? (cliente.pessoaFisica.dataNascimento | date:'dd/MM/yyyy') : '—' }}
+                      </span>
+                    </div>
+                    <div class="field">
+                      <span class="field-label">Gênero</span>
+                      <span class="field-value">{{ fmt(cliente.pessoaFisica.genero) }}</span>
+                    </div>
+                    <div class="field">
+                      <span class="field-label">Estado Civil</span>
+                      <span class="field-value">{{ fmt(cliente.pessoaFisica.estadoCivil) }}</span>
+                    </div>
+                    <div class="field">
+                      <span class="field-label">Profissão</span>
+                      <span class="field-value">{{ fmt(cliente.pessoaFisica.profissao) }}</span>
+                    </div>
+                  </div>
+                </div>
+              }
+
+              @if (cliente.pessoaJuridica) {
+                <div class="section-card">
+                  <h3 class="section-title">Pessoa Jurídica</h3>
+                  <div class="field-grid">
+                    @for (entry of objEntries(cliente.pessoaJuridica); track entry[0]) {
+                      <div class="field">
+                        <span class="field-label">{{ entry[0] }}</span>
+                        <span class="field-value">{{ fmt(entry[1]) }}</span>
+                      </div>
+                    }
+                  </div>
+                </div>
+              }
+
+            </div>
+          </p-tabpanel>
+
+          <!-- ABA: Endereços -->
+          <p-tabpanel value="1">
+            <div class="tab-content">
+              @if (!cliente.enderecos?.length) {
+                <div class="empty-state">
+                  <i class="pi pi-map-marker"></i>
+                  <p>Nenhum endereço cadastrado</p>
+                </div>
+              }
+              @for (e of cliente.enderecos; track e.id) {
+                <div class="section-card">
+                  <h3 class="section-title">
+                    Endereço {{ $index + 1 }}
+                    @if (e.principal) {
+                      <span class="badge-principal">Principal</span>
+                    }
+                    @if (e.tipo) {
+                      <span class="badge-tipo">{{ e.tipo }}</span>
+                    }
+                  </h3>
+                  <div class="address-block">
+                    <p class="address-line">
+                      {{ fmt(e.logradouro) }}{{ e.numero ? ', ' + e.numero : '' }}{{ e.complemento ? ' — ' + e.complemento : '' }}
+                    </p>
+                    <p class="address-line">{{ fmt(e.bairro) }} — {{ fmt(e.cidade) }}/{{ fmt(e.estado) }}</p>
+                    <p class="address-line muted">CEP: {{ fmt(e.cep) }}{{ e.pais ? ' · ' + e.pais : '' }}</p>
+                  </div>
+                </div>
+              }
+            </div>
+          </p-tabpanel>
+
+          <!-- ABA: Contatos -->
+          <p-tabpanel value="2">
+            <div class="tab-content">
+              @if (!cliente.contatos?.length) {
+                <div class="empty-state">
+                  <i class="pi pi-phone"></i>
+                  <p>Nenhum contato cadastrado</p>
+                </div>
+              }
+              @for (c of cliente.contatos; track c.id) {
+                <div class="section-card">
+                  <h3 class="section-title">
+                    {{ fmt(c.tipo) }}
+                    @if (c.principal) {
+                      <span class="badge-principal">Principal</span>
+                    }
+                  </h3>
+                  <div class="field-grid">
+                    <div class="field">
+                      <span class="field-label">Valor</span>
+                      <span class="field-value highlight">{{ fmt(c.valor) }}</span>
+                    </div>
+                    @if (c.observacao) {
+                      <div class="field">
+                        <span class="field-label">Observação</span>
+                        <span class="field-value">{{ fmt(c.observacao) }}</span>
+                      </div>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          </p-tabpanel>
+
+          <!-- ABA: Financeiro -->
+          <p-tabpanel value="3">
+            <div class="tab-content">
+              @if (!cliente.financeiro) {
+                <div class="empty-state">
+                  <i class="pi pi-wallet"></i>
+                  <p>Nenhuma informação financeira cadastrada</p>
+                </div>
+              } @else {
+                <div class="section-card">
+                  <h3 class="section-title">Informações Financeiras</h3>
+                  <div class="field-grid">
+                    <div class="field">
+                      <span class="field-label">Limite de Crédito</span>
+                      <span class="field-value">{{ fmt(cliente.financeiro.limiteCredito) }}</span>
+                    </div>
+                    <div class="field">
+                      <span class="field-label">Prazo de Pagamento</span>
+                      <span class="field-value">{{ fmt(cliente.financeiro.prazoPagamento) }}</span>
+                    </div>
+                    <div class="field">
+                      <span class="field-label">Bloqueado</span>
+                      <span class="field-value" [class.danger]="cliente.financeiro.bloqueado">
+                        {{ fmtBool(cliente.financeiro.bloqueado) }}
+                      </span>
+                    </div>
+                    @if (cliente.financeiro.observacoes) {
+                      <div class="field field-full">
+                        <span class="field-label">Observações</span>
+                        <span class="field-value">{{ fmt(cliente.financeiro.observacoes) }}</span>
+                      </div>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          </p-tabpanel>
+
+          <!-- ABA: Documentos -->
+          <p-tabpanel value="4">
+            <div class="tab-content">
+              @if (!cliente.documentos?.length) {
+                <div class="empty-state">
+                  <i class="pi pi-file"></i>
+                  <p>Nenhum documento cadastrado</p>
+                </div>
+              }
+              @for (d of cliente.documentos; track d.id) {
+                <div class="section-card">
+                  <h3 class="section-title">Documento {{ $index + 1 }}</h3>
+                  <div class="field-grid">
+                    <div class="field">
+                      <span class="field-label">Tipo</span>
+                      <span class="field-value">{{ fmt(d.tipo) }}</span>
+                    </div>
+                    <div class="field">
+                      <span class="field-label">Número</span>
+                      <span class="field-value">{{ fmt(d.numero) }}</span>
+                    </div>
+                    @if (d.dataEmissao) {
+                      <div class="field">
+                        <span class="field-label">Emissão</span>
+                        <span class="field-value">{{ d.dataEmissao | date:'dd/MM/yyyy' }}</span>
+                      </div>
+                    }
+                    @if (d.dataValidade) {
+                      <div class="field">
+                        <span class="field-label">Validade</span>
+                        <span class="field-value">{{ d.dataValidade | date:'dd/MM/yyyy' }}</span>
+                      </div>
+                    }
+                    @if (d.orgaoEmissor) {
+                      <div class="field">
+                        <span class="field-label">Órgão Emissor</span>
+                        <span class="field-value">{{ fmt(d.orgaoEmissor) }}</span>
+                      </div>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          </p-tabpanel>
+
+          <!-- ABA: Anexos -->
+          <p-tabpanel value="5">
+            <div class="tab-content">
+              @if (!cliente.anexos?.length) {
+                <div class="empty-state">
+                  <i class="pi pi-paperclip"></i>
+                  <p>Nenhum anexo cadastrado</p>
+                </div>
+              }
+              @for (a of cliente.anexos; track a.id) {
+                <div class="section-card">
+                  <h3 class="section-title">{{ fmt(a.nome || 'Anexo ' + ($index + 1)) }}</h3>
+                  <div class="field-grid">
+                    @if (a.tipo) {
+                      <div class="field">
+                        <span class="field-label">Tipo</span>
+                        <span class="field-value">{{ fmt(a.tipo) }}</span>
+                      </div>
+                    }
+                    @if (a.url) {
+                      <div class="field">
+                        <span class="field-label">Arquivo</span>
+                        <a [href]="a.url" target="_blank" rel="noopener noreferrer" class="field-link">
+                          <i class="pi pi-external-link"></i> Abrir arquivo
+                        </a>
+                      </div>
+                    }
+                    @if (a.observacao) {
+                      <div class="field field-full">
+                        <span class="field-label">Observação</span>
+                        <span class="field-value">{{ fmt(a.observacao) }}</span>
+                      </div>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          </p-tabpanel>
+
+          <!-- ABA: Indicações -->
+          <p-tabpanel value="6">
+            <div class="tab-content">
+              @if (!cliente.indicacoes?.length) {
+                <div class="empty-state">
+                  <i class="pi pi-users"></i>
+                  <p>Nenhuma indicação registrada</p>
+                </div>
+              }
+              @for (ind of cliente.indicacoes; track ind.id) {
+                <div class="section-card">
+                  <h3 class="section-title">Indicação {{ $index + 1 }}</h3>
+                  <div class="field-grid">
+                    <div class="field">
+                      <span class="field-label">Indicador</span>
+                      <span class="field-value">{{ fmt(ind.indicadorNome) }}</span>
+                    </div>
+                    <div class="field">
+                      <span class="field-label">Telefone</span>
+                      <span class="field-value">{{ fmt(ind.indicadorTelefone) }}</span>
+                    </div>
+                    @if (ind.observacao) {
+                      <div class="field field-full">
+                        <span class="field-label">Observação</span>
+                        <span class="field-value">{{ fmt(ind.observacao) }}</span>
+                      </div>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          </p-tabpanel>
+
+          <!-- ABA: LGPD -->
+          <p-tabpanel value="7">
+            <div class="tab-content">
+              @if (!cliente.consentimentosLgpd?.length) {
+                <div class="empty-state">
+                  <i class="pi pi-shield"></i>
+                  <p>Nenhum consentimento LGPD registrado</p>
+                </div>
+              }
+              @for (l of cliente.consentimentosLgpd; track l.id) {
+                <div class="section-card">
+                  <h3 class="section-title">
+                    {{ fmt(l.tipo) }}
+                    <span [class]="l.aceito ? 'badge-success' : 'badge-danger'">
+                      {{ l.aceito ? 'Aceito' : 'Recusado' }}
+                    </span>
+                  </h3>
+                  <div class="field-grid">
+                    <div class="field">
+                      <span class="field-label">Data</span>
+                      <span class="field-value">{{ l.data ? (l.data | date:'dd/MM/yyyy HH:mm') : '—' }}</span>
+                    </div>
+                    <div class="field">
+                      <span class="field-label">Válido até</span>
+                      <span class="field-value">{{ l.validoAte ? (l.validoAte | date:'dd/MM/yyyy') : '—' }}</span>
+                    </div>
+                    <div class="field">
+                      <span class="field-label">Canal</span>
+                      <span class="field-value">{{ fmt(l.canal) }}</span>
+                    </div>
+                    @if (l.observacoes) {
+                      <div class="field field-full">
+                        <span class="field-label">Observações</span>
+                        <span class="field-value">{{ fmt(l.observacoes) }}</span>
+                      </div>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          </p-tabpanel>
+
+          <!-- ABA: Cadastro -->
+          <p-tabpanel value="8">
+            <div class="tab-content">
+              <div class="section-card">
+                <h3 class="section-title">Informações de Cadastro</h3>
+                <div class="field-grid">
+                  <div class="field">
+                    <span class="field-label">ID</span>
+                    <span class="field-value mono">{{ fmt(cliente.id) }}</span>
+                  </div>
+                  @if (cliente.codigo) {
+                    <div class="field">
+                      <span class="field-label">Código</span>
+                      <span class="field-value mono">{{ fmt(cliente.codigo) }}</span>
+                    </div>
+                  }
+                  <div class="field">
+                    <span class="field-label">Criado em</span>
+                    <span class="field-value">
+                      {{ cliente.createdAt ? (cliente.createdAt | date:'dd/MM/yyyy HH:mm') : '—' }}
+                    </span>
+                  </div>
+                  <div class="field">
+                    <span class="field-label">Atualizado em</span>
+                    <span class="field-value">
+                      {{ cliente.updatedAt ? (cliente.updatedAt | date:'dd/MM/yyyy HH:mm') : '—' }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </p-tabpanel>
+
+        </p-tabpanels>
+      </p-tabs>
+    </div>
+
+  }
+</div>

@@ -1,22 +1,23 @@
-import { CommonModule, DatePipe, JsonPipe } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
-import { DialogModule } from 'primeng/dialog';
-import { TabsModule } from 'primeng/tabs';
+import { InputTextModule } from 'primeng/inputtext';
+import { TableModule } from 'primeng/table';
+import { TagModule } from 'primeng/tag';
+import { TooltipModule } from 'primeng/tooltip';
 import { ClientesService } from '../../../../core/services/clientes.service';
-import { DataTable, TableColumn, TableAction } from '../../../../shared/ui/data-table';
-import { Toast } from '../../../../shared/services/toast';
 import { Confirmation } from '../../../../shared/services/confirmation';
+import { Toast } from '../../../../shared/services/toast';
 
 @Component({
   selector: 'app-cliente-lista',
   standalone: true,
-  imports: [CommonModule, DatePipe, JsonPipe, FormsModule, ButtonModule, DialogModule, TabsModule, RouterLink, DataTable],
+  imports: [CommonModule, FormsModule, ButtonModule, RouterLink, TableModule, TagModule, TooltipModule, InputTextModule],
   templateUrl: './cliente-lista.html',
   styleUrl: './cliente-lista.scss',
-  providers: [ClientesService]
+  providers: [ClientesService],
 })
 export class ClienteLista implements OnInit {
   private toast = inject(Toast);
@@ -25,105 +26,33 @@ export class ClienteLista implements OnInit {
 
   clientes: any[] = [];
   loading = false;
-  selectedCliente: any | null = null;
+  searchTerm = '';
 
-  readonly resumo = {
-    ativos: 128,
-    retorno: 14,
-    manutencao: 12,
-    emDia: 86,
-  };
-
-  // Colunas do DataTable
-  columns: TableColumn<any>[] = [
-    {
-      field: 'nome',
-      header: 'Nome',
-      sortable: true,
-      filterable: true
-    },
-    {
-      field: 'documento',
-      header: 'CPF/CNPJ',
-      sortable: true,
-      filterable: true
-    },
-    {
-      field: 'email',
-      header: 'E-mail',
-      sortable: true,
-      filterable: true
-    },
-    {
-      field: 'telefone',
-      header: 'Telefone',
-      sortable: false
-    },
-    {
-      field: 'tipoDescricao',
-      header: 'Tipo',
-      sortable: true
-    },
-    {
-      field: 'vip',
-      header: 'VIP',
-      dataType: 'boolean',
-      align: 'center',
-      sortable: true,
-      formatter: (value) => value ? 'Sim' : 'Não'
-    },
-    {
-      field: 'statusDescricao',
-      header: 'Status',
-      sortable: true
-    }
-  ];
-
-  // Ações do DataTable
-  actions: TableAction<any>[] = [
-    {
-      icon: 'pi pi-eye',
-      tooltip: 'Visualizar',
-      styleClass: 'p-button-rounded p-button-text p-button-info',
-      onClick: (cliente) => this.openDetails(cliente)
-    },
-    {
-      icon: 'pi pi-pencil',
-      tooltip: 'Editar',
-      styleClass: 'p-button-rounded p-button-text p-button-warning',
-      onClick: (cliente) => this.router.navigate(['/clientes', cliente.id, 'editar'])
-    },
-    {
-      icon: 'pi pi-trash',
-      tooltip: 'Excluir',
-      styleClass: 'p-button-rounded p-button-text p-button-danger',
-      onClick: (cliente) => this.confirmDelete(cliente.id)
-    }
-  ];
-
-  // Configurações do DataTable
-  tableConfig = {
-    responsive: true,
-    selectable: false,
-    showGridlines: true,
-    hoverable: true,
-    globalFilter: true,
-    globalFilterPlaceholder: 'Buscar por nome, CPF/CNPJ, email...',
-    exportable: true,
-    emptyMessage: 'Nenhum cliente cadastrado'
-  };
-
-  constructor(private clientesService: ClientesService) { }
+  constructor(private clientesService: ClientesService) {}
 
   ngOnInit(): void {
     this.fetchClientes();
   }
 
-  fetchClientes() {
+  get totalAtivos(): number {
+    return this.clientes.filter(c => (c.status === 1 || c.statusDescricao === 'Ativo')).length;
+  }
+
+  get totalVip(): number {
+    return this.clientes.filter(c => c.vip).length;
+  }
+
+  get totalPJ(): number {
+    return this.clientes.filter(c =>
+      (c.tipoDescricao ?? '').toLowerCase().includes('jur')
+    ).length;
+  }
+
+  fetchClientes(): void {
     this.loading = true;
     this.clientesService.listTable().subscribe({
       next: (resp: any) => {
-        this.clientes = resp;
+        this.clientes = Array.isArray(resp) ? resp : (resp?.items ?? resp?.data ?? []);
         this.loading = false;
       },
       error: () => {
@@ -132,72 +61,57 @@ export class ClienteLista implements OnInit {
     });
   }
 
-  formatValue(value: any): string {
-    if (value === null || value === undefined || value === '') {
-      return '-';
+  getInitials(name: string): string {
+    if (!name) return '?';
+    const parts = name.trim().split(' ');
+    if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  }
+
+  getAvatarColor(name: string): string {
+    const colors = [
+      '#f97316', '#3b82f6', '#8b5cf6', '#10b981',
+      '#f59e0b', '#ec4899', '#06b6d4', '#84cc16',
+    ];
+    let hash = 0;
+    for (const ch of (name ?? '')) hash = ch.charCodeAt(0) + ((hash << 5) - hash);
+    return colors[Math.abs(hash) % colors.length];
+  }
+
+  getStatusClass(status: string): string {
+    switch ((status ?? '').toLowerCase()) {
+      case 'ativo':    return 'status-ativo';
+      case 'inativo':  return 'status-inativo';
+      case 'suspenso': return 'status-suspenso';
+      case 'bloqueado':return 'status-bloqueado';
+      default:         return 'status-inativo';
     }
-    return String(value);
   }
 
-  formatBoolean(value: any): string {
-    if (value === true) {
-      return 'SIM';
-    }
-    if (value === false) {
-      return 'NAO';
-    }
-    return '-';
+  getTipoClass(tipo: string): string {
+    return (tipo ?? '').toLowerCase().includes('jur') ? 'tipo-pj' : 'tipo-pf';
   }
 
-  GetStatus(status: any): string {
-    let ret = 'Status desconhecido';
-    switch (status) {
-      case 0:
-        ret = 'Cliente Inativo';
-        break;
-      case 1:
-        ret = 'Cliente Ativo';
-        break;
-      case 2:
-        ret = 'Cliente Suspenso';
-        break;
-      case 3:
-        ret = 'Cliente Bloqueado';
-        break;
-    }
-    return ret;
+  navigateTo(id: number): void {
+    this.router.navigate(['/clientes', id]);
   }
 
-  openDetails(cliente: any) {
-    this.loading = true;
-    this.clientesService.get(cliente.id).subscribe({
-      next: (resp: any) => {
-        this.selectedCliente = resp;
-        this.loading = false;
-      },
-      error: () => {
-        this.loading = false;
-      },
-    });
+  editarCliente(event: MouseEvent, id: number): void {
+    event.stopPropagation();
+    this.router.navigate(['/clientes', id, 'editar']);
   }
 
-  closeDetails() {
-    this.selectedCliente = null;
-  }
-
-  async confirmDelete(id: number): Promise<void> {
+  async confirmDelete(event: MouseEvent, id: number): Promise<void> {
+    event.stopPropagation();
     const cliente = this.clientes.find(c => c.id === id);
     const confirmado = await this.confirmation.confirmDelete(cliente?.nome || 'este cliente');
-
     if (confirmado) {
       this.clientesService.delete(id).subscribe({
         next: () => {
           this.clientes = this.clientes.filter(c => c.id !== id);
           this.toast.success('Sucesso', 'Cliente excluído com sucesso');
         },
-        error: () => {
-          this.toast.error('Erro', 'Erro ao excluir cliente');
-        },
+        error: () => this.toast.error('Erro', 'Erro ao excluir cliente'),
       });
     }
   }

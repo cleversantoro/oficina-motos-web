@@ -101,9 +101,13 @@
         @if (isPessoaFisica) {
           <label class="field" [class.invalid]="isInvalid(field('cpf'))">
             <span>CPF <em>*</em></span>
-            <input type="text" formControlName="cpf" placeholder="000.000.000-00" />
+            <input type="text" formControlName="cpf" placeholder="000.000.000-00"
+              (input)="applyMask(field('cpf'), 'cpf', $event)" maxlength="14" />
             @if (isInvalid(field('cpf'))) {
-              <span class="error-msg">CPF é obrigatório.</span>
+              <span class="error-msg">
+                @if (field('cpf')?.errors?.['required']) { CPF é obrigatório. }
+                @else if (field('cpf')?.errors?.['cpf']) { {{ field('cpf')?.errors?.['cpf']?.message }} }
+              </span>
             }
           </label>
           <label class="field">
@@ -138,9 +142,15 @@
             <input type="text" formControlName="profissao" placeholder="Ex: Mecânico" />
           </label>
         } @else {
-          <label class="field">
+          <label class="field" [class.invalid]="isInvalid(field('cnpj'))">
             <span>CNPJ</span>
-            <input type="text" formControlName="cnpj" placeholder="00.000.000/0001-00" />
+            <input type="text" formControlName="cnpj" placeholder="00.000.000/0001-00"
+              (input)="applyMask(field('cnpj'), 'cnpj', $event)" maxlength="18" />
+            @if (isInvalid(field('cnpj'))) {
+              <span class="error-msg">
+                @if (field('cnpj')?.errors?.['cnpj']) { {{ field('cnpj')?.errors?.['cnpj']?.message }} }
+              </span>
+            }
           </label>
           <label class="field">
             <span>Razão social</span>
@@ -188,9 +198,15 @@
             <span class="error-msg">E-mail inválido.</span>
           }
         </label>
-        <label class="field">
+        <label class="field" [class.invalid]="isInvalid(field('telefone'))">
           <span>Telefone principal</span>
-          <input type="text" formControlName="telefone" placeholder="(11) 99999-9999" />
+          <input type="text" formControlName="telefone" placeholder="(11) 99999-9999"
+            (input)="applyMask(field('telefone'), 'phone', $event)" maxlength="15" />
+          @if (isInvalid(field('telefone'))) {
+            <span class="error-msg">
+              @if (field('telefone')?.errors?.['celular']) { {{ field('telefone')?.errors?.['celular']?.message }} }
+            </span>
+          }
         </label>
       </div>
 
@@ -217,7 +233,8 @@
                 </label>
                 <label class="field">
                   <span>Valor</span>
-                  <input type="text" formControlName="valor" placeholder="(11) 99999-0000" />
+                  <input type="text" formControlName="valor" placeholder="(11) 99999-0000"
+                    (input)="applyMask(cg.get('valor'), 'phone', $event)" maxlength="15" />
                 </label>
                 <label class="field">
                   <span>Observação</span>
@@ -264,9 +281,18 @@
                     <option [value]="4">Outro</option>
                   </select>
                 </label>
-                <label class="field">
-                  <span>CEP</span>
-                  <input type="text" formControlName="cep" placeholder="00000-000" />
+                <label class="field" [class.invalid]="!isCepLoading($index) && eg.get('cep')?.invalid && (eg.get('cep')?.dirty || eg.get('cep')?.touched)">
+                  <span>CEP
+                    @if (isCepLoading($index)) {
+                      <span class="cep-spinner"><i class="pi pi-spin pi-spinner"></i></span>
+                    }
+                  </span>
+                  <input type="text" formControlName="cep" placeholder="00000-000"
+                    (input)="applyMask(eg.get('cep'), 'cep', $event)"
+                    (blur)="buscarCep(eg, $index)" maxlength="9" />
+                  @if (cepError(eg)) {
+                    <span class="error-msg">{{ cepError(eg) }}</span>
+                  }
                 </label>
                 <label class="field span-2">
                   <span>Logradouro</span>

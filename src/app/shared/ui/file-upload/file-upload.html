@@ -1,1 +1,91 @@
-<p>file-upload works!</p>
+<div class="fu-root">
+
+  @if (!readonly) {
+  <div class="fu-upload-zone">
+    <p-fileUpload
+      mode="basic"
+      name="file"
+      [auto]="false"
+      chooseLabel="Escolher arquivo"
+      chooseIcon="pi pi-upload"
+      [maxFileSize]="10485760"
+      accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx"
+      (onSelect)="onFileSelect($event)"
+      styleClass="fu-picker"
+    ></p-fileUpload>
+
+    @if (pendingFile) {
+      <div class="fu-pending">
+        <div class="fu-pending-info">
+          <i class="pi {{ getFileIcon(pendingFile.type) }} fu-icon"></i>
+          <div>
+            <p class="fu-filename">{{ pendingFile.name }}</p>
+            <p class="fu-size">{{ formatBytes(pendingFile.size) }}</p>
+          </div>
+        </div>
+        <input
+          type="text"
+          class="fu-obs-input"
+          placeholder="Observação (opcional)"
+          [(ngModel)]="pendingObs"
+        />
+        <div class="fu-pending-actions">
+          <button type="button" class="fu-btn fu-btn-ghost" (click)="onClearPending()">
+            Cancelar
+          </button>
+          <button type="button" class="fu-btn fu-btn-primary" (click)="onUpload()" [disabled]="uploading">
+            <i class="pi" [class.pi-upload]="!uploading" [class.pi-spin]="uploading" [class.pi-spinner]="uploading"></i>
+            {{ uploading ? 'Enviando...' : 'Enviar' }}
+          </button>
+        </div>
+      </div>
+    }
+  </div>
+  }
+
+  <!-- List -->
+  <div class="fu-list-section">
+    <div class="fu-list-head">
+      <p class="fu-list-title">Anexos</p>
+      <span class="fu-badge">{{ anexos.length }}</span>
+    </div>
+
+    @if (loading) {
+      <div class="fu-status">
+        <i class="pi pi-spin pi-spinner"></i>
+        <span>Carregando...</span>
+      </div>
+    } @else if (anexos.length === 0) {
+      <div class="fu-status fu-empty">
+        <i class="pi pi-inbox"></i>
+        <span>Nenhum arquivo enviado.</span>
+      </div>
+    } @else {
+      <ul class="fu-list">
+        @for (anexo of anexos; track anexo.id) {
+          <li class="fu-item">
+            <i class="pi {{ getFileIcon(anexo.tipo) }} fu-item-icon"></i>
+            <div class="fu-item-info">
+              <p class="fu-item-name">{{ anexo.nome }}</p>
+              @if (anexo.observacao) {
+                <p class="fu-item-obs">{{ anexo.observacao }}</p>
+              }
+            </div>
+            <span class="fu-item-tipo">{{ anexo.tipo }}</span>
+            <div class="fu-item-actions">
+              <a [href]="getDownloadUrl(anexo.url)" target="_blank" class="fu-btn fu-btn-icon" title="Download">
+                <i class="pi pi-download"></i>
+              </a>
+              @if (!readonly) {
+                <button type="button" class="fu-btn fu-btn-icon fu-btn-danger" title="Excluir"
+                  (click)="confirmDelete(anexo)">
+                  <i class="pi pi-trash"></i>
+                </button>
+              }
+            </div>
+          </li>
+        }
+      </ul>
+    }
+  </div>
+</div>

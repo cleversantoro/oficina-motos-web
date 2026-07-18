@@ -32,6 +32,10 @@ export class ApiClientService {
     return this.http.delete(`${this.url(path)}/${id}`);
   }
 
+  uploadFile<T>(path: string, formData: FormData) {
+    return this.http.post<T>(this.url(path), formData);
+  }
+
   private url(path: string) {
     return `${this.baseUrl}${path}`;
   }

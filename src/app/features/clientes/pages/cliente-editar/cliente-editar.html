@@ -1,1 +1,402 @@
-<p>cliente-editar works!</p>
+@if (loading) {
+  <div class="editar-loading">
+    <i class="pi pi-spin pi-spinner"></i>
+    <p>Carregando dados do cliente…</p>
+  </div>
+} @else {
+<form [formGroup]="form" (ngSubmit)="onSave()" novalidate>
+<section class="cadastro-shell">
+  <aside class="tab-nav">
+    <div class="nav-header">
+      <p class="eyebrow">Edição</p>
+      <h2>{{ cliente?.nome || 'Cliente' }}</h2>
+      <p class="muted">Atualize os dados do cliente.</p>
+    </div>
+
+    <div class="mobile-select">
+      <select [value]="activeTab" (change)="onTabSelect($event)">
+        @for (tab of tabs; track tab.id) {
+          <option [value]="tab.id">{{ tab.label }}</option>
+        }
+      </select>
+    </div>
+
+    <nav class="nav-list">
+      @for (tab of tabs; track tab.id) {
+        <button type="button" (click)="setTab(tab.id)"
+          [class.active]="activeTab === tab.id" class="nav-item">
+          <div>
+            <p class="nav-label">{{ tab.label }}</p>
+            <p class="nav-desc">{{ tab.desc }}</p>
+          </div>
+          <span class="pi pi-chevron-right"></span>
+        </button>
+      }
+    </nav>
+  </aside>
+
+  <main class="tab-content">
+    <header class="content-head">
+      <div>
+        <p class="eyebrow">Cliente #{{ clienteId }}</p>
+        <h1>Editar cadastro</h1>
+      </div>
+      <div class="actions">
+        <button type="button" class="ghost" (click)="cancelar()">Cancelar</button>
+        <button type="submit" class="cta primary" [disabled]="saving">
+          {{ saving ? 'Salvando...' : 'Salvar alterações' }}
+        </button>
+      </div>
+    </header>
+
+    @if (saveError) {
+      <div class="alert alert-error">{{ saveError }}</div>
+    }
+
+    <!-- ── Perfil ─────────────────────────────────────────── -->
+    @if (activeTab === 'perfil') {
+    <section class="card">
+      <div class="card-head">
+        <h2>Perfil & Identidade</h2>
+        <div class="pill">Obrigatório</div>
+      </div>
+
+      <div class="toggle">
+        <button type="button" [class.active]="isPessoaFisica"  (click)="setTipo('pf')">Pessoa Física</button>
+        <button type="button" [class.active]="!isPessoaFisica" (click)="setTipo('pj')">Pessoa Jurídica</button>
+      </div>
+
+      <div class="grid">
+        <label class="field span-2" [class.invalid]="isInvalid(field('nome'))">
+          <span>Nome completo / Razão social <em>*</em></span>
+          <input type="text" formControlName="nome" placeholder="Ex: João da Silva" />
+          @if (isInvalid(field('nome'))) {
+            <span class="error-msg">Nome é obrigatório (mínimo 3 caracteres).</span>
+          }
+        </label>
+
+        <label class="field">
+          <span>Nome de exibição</span>
+          <input type="text" formControlName="nomeExibicao" placeholder="Apelido ou nome curto" />
+        </label>
+
+        <label class="field">
+          <span>Status</span>
+          <select formControlName="status">
+            <option [value]="1">Ativo</option>
+            <option [value]="0">Inativo</option>
+            <option [value]="2">Suspenso</option>
+            <option [value]="3">Bloqueado</option>
+          </select>
+        </label>
+
+        <label class="field check-field">
+          <span>Cliente VIP</span>
+          <label class="check">
+            <input type="checkbox" formControlName="vip" />
+            <span>Marcar como VIP</span>
+          </label>
+        </label>
+
+        @if (isPessoaFisica) {
+          <label class="field" [class.invalid]="isInvalid(field('cpf'))">
+            <span>CPF</span>
+            <input type="text" formControlName="cpf" placeholder="000.000.000-00"
+              (input)="applyMask(field('cpf'), 'cpf', $event)" maxlength="14" />
+            @if (isInvalid(field('cpf'))) {
+              <span class="error-msg">
+                @if (field('cpf')?.errors?.['cpf']) { {{ field('cpf')?.errors?.['cpf']?.message }} }
+              </span>
+            }
+          </label>
+          <label class="field">
+            <span>RG</span>
+            <input type="text" formControlName="rg" placeholder="00.000.000-0" />
+          </label>
+          <label class="field">
+            <span>Data de nascimento</span>
+            <input type="date" formControlName="dataNascimento" />
+          </label>
+          <label class="field">
+            <span>Gênero</span>
+            <select formControlName="genero">
+              <option value="">Não informado</option>
+              <option value="M">Masculino</option>
+              <option value="F">Feminino</option>
+              <option value="O">Outro</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>Estado civil</span>
+            <select formControlName="estadoCivil">
+              <option value="">Não informado</option>
+              <option value="Solteiro">Solteiro(a)</option>
+              <option value="Casado">Casado(a)</option>
+              <option value="Divorciado">Divorciado(a)</option>
+              <option value="Viúvo">Viúvo(a)</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>Profissão</span>
+            <input type="text" formControlName="profissao" placeholder="Ex: Mecânico" />
+          </label>
+        } @else {
+          <label class="field" [class.invalid]="isInvalid(field('cnpj'))">
+            <span>CNPJ</span>
+            <input type="text" formControlName="cnpj" placeholder="00.000.000/0001-00"
+              (input)="applyMask(field('cnpj'), 'cnpj', $event)" maxlength="18" />
+            @if (isInvalid(field('cnpj'))) {
+              <span class="error-msg">
+                @if (field('cnpj')?.errors?.['cnpj']) { {{ field('cnpj')?.errors?.['cnpj']?.message }} }
+              </span>
+            }
+          </label>
+          <label class="field">
+            <span>Razão social</span>
+            <input type="text" formControlName="razaoSocial" />
+          </label>
+          <label class="field">
+            <span>Nome fantasia</span>
+            <input type="text" formControlName="nomeFantasia" />
+          </label>
+          <label class="field">
+            <span>Inscrição estadual</span>
+            <input type="text" formControlName="inscricaoEstadual" />
+          </label>
+          <label class="field">
+            <span>Inscrição municipal</span>
+            <input type="text" formControlName="inscricaoMunicipal" />
+          </label>
+          <label class="field">
+            <span>Responsável</span>
+            <input type="text" formControlName="responsavel" />
+          </label>
+        }
+
+        <label class="field span-2">
+          <span>Observações gerais</span>
+          <textarea rows="2" formControlName="observacoes" placeholder="Notas internas"></textarea>
+        </label>
+      </div>
+    </section>
+    }
+
+    <!-- ── Contato ─────────────────────────────────────────── -->
+    @if (activeTab === 'contato') {
+    <section class="card">
+      <div class="card-head"><h2>Contato & Localização</h2></div>
+
+      <div class="grid">
+        <label class="field" [class.invalid]="isInvalid(field('email'))">
+          <span>E-mail</span>
+          <input type="email" formControlName="email" placeholder="cliente@email.com" />
+          @if (isInvalid(field('email'))) {
+            <span class="error-msg">E-mail inválido.</span>
+          }
+        </label>
+        <label class="field" [class.invalid]="isInvalid(field('telefone'))">
+          <span>Telefone principal</span>
+          <input type="text" formControlName="telefone" placeholder="(11) 99999-9999"
+            (input)="applyMask(field('telefone'), 'phone', $event)" maxlength="15" />
+          @if (isInvalid(field('telefone'))) {
+            <span class="error-msg">
+              @if (field('telefone')?.errors?.['celular']) { {{ field('telefone')?.errors?.['celular']?.message }} }
+            </span>
+          }
+        </label>
+      </div>
+
+      <!-- Contatos adicionais -->
+      <div class="card-sub">
+        <div class="card-head">
+          <h3>Contatos adicionais</h3>
+          <button type="button" class="ghost small" (click)="addContato()">+ Adicionar</button>
+        </div>
+        <div formArrayName="contatos" class="list">
+          @for (cg of contatos.controls; track $index) {
+            <div [formGroupName]="$index" class="list-row list-form-row">
+              <div class="grid sub-grid">
+                <label class="field">
+                  <span>Tipo</span>
+                  <select formControlName="tipo">
+                    <option [value]="1">Telefone</option>
+                    <option [value]="2">Celular</option>
+                    <option [value]="3">E-mail</option>
+                    <option [value]="4">WhatsApp</option>
+                    <option [value]="5">Outro</option>
+                  </select>
+                </label>
+                <label class="field">
+                  <span>Valor</span>
+                  <input type="text" formControlName="valor" placeholder="(11) 99999-0000"
+                    (input)="applyMask(cg.get('valor'), 'phone', $event)" maxlength="15" />
+                </label>
+                <label class="field">
+                  <span>Observação</span>
+                  <input type="text" formControlName="observacao" placeholder="Ex: Preferencial" />
+                </label>
+                <label class="field check-field">
+                  <span>Principal</span>
+                  <label class="check">
+                    <input type="checkbox" formControlName="principal" />
+                    <span>Sim</span>
+                  </label>
+                </label>
+              </div>
+              <button type="button" class="ghost small remove-btn" (click)="removeContato($index)">✕</button>
+            </div>
+          }
+          @if (contatos.length === 0) {
+            <p class="muted empty-hint">Nenhum contato adicional.</p>
+          }
+        </div>
+      </div>
+
+      <!-- Endereços -->
+      <div class="card-sub">
+        <div class="card-head">
+          <h3>Endereços</h3>
+          <button type="button" class="ghost small" (click)="addEndereco()">+ Adicionar</button>
+        </div>
+        <div formArrayName="enderecos" class="address-grid">
+          @for (eg of enderecos.controls; track $index) {
+            <div [formGroupName]="$index" class="address-card address-form-card">
+              <div class="address-head">
+                <p class="label-strong">Endereço {{ $index + 1 }}</p>
+                <button type="button" class="ghost small remove-btn" (click)="removeEndereco($index)">✕</button>
+              </div>
+              <div class="grid sub-grid">
+                <label class="field">
+                  <span>Tipo</span>
+                  <select formControlName="tipo">
+                    <option [value]="1">Residencial</option>
+                    <option [value]="2">Comercial</option>
+                    <option [value]="3">Correspondência</option>
+                    <option [value]="4">Outro</option>
+                  </select>
+                </label>
+                <label class="field" [class.invalid]="!isCepLoading($index) && eg.get('cep')?.invalid && (eg.get('cep')?.dirty || eg.get('cep')?.touched)">
+                  <span>CEP
+                    @if (isCepLoading($index)) {
+                      <span class="cep-spinner"><i class="pi pi-spin pi-spinner"></i></span>
+                    }
+                  </span>
+                  <input type="text" formControlName="cep" placeholder="00000-000"
+                    (input)="applyMask(eg.get('cep'), 'cep', $event)"
+                    (blur)="buscarCep(eg, $index)" maxlength="9" />
+                  @if (cepError(eg)) {
+                    <span class="error-msg">{{ cepError(eg) }}</span>
+                  }
+                </label>
+                <label class="field span-2">
+                  <span>Logradouro</span>
+                  <input type="text" formControlName="logradouro" placeholder="Rua, Avenida..." />
+                </label>
+                <label class="field">
+                  <span>Número</span>
+                  <input type="text" formControlName="numero" />
+                </label>
+                <label class="field">
+                  <span>Complemento</span>
+                  <input type="text" formControlName="complemento" placeholder="Apto, Bloco..." />
+                </label>
+                <label class="field">
+                  <span>Bairro</span>
+                  <input type="text" formControlName="bairro" />
+                </label>
+                <label class="field">
+                  <span>Cidade</span>
+                  <input type="text" formControlName="cidade" />
+                </label>
+                <label class="field">
+                  <span>Estado (UF)</span>
+                  <input type="text" formControlName="estado" maxlength="2" placeholder="SP" />
+                </label>
+                <label class="field check-field">
+                  <span>Principal</span>
+                  <label class="check">
+                    <input type="checkbox" formControlName="principal" />
+                    <span>Sim</span>
+                  </label>
+                </label>
+              </div>
+            </div>
+          }
+          @if (enderecos.length === 0) {
+            <p class="muted empty-hint">Nenhum endereço cadastrado.</p>
+          }
+        </div>
+      </div>
+    </section>
+    }
+
+    <!-- ── Financeiro ─────────────────────────────────────── -->
+    @if (activeTab === 'financeiro') {
+    <section class="card">
+      <div class="card-head">
+        <h2>Financeiro & Comercial</h2>
+        <div class="pill">Preferencial</div>
+      </div>
+      <div class="grid">
+        <label class="field">
+          <span>Limite de crédito (R$)</span>
+          <input type="number" formControlName="limiteCredito" placeholder="0,00" min="0" />
+        </label>
+        <label class="field">
+          <span>Prazo de pagamento (dias)</span>
+          <input type="number" formControlName="prazoPagamento" placeholder="30" min="0" />
+        </label>
+        <label class="field check-field">
+          <span>Bloquear crédito</span>
+          <label class="check">
+            <input type="checkbox" formControlName="bloqueado" />
+            <span>Crédito bloqueado</span>
+          </label>
+        </label>
+        <label class="field span-2">
+          <span>Observações financeiras</span>
+          <textarea rows="2" formControlName="financeiroObservacoes"></textarea>
+        </label>
+      </div>
+    </section>
+    }
+
+    <!-- ── Legal ─────────────────────────────────────────── -->
+    @if (activeTab === 'legal') {
+    <section class="card">
+      <div class="card-head">
+        <h2>Legal & Compliance</h2>
+        <div class="pill pill-neutral">LGPD</div>
+      </div>
+      <p class="muted" style="font-size:0.85rem;margin-bottom:0.75rem;">
+        Novos consentimentos são registrados com data atual (Web) conforme a LGPD.
+        Consentimentos anteriores não são alterados.
+      </p>
+      <div class="checks">
+        <label class="check">
+          <input type="checkbox" formControlName="lgpdTermos" />
+          <span>Registrar nova aceitação de termos de uso</span>
+        </label>
+        <label class="check">
+          <input type="checkbox" formControlName="lgpdMarketing" />
+          <span>Registrar novo consentimento de marketing</span>
+        </label>
+      </div>
+    </section>
+    }
+
+    <!-- ── Anexos ─────────────────────────────────────────── -->
+    @if (activeTab === 'anexos') {
+    <section class="card">
+      <div class="card-head">
+        <h2>Arquivos</h2>
+        <div class="pill">Upload</div>
+      </div>
+      <app-file-upload [clienteId]="clienteId"></app-file-upload>
+    </section>
+    }
+
+  </main>
+</section>
+</form>
+}

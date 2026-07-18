@@ -1,30 +1,42 @@
-import { Component, OnInit } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { HttpClient } from '@angular/common/http';
+import { Component, OnInit, inject } from '@angular/core';
 import {
+  AbstractControl,
+  FormArray,
   FormBuilder,
   FormGroup,
-  FormArray,
-  Validators,
   ReactiveFormsModule,
-  AbstractControl,
+  Validators,
 } from '@angular/forms';
-import { CommonModule } from '@angular/common';
+import { Router, RouterLink } from '@angular/router';
+import { ButtonModule } from 'primeng/button';
 import { ClientesService } from '../../../../core/services/clientes.service';
+import { Toast } from '../../../../shared/services/toast';
+import {
+  cepValidator,
+  celularValidator,
+  cnpjValidator,
+  cpfValidator,
+} from '../../../../shared/validators';
 
 type TabId = 'perfil' | 'contato' | 'financeiro' | 'legal' | 'anexos';
 
 @Component({
   selector: 'app-cliente-cadastro',
   standalone: true,
-  imports: [RouterLink, ReactiveFormsModule, CommonModule],
+  imports: [RouterLink, ReactiveFormsModule, CommonModule, ButtonModule],
   templateUrl: './cliente-cadastro.html',
   styleUrl: './cliente-cadastro.scss',
 })
 export class ClienteCadastro implements OnInit {
+  private http = inject(HttpClient);
+  private toast = inject(Toast);
+
   activeTab: TabId = 'perfil';
   saving = false;
   saveError: string | null = null;
-  saveSuccess = false;
+  cepLoading = new Set<number>();
 
   readonly tabs: { id: TabId; label: string; desc: string }[] = [
     { id: 'perfil', label: 'Perfil & Identidade', desc: 'PF/PJ, status e origem' },
@@ -54,7 +66,7 @@ export class ClienteCadastro implements OnInit {
       origemId: [null],
 
       // PF
-      cpf: ['', Validators.required],
+      cpf: ['', [Validators.required, cpfValidator()]],
       rg: [''],
       dataNascimento: [''],
       genero: [''],
@@ -62,7 +74,7 @@ export class ClienteCadastro implements OnInit {
       profissao: [''],
 
       // PJ
-      cnpj: [''],
+      cnpj: ['', cnpjValidator()],
       razaoSocial: [''],
       nomeFantasia: [''],
       inscricaoEstadual: [''],
@@ -71,7 +83,7 @@ export class ClienteCadastro implements OnInit {
 
       // ── Contato ─────────────────────────────────────────────
       email: ['', Validators.email],
-      telefone: [''],
+      telefone: ['', celularValidator()],
       contatos: this.fb.array([]),
       enderecos: this.fb.array([]),
 
@@ -140,12 +152,12 @@ export class ClienteCadastro implements OnInit {
     this.enderecos.push(
       this.fb.group({
         tipo: [1, Validators.required],
-        cep: ['', Validators.required],
+        cep: ['', [Validators.required, cepValidator()]],
         logradouro: ['', Validators.required],
         numero: ['', Validators.required],
         bairro: ['', Validators.required],
         cidade: ['', Validators.required],
-        estado: ['', Validators.required],
+        estado: ['', [Validators.required, Validators.maxLength(2)]],
         complemento: [''],
         pais: ['Brasil'],
         principal: [false],
@@ -157,12 +169,97 @@ export class ClienteCadastro implements OnInit {
     this.enderecos.removeAt(i);
   }
 
+  // ── Masking ──────────────────────────────────────────────────────────────────
+
+  applyMask(ctrl: AbstractControl | null, type: 'cpf' | 'cnpj' | 'cep' | 'phone', event: Event): void {
+    if (!ctrl) return;
+    const input = event.target as HTMLInputElement;
+    let v = input.value.replace(/\D/g, '');
+
+    switch (type) {
+      case 'cpf':
+        v = v.substring(0, 11);
+        v = v.replace(/(\d{3})(\d)/, '$1.$2')
+             .replace(/(\d{3})(\d)/, '$1.$2')
+             .replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+        break;
+      case 'cnpj':
+        v = v.substring(0, 14);
+        v = v.replace(/(\d{2})(\d)/, '$1.$2')
+             .replace(/(\d{3})(\d)/, '$1.$2')
+             .replace(/(\d{3})(\d)/, '$1/$2')
+             .replace(/(\d{4})(\d{1,2})$/, '$1-$2');
+        break;
+      case 'cep':
+        v = v.substring(0, 8);
+        v = v.replace(/(\d{5})(\d{1,3})$/, '$1-$2');
+        break;
+      case 'phone':
+        v = v.substring(0, 11);
+        if (v.length === 11) {
+          v = v.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
+        } else if (v.length === 10) {
+          v = v.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3');
+        } else if (v.length > 2) {
+          v = v.replace(/(\d{2})(\d+)/, '($1) $2');
+        }
+        break;
+    }
+
+    input.value = v;
+    ctrl.setValue(v, { emitEvent: false });
+    ctrl.markAsDirty();
+  }
+
+  // ── CEP auto-search (ViaCEP) ─────────────────────────────────────────────────
+
+  buscarCep(ctrl: AbstractControl, index: number): void {
+    const group = ctrl as FormGroup;
+    const cep = (group.get('cep')?.value ?? '').replace(/\D/g, '');
+    if (cep.length !== 8) return;
+
+    this.cepLoading.add(index);
+    this.http.get<any>(`https://viacep.com.br/ws/${cep}/json/`).subscribe({
+      next: (data) => {
+        if (data.erro) {
+          group.get('cep')?.setErrors({ cepNotFound: true });
+        } else {
+          group.patchValue({
+            logradouro: data.logradouro || '',
+            bairro: data.bairro || '',
+            cidade: data.localidade || '',
+            estado: data.uf || '',
+          });
+        }
+        this.cepLoading.delete(index);
+      },
+      error: () => this.cepLoading.delete(index),
+    });
+  }
+
+  isCepLoading(index: number): boolean {
+    return this.cepLoading.has(index);
+  }
+
+  cepError(ctrl: AbstractControl): string | null {
+    const c = (ctrl as FormGroup).get('cep');
+    if (!c || !c.invalid || !(c.dirty || c.touched)) return null;
+    if (c.errors?.['required']) return 'CEP é obrigatório.';
+    if (c.errors?.['cep']) return c.errors['cep'].message || 'CEP inválido.';
+    if (c.errors?.['cepNotFound']) return 'CEP não encontrado.';
+    return 'CEP inválido.';
+  }
+
   isInvalid(ctrl: AbstractControl | null): boolean {
     return !!ctrl && ctrl.invalid && (ctrl.dirty || ctrl.touched);
   }
 
   field(name: string): AbstractControl | null {
     return this.form.get(name);
+  }
+
+  asGroup(ctrl: AbstractControl): FormGroup {
+    return ctrl as FormGroup;
   }
 
   async onSave(): Promise<void> {
@@ -337,7 +434,7 @@ export class ClienteCadastro implements OnInit {
 
   private onComplete(clienteId: number): void {
     this.saving = false;
-    this.saveSuccess = true;
-    this.router.navigate(['/clientes']);
+    this.toast.success('Cliente salvo!', 'Cadastro realizado com sucesso.');
+    this.router.navigate(['/clientes', clienteId]);
   }
 }

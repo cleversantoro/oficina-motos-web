@@ -67,4 +67,43 @@ export class ClientesService {
   createAnexo(body: any) {
     return this.api.create(apiPaths.clientes.anexos, body);
   }
+
+  getAnexos(params?: Record<string, any>) {
+    return this.api.list(apiPaths.clientes.anexos, params);
+  }
+
+  uploadAnexo(clienteId: number, file: File, observacao?: string) {
+    const fd = new FormData();
+    fd.append('file', file);
+    fd.append('clienteId', String(clienteId));
+    if (observacao) fd.append('observacao', observacao);
+    return this.api.uploadFile<any>(`${apiPaths.clientes.anexos}/upload`, fd);
+  }
+
+  deleteAnexo(id: string | number) {
+    return this.api.remove(apiPaths.clientes.anexos, id);
+  }
+
+  // Endereços
+  updateEndereco(id: string | number, body: any) {
+    return this.api.update(apiPaths.clientes.enderecos, id, body);
+  }
+
+  deleteEndereco(id: string | number) {
+    return this.api.remove(apiPaths.clientes.enderecos, id);
+  }
+
+  // Contatos
+  updateContato(id: string | number, body: any) {
+    return this.api.update(apiPaths.clientes.contatos, id, body);
+  }
+
+  deleteContato(id: string | number) {
+    return this.api.remove(apiPaths.clientes.contatos, id);
+  }
+
+  // Financeiro
+  updateFinanceiro(id: string | number, body: any) {
+    return this.api.update(apiPaths.clientes.financeiros, id, body);
+  }
 }

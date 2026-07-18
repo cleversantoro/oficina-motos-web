@@ -1,0 +1,216 @@
+.fu-root {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.fu-upload-zone {
+  border: 2px dashed rgba(255, 255, 255, 0.15);
+  border-radius: 1rem;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.fu-pending {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  padding: 0.85rem;
+  border-radius: 0.85rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(249, 115, 22, 0.25);
+}
+
+.fu-pending-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.fu-icon {
+  font-size: 1.5rem;
+  color: #f97316;
+}
+
+.fu-filename {
+  margin: 0;
+  color: #f8fafc;
+  font-weight: 600;
+  font-size: 0.9rem;
+  word-break: break-all;
+}
+
+.fu-size {
+  margin: 0;
+  color: #94a3b8;
+  font-size: 0.8rem;
+}
+
+.fu-obs-input {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 0.65rem;
+  color: #f8fafc;
+  padding: 0.55rem 0.75rem;
+  font-size: 0.9rem;
+  width: 100%;
+
+  &::placeholder { color: #64748b; }
+}
+
+.fu-pending-actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}
+
+// ── List ──────────────────────────────────────────────────
+
+.fu-list-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.fu-list-head {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.1rem;
+}
+
+.fu-list-title {
+  margin: 0;
+  color: #e2e8f0;
+  font-weight: 700;
+}
+
+.fu-badge {
+  background: rgba(249, 115, 22, 0.18);
+  color: #f97316;
+  border-radius: 999px;
+  padding: 0.1rem 0.55rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.fu-status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #64748b;
+  font-size: 0.9rem;
+  padding: 0.75rem 0;
+}
+
+.fu-empty { font-style: italic; }
+
+.fu-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.fu-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem 0.85rem;
+  border-radius: 0.8rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.02);
+  transition: border-color 140ms ease;
+
+  &:hover { border-color: rgba(249, 115, 22, 0.3); }
+}
+
+.fu-item-icon {
+  font-size: 1.25rem;
+  color: #94a3b8;
+  flex-shrink: 0;
+}
+
+.fu-item-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.fu-item-name {
+  margin: 0;
+  color: #e2e8f0;
+  font-weight: 600;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fu-item-obs {
+  margin: 0;
+  color: #94a3b8;
+  font-size: 0.8rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fu-item-tipo {
+  color: #64748b;
+  font-size: 0.78rem;
+  white-space: nowrap;
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+
+.fu-item-actions {
+  display: flex;
+  gap: 0.35rem;
+  flex-shrink: 0;
+}
+
+// ── Buttons ───────────────────────────────────────────────
+
+.fu-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 0.9rem;
+  border-radius: 0.7rem;
+  font-size: 0.88rem;
+  cursor: pointer;
+  border: none;
+  transition: opacity 140ms ease, transform 140ms ease;
+
+  &:hover { opacity: 0.9; transform: translateY(-1px); }
+  &:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+  &.fu-btn-ghost {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    color: #e2e8f0;
+  }
+
+  &.fu-btn-primary {
+    background: linear-gradient(135deg, rgba(249, 115, 22, 0.9), rgba(248, 180, 87, 0.95));
+    color: #0b1222;
+    font-weight: 700;
+  }
+
+  &.fu-btn-icon {
+    padding: 0.45rem 0.65rem;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #cbd5e1;
+    text-decoration: none;
+  }
+
+  &.fu-btn-danger {
+    color: #f87171;
+    &:hover { border-color: rgba(239, 68, 68, 0.45); }
+  }
+}

@@ -1,555 +1,208 @@
 <section class="clientes-page">
+
+  <!-- ── Cabeçalho ──────────────────────────────────────────── -->
   <header class="page-header">
-    <!-- <div class="title-block">
-      <p class="eyebrow">Clientes</p>
-      <h1>Carteira ativa</h1>
-      <p class="muted">
-        Centralize cadastros, retornos e ofertas recorrentes. Tudo fica em um lugar so.
-      </p>
-
-      <div class="chips">
-        <span class="chip">Fila de retorno: 3</span>
-        <span class="chip success">Pagamentos em dia: {{ resumo.emDia }}</span>
-      </div>
-    </div> -->
-
+    <div class="title-block">
+      <p class="eyebrow">Gestão de clientes</p>
+      <h1>Carteira de clientes</h1>
+    </div>
     <div class="header-actions">
-      <!-- <button class="ghost">
-        <span class="pi pi-upload"></span>
-        Importar CSV
-      </button> -->
       <a routerLink="/clientes/novo">
-        <p-button label="Novo cliente" icon="pi pi-plus" size="small"></p-button>
+        <button class="cta-btn">
+          <i class="pi pi-plus"></i>
+          Novo cliente
+        </button>
       </a>
     </div>
   </header>
 
-  <!-- <div class="metrics">
+  <!-- ── Métricas ───────────────────────────────────────────── -->
+  <div class="metrics">
     <div class="metric-card">
-      <div class="pill pill-orange">Ativos</div>
-      <p class="metric-value">{{ resumo.ativos }}</p>
-      <p class="metric-label">Clientes prontos para nova oferta</p>
-    </div>
-
-    <div class="metric-card">
-      <div class="pill pill-mint">Retornos</div>
-      <p class="metric-value">{{ resumo.retorno }}</p>
-      <p class="metric-label">Follow-ups agendados nesta semana</p>
-    </div>
-
-    <div class="metric-card">
-      <div class="pill pill-slate">Manutencao</div>
-      <p class="metric-value">{{ resumo.manutencao }}</p>
-      <p class="metric-label">Motos aguardando peca ou aprovacao</p>
-    </div>
-  </div> -->
-
-  <div class="table-card card-surface">
-    <!-- <div class="table-head">
+      <div class="metric-icon icon-green"><i class="pi pi-users"></i></div>
       <div>
-        <p class="eyebrow">Listagem</p>
-        <h2>Clientes recentes</h2>
+        <p class="metric-value">{{ totalAtivos }}</p>
+        <p class="metric-label">Ativos</p>
       </div>
-      <div class="table-actions">
-        <button class="ghost">
-          <span class="pi pi-filter"></span>
-          Filtrar
-        </button>
-        <button class="ghost">
-          <span class="pi pi-download"></span>
-          Exportar
-        </button>
+    </div>
+    <div class="metric-card">
+      <div class="metric-icon icon-orange"><i class="pi pi-star-fill"></i></div>
+      <div>
+        <p class="metric-value">{{ totalVip }}</p>
+        <p class="metric-label">Clientes VIP</p>
       </div>
-    </div> -->
-
-    <!-- DataTable Component -->
-    <app-data-table
-      [data]="clientes"
-      [columns]="columns"
-      [actions]="actions"
-      [loading]="loading"
-      [config]="tableConfig"
-      [paginationConfig]="{ rows: 5, rowsPerPageOptions: [5, 10, 25, 50] }"
-    />
+    </div>
+    <div class="metric-card">
+      <div class="metric-icon icon-blue"><i class="pi pi-building"></i></div>
+      <div>
+        <p class="metric-value">{{ totalPJ }}</p>
+        <p class="metric-label">Pessoa Jurídica</p>
+      </div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-icon icon-purple"><i class="pi pi-list"></i></div>
+      <div>
+        <p class="metric-value">{{ clientes.length }}</p>
+        <p class="metric-label">Total cadastrado</p>
+      </div>
+    </div>
   </div>
 
-  <p-dialog header="Detalhes do cliente"
-    [(visible)]="selectedCliente"
-    [modal]="true"
-    [style]="{ width: '820px' }"
-    [contentStyle]="{ 'max-height': '70vh', 'overflow': 'auto' }"
-    (onHide)="closeDetails()">
+  <!-- ── Tabela ─────────────────────────────────────────────── -->
+  <div class="table-card">
+    <!-- Barra de busca -->
+    <div class="table-toolbar">
+      <div class="search-wrap">
+        <i class="pi pi-search search-icon"></i>
+        <input
+          #searchInput
+          type="text"
+          class="search-input"
+          placeholder="Buscar por nome, CPF/CNPJ, e-mail..."
+          [(ngModel)]="searchTerm"
+          (input)="dt.filterGlobal(searchInput.value, 'contains')"
+        />
+        @if (searchTerm) {
+          <button class="search-clear" (click)="searchTerm=''; dt.filterGlobal('', 'contains')">
+            <i class="pi pi-times"></i>
+          </button>
+        }
+      </div>
+      <div class="toolbar-right">
+        <span class="count-badge">{{ clientes.length }} registros</span>
+      </div>
+    </div>
 
-    @if (selectedCliente; as cliente) {
+    <p-table
+      #dt
+      [value]="clientes"
+      [loading]="loading"
+      [paginator]="true"
+      [rows]="5"
+      [rowsPerPageOptions]="[10, 25, 50]"
+      [showCurrentPageReport]="true"
+      currentPageReportTemplate="{first}–{last} de {totalRecords}"
+      [globalFilterFields]="['nome','documento','email','telefone','tipoDescricao','statusDescricao']"
+      [rowHover]="true"
+      styleClass="p-datatable-sm clientes-table"
+      (onRowClick)="navigateTo($any($event).data?.id)"
+    >
+      <ng-template pTemplate="header">
+        <tr>
+          <th pSortableColumn="nome" style="min-width:220px">
+            Cliente <p-sortIcon field="nome" />
+          </th>
+          <th pSortableColumn="documento" style="min-width:140px">
+            CPF / CNPJ <p-sortIcon field="documento" />
+          </th>
+          <th pSortableColumn="email" style="min-width:180px">
+            E-mail <p-sortIcon field="email" />
+          </th>
+          <th style="min-width:130px">Telefone</th>
+          <th pSortableColumn="tipoDescricao" style="width:110px">
+            Tipo <p-sortIcon field="tipoDescricao" />
+          </th>
+          <th style="width:70px; text-align:center">VIP</th>
+          <th pSortableColumn="statusDescricao" style="width:110px">
+            Status <p-sortIcon field="statusDescricao" />
+          </th>
+          <th style="width:110px; text-align:center">Ações</th>
+        </tr>
+      </ng-template>
 
-      <p-tabs value="0" class="detail-tabs">
-        <p-tablist>
-          <p-tab value="0">Basico</p-tab>
-          <p-tab value="1">Origem</p-tab>
-          <p-tab value="2">Pessoa</p-tab>
-          <p-tab value="3">Financeiro</p-tab>
-          <p-tab value="4">Enderecos</p-tab>
-          <p-tab value="5">Contatos</p-tab>
-          <p-tab value="6">Anexos</p-tab>
-          <p-tab value="7">Documentos</p-tab>
-          <p-tab value="8">Indicacoes</p-tab>
-          <p-tab value="9">LGPD</p-tab>
-          <p-tab value="10">Cadastro</p-tab>
-        </p-tablist>
-
-        <p-tabpanels>
-          <p-tabpanel value="0">
-            <div class="card-head" >
-              <p class="label">Nome</p>
-              <p class="value">{{ formatValue(cliente.nome) }}</p>
-            </div>
-            <div class="detail-grid">
+      <ng-template pTemplate="body" let-c>
+        <tr class="table-row">
+          <!-- Nome + avatar -->
+          <td>
+            <div class="cell-name">
+              <span class="avatar" [style.background]="getAvatarColor(c.nome)">
+                {{ getInitials(c.nome) }}
+              </span>
               <div>
-                <p class="label">ID</p>
-                <p class="value">{{ formatValue(cliente.id) }}</p>
-              </div>
-              <div>
-                <p class="label">Codigo</p>
-                <p class="value">{{ formatValue(cliente.codigo) }}</p>
+                <p class="name-main">{{ c.nome }}</p>
+                @if (c.nomeExibicao) {
+                  <p class="name-sub">{{ c.nomeExibicao }}</p>
+                }
               </div>
             </div>
-            <div class="detail-grid">
-              <div>
-                <p class="label">Nome exibicao</p>
-                <p class="value">{{ formatValue(cliente.nomeExibicao) }}</p>
-              </div>
-              <div>
-                <p class="label">CPF/CNPJ</p>
-                <p class="value">{{ formatValue(cliente.documento) }}</p>
-              </div>
-            </div>
-            <div class="detail-grid">
-              <div>
-                <p class="label">Email</p>
-                <p class="value">{{ formatValue(cliente.email) }}</p>
-              </div>
-              <div>
-                <p class="label">Telefone</p>
-                <p class="value">{{ formatValue(cliente.telefone) }}</p>
-              </div>
-            </div>
-            <div class="detail-grid">
-              <div>
-                <p class="label">Tipo</p>
-                <p class="value">{{ formatValue(cliente.tipo) }}</p>
-              </div>
-              <div>
-                <p class="label">Status</p>
-                <p class="value">{{ formatValue(cliente.statusDescricao || GetStatus(cliente.status)) }}</p>
-              </div>
-              <div>
-                <p class="label">Vip</p>
-                <p class="value">{{ formatBoolean(cliente.vip) }}</p>
-              </div>
-            </div>
-            <div class="detail-block">
-              <p class="label">Observacoes</p>
-              <p class="value">{{ formatValue(cliente.observacoes) }}</p>
-            </div>
-          </p-tabpanel>
-
-          <p-tabpanel value="1">
-            <div class="detail-grid">
-              <div>
-                <p class="label">Origem descricao</p>
-                <p class="value">{{ formatValue(cliente.origemDescricao) }}</p>
-              </div>
-              <div>
-                <p class="label">Origem cadastro id</p>
-                <p class="value">{{ formatValue(cliente.origemCadastroId) }}</p>
-              </div>
-            </div>
-            <div class="detail-grid">
-              <div>
-                <p class="label">Origem id</p>
-                <p class="value">{{ formatValue(cliente.origemId) }}</p>
-              </div>
-              <div>
-                <p class="label">Origem objeto id</p>
-                <p class="value">{{ formatValue(cliente.origem?.id) }}</p>
-              </div>
-            </div>
-            <div class="detail-grid">
-              <div>
-                <p class="label">Origem nome</p>
-                <p class="value">{{ formatValue(cliente.origem?.nome) }}</p>
-              </div>
-              <div>
-                <p class="label">Origem descricao completa</p>
-                <p class="value">{{ formatValue(cliente.origem?.descricao) }}</p>
-              </div>
-            </div>
-          </p-tabpanel>
-
-          <p-tabpanel value="2">
-            <div class="detail-section">
-              <p class="section-title">Pessoa fisica</p>
-              @if (cliente.pessoaFisica) {
-                <div class="detail-grid">
-                  <div>
-                    <p class="label">ID</p>
-                    <p class="value">{{ formatValue(cliente.pessoaFisica?.id) }}</p>
-                  </div>
-                  <div>
-                    <p class="label">Cliente ID</p>
-                    <p class="value">{{ formatValue(cliente.pessoaFisica?.clienteId) }}</p>
-                  </div>
-                </div>
-                <div class="detail-grid">
-                  <div>
-                    <p class="label">CPF</p>
-                    <p class="value">{{ formatValue(cliente.pessoaFisica?.cpf) }}</p>
-                  </div>
-                  <div>
-                    <p class="label">RG</p>
-                    <p class="value">{{ formatValue(cliente.pessoaFisica?.rg) }}</p>
-                  </div>
-                </div>
-                <div class="detail-grid">
-                  <div>
-                    <p class="label">Data nascimento</p>
-                    <p class="value">
-                      {{ cliente.pessoaFisica?.dataNascimento ? (cliente.pessoaFisica?.dataNascimento |
-                      date:'dd/MM/yyyy')
-                      : '-' }}
-                    </p>
-                  </div>
-                  <div>
-                    <p class="label">Genero</p>
-                    <p class="value">{{ formatValue(cliente.pessoaFisica?.genero) }}</p>
-                  </div>
-                </div>
-                <div class="detail-grid">
-                  <div>
-                    <p class="label">Estado civil</p>
-                    <p class="value">{{ formatValue(cliente.pessoaFisica?.estadoCivil) }}</p>
-                  </div>
-                  <div>
-                    <p class="label">Profissao</p>
-                    <p class="value">{{ formatValue(cliente.pessoaFisica?.profissao) }}</p>
-                  </div>
-                </div>
-              } @else {
-                <p class="value">-</p>
-              }
-            </div>
-
-            <div class="detail-section">
-              <p class="section-title">Pessoa juridica</p>
-              @if (cliente.pessoaJuridica) {
-                <div class="detail-block">
-                  <pre class="detail-pre">{{ cliente.pessoaJuridica | json }}</pre>
-                </div>
-              } @else {
-                <p class="value">-</p>
-              }
-            </div>
-          </p-tabpanel>
-
-          <p-tabpanel value="3">
-            @if (cliente.financeiro) {
-              <div class="detail-grid">
-                <div>
-                  <p class="label">ID</p>
-                  <p class="value">{{ formatValue(cliente.financeiro?.id) }}</p>
-                </div>
-                <div>
-                  <p class="label">Cliente ID</p>
-                  <p class="value">{{ formatValue(cliente.financeiro?.clienteId) }}</p>
-                </div>
-              </div>
-              <div class="detail-grid">
-                <div>
-                  <p class="label">Limite credito</p>
-                  <p class="value">{{ formatValue(cliente.financeiro?.limiteCredito) }}</p>
-                </div>
-                <div>
-                  <p class="label">Prazo pagamento</p>
-                  <p class="value">{{ formatValue(cliente.financeiro?.prazoPagamento) }}</p>
-                </div>
-              </div>
-              <div class="detail-grid">
-                <div>
-                  <p class="label">Bloqueado</p>
-                  <p class="value">{{ formatBoolean(cliente.financeiro?.bloqueado) }}</p>
-                </div>
-                <div>
-                  <p class="label">Observacoes</p>
-                  <p class="value">{{ formatValue(cliente.financeiro?.observacoes) }}</p>
-                </div>
-              </div>
+          </td>
+          <!-- Documento -->
+          <td>
+            <span class="cell-mono">{{ c.documento || '—' }}</span>
+          </td>
+          <!-- Email -->
+          <td>
+            <span class="cell-muted">{{ c.email || '—' }}</span>
+          </td>
+          <!-- Telefone -->
+          <td>
+            <span class="cell-mono">{{ c.telefone || '—' }}</span>
+          </td>
+          <!-- Tipo -->
+          <td>
+            <span class="badge" [ngClass]="getTipoClass(c.tipoDescricao)">
+              {{ c.tipoDescricao || '—' }}
+            </span>
+          </td>
+          <!-- VIP -->
+          <td style="text-align:center">
+            @if (c.vip) {
+              <i class="pi pi-star-fill vip-star" pTooltip="Cliente VIP"></i>
             } @else {
-              <p class="value">-</p>
+              <span class="cell-dash">—</span>
             }
-          </p-tabpanel>
-
-          <p-tabpanel value="4">
-            @if (!cliente.enderecos?.length) {<div class="value">-</div>}
-            @for (endereco of cliente.enderecos; track endereco.id) {
-            <div class="detail-list">
-              <p class="label">Endereco {{ $index + 1 }}</p>
-              <div class="detail-grid">
-                <div>
-                  <p class="label">ID</p>
-                  <p class="value">{{ formatValue(endereco.id) }}</p>
-                </div>
-                <div>
-                  <p class="label">Cliente ID</p>
-                  <p class="value">{{ formatValue(endereco.clienteId) }}</p>
-                </div>
-              </div>
-              <div class="detail-grid">
-                <div>
-                  <p class="label">Tipo</p>
-                  <p class="value">{{ formatValue(endereco.tipo) }}</p>
-                </div>
-                <div>
-                  <p class="label">CEP</p>
-                  <p class="value">{{ formatValue(endereco.cep) }}</p>
-                </div>
-              </div>
-              <div class="detail-grid">
-                <div>
-                  <p class="label">Logradouro</p>
-                  <p class="value">{{ formatValue(endereco.logradouro) }}</p>
-                </div>
-                <div>
-                  <p class="label">Numero</p>
-                  <p class="value">{{ formatValue(endereco.numero) }}</p>
-                </div>
-              </div>
-              <div class="detail-grid">
-                <div>
-                  <p class="label">Bairro</p>
-                  <p class="value">{{ formatValue(endereco.bairro) }}</p>
-                </div>
-                <div>
-                  <p class="label">Cidade</p>
-                  <p class="value">{{ formatValue(endereco.cidade) }}</p>
-                </div>
-              </div>
-              <div class="detail-grid">
-                <div>
-                  <p class="label">Estado</p>
-                  <p class="value">{{ formatValue(endereco.estado) }}</p>
-                </div>
-                <div>
-                  <p class="label">Pais</p>
-                  <p class="value">{{ formatValue(endereco.pais) }}</p>
-                </div>
-              </div>
-              <div class="detail-grid">
-                <div>
-                  <p class="label">Complemento</p>
-                  <p class="value">{{ formatValue(endereco.complemento) }}</p>
-                </div>
-                <div>
-                  <p class="label">Principal</p>
-                  <p class="value">{{ formatBoolean(endereco.principal) }}</p>
-                </div>
-              </div>
+          </td>
+          <!-- Status -->
+          <td>
+            <span class="badge" [ngClass]="getStatusClass(c.statusDescricao)">
+              {{ c.statusDescricao || 'Ativo' }}
+            </span>
+          </td>
+          <!-- Ações -->
+          <td style="text-align:center">
+            <div class="actions-cell">
+              <button class="act-btn act-view"
+                pTooltip="Ver detalhes" tooltipPosition="top"
+                (click)="navigateTo(c.id); $event.stopPropagation()">
+                <i class="pi pi-eye"></i>
+              </button>
+              <button class="act-btn act-edit"
+                pTooltip="Editar" tooltipPosition="top"
+                (click)="editarCliente($event, c.id)">
+                <i class="pi pi-pencil"></i>
+              </button>
+              <button class="act-btn act-del"
+                pTooltip="Excluir" tooltipPosition="top"
+                (click)="confirmDelete($event, c.id)">
+                <i class="pi pi-trash"></i>
+              </button>
             </div>
-            }
-          </p-tabpanel>
+          </td>
+        </tr>
+      </ng-template>
 
-          <p-tabpanel value="5">
-            @if (!cliente.contatos?.length) {<div class="value">-</div>}
-            @for (contato of cliente.contatos; track contato.id) {
-            <div class="detail-list">
-              <p class="label">Contato {{ $index + 1 }}</p>
-              <div class="detail-grid">
-                <div>
-                  <p class="label">ID</p>
-                  <p class="value">{{ formatValue(contato.id) }}</p>
-                </div>
-                <div>
-                  <p class="label">Cliente ID</p>
-                  <p class="value">{{ formatValue(contato.clienteId) }}</p>
-                </div>
-              </div>
-              <div class="detail-grid">
-                <div>
-                  <p class="label">Tipo</p>
-                  <p class="value">{{ formatValue(contato.tipo) }}</p>
-                </div>
-                <div>
-                  <p class="label">Valor</p>
-                  <p class="value">{{ formatValue(contato.valor) }}</p>
-                </div>
-              </div>
-              <div class="detail-grid">
-                <div>
-                  <p class="label">Principal</p>
-                  <p class="value">{{ formatBoolean(contato.principal) }}</p>
-                </div>
-                <div>
-                  <p class="label">Observacoes</p>
-                  <p class="value">{{ formatValue(contato.observacao) }}</p>
-                </div>
-              </div>
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="8">
+            <div class="empty-state">
+              <i class="pi pi-users empty-icon"></i>
+              <p>Nenhum cliente encontrado.</p>
+              @if (searchTerm) {
+                <button class="ghost-btn" (click)="searchTerm=''; dt.filterGlobal('', 'contains')">
+                  Limpar busca
+                </button>
+              }
             </div>
-            }
-          </p-tabpanel>
+          </td>
+        </tr>
+      </ng-template>
 
-          <p-tabpanel value="6">
-            @if (!cliente.anexos?.length) {<div class="value">-</div>}
-            @for (anexo of cliente.anexos; track anexo.id) {
-            <div class="detail-list">
-              <p class="label">Anexo {{ $index + 1 }}</p>
-              <div class="detail-grid">
-                <div>
-                  <p class="label">ID</p>
-                  <p class="value">{{ formatValue(anexo.id) }}</p>
-                </div>
-                <div>
-                  <p class="label">Cliente ID</p>
-                  <p class="value">{{ formatValue(anexo.clienteId) }}</p>
-                </div>
-              </div>
-              <div class="detail-grid">
-                <div>
-                  <p class="label">Nome</p>
-                  <p class="value">{{ formatValue(anexo.nome) }}</p>
-                </div>
-                <div>
-                  <p class="label">Tipo</p>
-                  <p class="value">{{ formatValue(anexo.tipo) }}</p>
-                </div>
-              </div>
-              <div class="detail-grid">
-                <div>
-                  <p class="label">URL</p>
-                  <p class="value">
-                    @if (anexo.url) {<a [href]="anexo.url" target="_blank" rel="noopener">{{ anexo.url }}</a>}
-                    @else {<span>-</span>}
-                  </p>
-                </div>
-                <div>
-                  <p class="label">Observacoes</p>
-                  <p class="value">{{ formatValue(anexo.observacao) }}</p>
-                </div>
-              </div>
-            </div>
-            }
-          </p-tabpanel>
+      <ng-template pTemplate="loadingbody">
+        <tr *ngFor="let i of [1,2,3,4,5]">
+          <td colspan="8"><div class="skeleton-row"></div></td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
 
-          <p-tabpanel value="7">
-            @if (!cliente.documentos?.length) {<div class="value">-</div>}
-            @for (documento of cliente.documentos; track documento.id) {
-            <div class="detail-list">
-              <p class="label">Documento {{ $index + 1 }}</p>
-              <pre class="detail-pre">{{ documento | json }}</pre>
-            </div>
-            }
-          </p-tabpanel>
-
-          <p-tabpanel value="8">
-            @if (!cliente.indicacoes?.length) {<div class="value">-</div>}
-            @for (indicacao of cliente.indicacoes; track indicacao.id) {
-            <div class="detail-list">
-              <p class="label">Indicacao {{ $index + 1 }}</p>
-              <div class="detail-grid">
-                <div>
-                  <p class="label">ID</p>
-                  <p class="value">{{ formatValue(indicacao.id) }}</p>
-                </div>
-                <div>
-                  <p class="label">Cliente ID</p>
-                  <p class="value">{{ formatValue(indicacao.clienteId) }}</p>
-                </div>
-              </div>
-              <div class="detail-grid">
-                <div>
-                  <p class="label">Indicador nome</p>
-                  <p class="value">{{ formatValue(indicacao.indicadorNome) }}</p>
-                </div>
-                <div>
-                  <p class="label">Indicador telefone</p>
-                  <p class="value">{{ formatValue(indicacao.indicadorTelefone) }}</p>
-                </div>
-              </div>
-              <div class="detail-block">
-                <p class="label">Observacoes</p>
-                <p class="value">{{ formatValue(indicacao.observacao) }}</p>
-              </div>
-            </div>
-            }
-          </p-tabpanel>
-
-          <p-tabpanel value="9">
-            @if (!cliente.consentimentosLgpd?.length) {<div class="value">-</div>}
-            @for (consentimento of cliente.consentimentosLgpd; track consentimento.id) {
-            <div class="detail-list">
-              <p class="label">Consentimento {{ $index + 1 }}</p>
-              <div class="detail-grid">
-                <div>
-                  <p class="label">ID</p>
-                  <p class="value">{{ formatValue(consentimento.id) }}</p>
-                </div>
-                <div>
-                  <p class="label">Cliente ID</p>
-                  <p class="value">{{ formatValue(consentimento.clienteId) }}</p>
-                </div>
-              </div>
-              <div class="detail-grid">
-                <div>
-                  <p class="label">Tipo</p>
-                  <p class="value">{{ formatValue(consentimento.tipo) }}</p>
-                </div>
-                <div>
-                  <p class="label">Aceito</p>
-                  <p class="value">{{ formatBoolean(consentimento.aceito) }}</p>
-                </div>
-              </div>
-              <div class="detail-grid">
-                <div>
-                  <p class="label">Data</p>
-                  <p class="value">
-                    {{ consentimento.data ? (consentimento.data | date:'dd/MM/yyyy HH:mm') : '-' }}
-                  </p>
-                </div>
-                <div>
-                  <p class="label">Valido ate</p>
-                  <p class="value">
-                    {{ consentimento.validoAte ? (consentimento.validoAte | date:'dd/MM/yyyy HH:mm') : '-' }}
-                  </p>
-                </div>
-              </div>
-              <div class="detail-grid">
-                <div>
-                  <p class="label">Canal</p>
-                  <p class="value">{{ formatValue(consentimento.canal) }}</p>
-                </div>
-                <div>
-                  <p class="label">Observacoes</p>
-                  <p class="value">{{ formatValue(consentimento.observacoes) }}</p>
-                </div>
-              </div>
-            </div>
-            }
-          </p-tabpanel>
-
-          <p-tabpanel value="10">
-            <div class="detail-grid">
-              <div>
-                <p class="label">Criado em</p>
-                <p class="value">{{ cliente.createdAt ? (cliente.createdAt | date:'dd/MM/yyyy HH:mm') : '-' }}</p>
-              </div>
-              <div>
-                <p class="label">Atualizado em</p>
-                <p class="value">{{ cliente.updatedAt ? (cliente.updatedAt | date:'dd/MM/yyyy HH:mm') : '-' }}</p>
-              </div>
-            </div>
-          </p-tabpanel>
-        </p-tabpanels>
-      </p-tabs>
-
-    }
-
-  </p-dialog>
 </section>

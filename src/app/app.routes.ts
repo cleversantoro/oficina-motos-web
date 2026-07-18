@@ -1,6 +1,8 @@
 import { Routes } from '@angular/router';
 import { ClienteLista } from './features/clientes/pages/cliente-lista/cliente-lista';
+import { ClienteDetalhe } from './features/clientes/pages/cliente-detalhe/cliente-detalhe';
 import { ClienteCadastro } from './features/clientes/pages/cliente-cadastro/cliente-cadastro';
+import { ClienteEditar } from './features/clientes/pages/cliente-editar/cliente-editar';
 import { OsDetalhe } from './features/ordens-servico/pages/os-detalhe/os-detalhe';
 import { EstoqueLista } from './features/estoque/pages/estoque-lista/estoque-lista';
 import { MecanicoLista } from './features/mecanicos/pages/mecanico-lista/mecanico-lista';
@@ -31,6 +33,8 @@ export const routes: Routes = [
       },
       { path: 'clientes', component: ClienteLista },
       { path: 'clientes/novo', component: ClienteCadastro },
+      { path: 'clientes/:id', component: ClienteDetalhe },
+      { path: 'clientes/:id/editar', component: ClienteEditar },
       { path: 'motos', component: VeiculoLista },
       { path: 'motos/:id', component: VeiculoDetalhe },
       {
