@@ -5,6 +5,8 @@ export interface LoginRequest {
 
 export interface LoginResponse {
   token: string;
+  refreshToken?: string;
+  refreshTokenExpiresAt?: string;
   email: string;
   name: string;
   role: string;
@@ -16,4 +18,6 @@ export interface CurrentUser {
   name: string;
   role: string;
   expiresAt: Date;
+  refreshToken?: string;
+  refreshTokenExpiresAt?: Date;
 }

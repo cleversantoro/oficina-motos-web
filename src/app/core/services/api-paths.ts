@@ -1,6 +1,8 @@
 export const apiPaths = {
   auth: {
     login: '/api/v1/Auth/login',
+    refresh: '/api/v1/Auth/refresh',
+    logout: '/api/v1/Auth/logout',
   },
   clientes: {
     base: '/api/v1/Clientes',

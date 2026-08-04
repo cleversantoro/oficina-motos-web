@@ -1,6 +1,6 @@
 import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
-import { catchError, throwError } from 'rxjs';
+import { catchError, filter, switchMap, take, throwError } from 'rxjs';
 import { AuthService } from '../auth/auth.service';
 import { Toast } from '../../shared/services/toast';
 
@@ -17,11 +17,29 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(req).pipe(
     catchError((error: unknown) => {
+      if (error instanceof HttpErrorResponse && error.status === 401 && !req.url.includes('/api/v1/Auth/refresh')) {
+        if (!authService.getRefreshToken()) {
+          toast.error('Sessão expirada', 'Sua sessão expirou. Faça login novamente.');
+          authService.logout();
+          return throwError(() => error);
+        }
+
+        return authService.refreshToken().pipe(
+          filter(() => !!authService.getToken()),
+          take(1),
+          switchMap(() => next(req.clone())),
+          catchError(refreshError => {
+            toast.error('Sessão expirada', 'Não foi possível renovar a sessão. Faça login novamente.');
+            authService.logout();
+            return throwError(() => refreshError);
+          })
+        );
+      }
+
       // Verifica se é um erro HTTP
       if (error instanceof HttpErrorResponse) {
         switch (error.status) {
           case 401:
-            // Não autorizado - redireciona para login
             toast.error(
               'Sessão expirada',
               'Sua sessão expirou. Faça login novamente.'
