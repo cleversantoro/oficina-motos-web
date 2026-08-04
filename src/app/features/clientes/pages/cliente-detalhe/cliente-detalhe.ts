@@ -4,6 +4,8 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { TabsModule } from 'primeng/tabs';
 import { TagModule } from 'primeng/tag';
+import { AuthService } from '../../../../core/auth/auth.service';
+import { canPerformBusinessAction } from '../../../../core/auth/rbac-access.helper';
 import { ClientesService } from '../../../../core/services/clientes.service';
 import { Toast } from '../../../../shared/services/toast';
 import { Confirmation } from '../../../../shared/services/confirmation';
@@ -22,6 +24,7 @@ export class ClienteDetalhe implements OnInit {
   private clientesService = inject(ClientesService);
   private toast = inject(Toast);
   private confirmation = inject(Confirmation);
+  private authService = inject(AuthService);
 
   cliente: any = null;
   loading = true;
@@ -55,6 +58,14 @@ export class ClienteDetalhe implements OnInit {
 
   editarCliente(): void {
     this.router.navigate(['/clientes', this.clienteId, 'editar']);
+  }
+
+  canEditCliente(): boolean {
+    return canPerformBusinessAction(this.authService.currentRole(), 'clientes', 'edit');
+  }
+
+  canDeleteCliente(): boolean {
+    return canPerformBusinessAction(this.authService.currentRole(), 'clientes', 'delete');
   }
 
   async excluirCliente(): Promise<void> {

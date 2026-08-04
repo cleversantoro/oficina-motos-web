@@ -3,6 +3,8 @@ import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DialogModule } from 'primeng/dialog';
 import { TabsModule } from 'primeng/tabs';
+import { AuthService } from '../../../../core/auth/auth.service';
+import { canPerformBusinessAction } from '../../../../core/auth/rbac-access.helper';
 import { OrdensService } from '../../../../core/services/ordens.service';
 import { OrdemServico } from '../../../../core/models';
 
@@ -23,7 +25,10 @@ export class OsDetalhe implements OnInit {
   first = 0;
   rows = 5;
 
-  constructor(private ordensService: OrdensService) {}
+  constructor(
+    private ordensService: OrdensService,
+    private authService: AuthService,
+  ) {}
 
   ngOnInit(): void {
     this.fetchOrdens();
@@ -58,6 +63,10 @@ export class OsDetalhe implements OnInit {
   }
 
   closeDetails() { this.selected = null; }
+
+  canDeleteOrdem(): boolean {
+    return canPerformBusinessAction(this.authService.currentRole(), 'ordens', 'delete');
+  }
 
   confirmDelete(id: number): void {
     if (!confirm('Tem certeza que deseja excluir esta OS?')) return;

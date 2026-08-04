@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { AuthService } from '../../../../core/auth/auth.service';
+import { canPerformBusinessAction } from '../../../../core/auth/rbac-access.helper';
 import { MecanicosService } from '../../../../core/services/mecanicos.service';
 import { Mecanico } from '../../../../core/models';
 import { MecanicoDetalhe } from '../mecanico-detalhe/mecanico-detalhe';
@@ -22,7 +24,10 @@ export class MecanicoLista implements OnInit {
   first = 0;
   rows  = 5;
 
-  constructor(private mecanicosService: MecanicosService) {}
+  constructor(
+    private mecanicosService: MecanicosService,
+    private authService: AuthService,
+  ) {}
 
   ngOnInit(): void {
     this.load();
@@ -60,6 +65,10 @@ export class MecanicoLista implements OnInit {
   }
 
   closeDetails(): void { this.selected = null; }
+
+  canDeleteMecanico(): boolean {
+    return canPerformBusinessAction(this.authService.currentRole(), 'mecanicos', 'delete');
+  }
 
   confirmDelete(id: number): void {
     if (!confirm('Tem certeza que deseja excluir este mec\u00e2nico?')) return;

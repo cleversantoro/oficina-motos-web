@@ -79,20 +79,24 @@
       </div>
 
       <div class="hero-actions">
-        <p-button
-          label="Editar"
-          icon="pi pi-pencil"
-          size="small"
-          (onClick)="editarCliente()">
-        </p-button>
-        <p-button
-          label="Excluir"
-          icon="pi pi-trash"
-          size="small"
-          severity="danger"
-          [outlined]="true"
-          (onClick)="excluirCliente()">
-        </p-button>
+        @if (canEditCliente()) {
+          <p-button
+            label="Editar"
+            icon="pi pi-pencil"
+            size="small"
+            (onClick)="editarCliente()">
+          </p-button>
+        }
+        @if (canDeleteCliente()) {
+          <p-button
+            label="Excluir"
+            icon="pi pi-trash"
+            size="small"
+            severity="danger"
+            [outlined]="true"
+            (onClick)="excluirCliente()">
+          </p-button>
+        }
       </div>
     </div>
 

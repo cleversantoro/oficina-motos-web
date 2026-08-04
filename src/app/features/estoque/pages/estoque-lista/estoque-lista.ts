@@ -1,6 +1,8 @@
 ﻿import { DecimalPipe } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { AuthService } from '../../../../core/auth/auth.service';
+import { canPerformBusinessAction } from '../../../../core/auth/rbac-access.helper';
 import { EstoqueService } from '../../../../core/services/estoque.service';
 import { EstoquePeca, EstoqueCategoria, EstoqueFabricante, EstoqueLocalizacao } from '../../../../core/models';
 
@@ -29,7 +31,10 @@ export class EstoqueLista implements OnInit {
     { label: 'Reposicao pendente', checked: false },
   ];
 
-  constructor(private estoqueService: EstoqueService) {}
+  constructor(
+    private estoqueService: EstoqueService,
+    private authService: AuthService,
+  ) {}
 
   ngOnInit(): void {
     this.loading = true;
@@ -69,6 +74,10 @@ export class EstoqueLista implements OnInit {
 
   isCritico(item: EstoquePeca): boolean {
     return item.quantidade <= item.estoqueMinimo;
+  }
+
+  canDeleteItem(): boolean {
+    return canPerformBusinessAction(this.authService.currentRole(), 'estoque', 'delete');
   }
 
   getCategoria(id: number | null): string {

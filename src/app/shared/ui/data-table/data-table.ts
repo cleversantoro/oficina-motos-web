@@ -21,6 +21,7 @@ import {
   TablePageEvent,
   TableSortEvent,
 } from './data-table.models';
+import { hasAnyRole } from '../../../core/auth/rbac-access.helper';
 
 /**
  * Componente de tabela reutilizável com PrimeNG
@@ -71,6 +72,9 @@ export class DataTable<T = any> {
 
   /** Ações disponíveis por linha */
   @Input() actions: TableAction<T>[] = [];
+
+  /** Papel atual do usuário autenticado */
+  @Input() currentRole: string | null = null;
 
   /** Estado de carregamento */
   @Input() loading = false;
@@ -180,6 +184,10 @@ export class DataTable<T = any> {
    * Verifica se ação deve ser exibida
    */
   isActionVisible(action: TableAction<T>, row: T): boolean {
+    if (action.requiredRoles?.length && !hasAnyRole(this.currentRole, action.requiredRoles)) {
+      return false;
+    }
+
     return action.visible ? action.visible(row) : true;
   }
 

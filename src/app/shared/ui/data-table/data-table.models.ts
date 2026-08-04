@@ -74,6 +74,9 @@ export interface TableAction<T = any> {
 
   /** Condição para desabilitar o botão (opcional) */
   disabled?: (row: T) => boolean;
+
+  /** Papéis permitidos para exibir a ação */
+  requiredRoles?: string[];
 }
 
 /**

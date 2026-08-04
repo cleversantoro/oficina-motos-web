@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { Observable, tap } from 'rxjs';
 import { apiPaths } from '../services/api-paths';
 import { CurrentUser, LoginRequest, LoginResponse } from './auth.model';
+import { environment } from '../../../environments/environment';
 
 const TOKEN_KEY = 'oficina_token';
 const REFRESH_TOKEN_KEY = 'oficina_refresh_token';
@@ -11,6 +12,7 @@ const USER_KEY  = 'oficina_user';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
+  private readonly baseUrl = environment.apiUrl;
   private readonly _currentUser = signal<CurrentUser | null>(this._loadUser());
 
   /** Usuário autenticado atual (somente leitura). */
@@ -22,10 +24,13 @@ export class AuthService {
     return !!user && new Date(user.expiresAt) > new Date();
   });
 
+  /** Papel atual do usuário autenticado, se houver. */
+  readonly currentRole = computed(() => this._currentUser()?.role ?? null);
+
   constructor(private readonly http: HttpClient, private readonly router: Router) {}
 
   login(credentials: LoginRequest): Observable<LoginResponse> {
-    return this.http.post<LoginResponse>(apiPaths.auth.login, credentials).pipe(
+    return this.http.post<LoginResponse>(this._url(apiPaths.auth.login), credentials).pipe(
       tap(response => {
         this._persistSession(response);
       })
@@ -38,7 +43,7 @@ export class AuthService {
       throw new Error('Refresh token não disponível');
     }
 
-    return this.http.post<LoginResponse>(apiPaths.auth.refresh, { refreshToken }).pipe(
+    return this.http.post<LoginResponse>(this._url(apiPaths.auth.refresh), { refreshToken }).pipe(
       tap(response => {
         this._persistSession(response);
       })
@@ -48,7 +53,7 @@ export class AuthService {
   logout(): void {
     const refreshToken = this.getRefreshToken();
     if (refreshToken) {
-      this.http.post(apiPaths.auth.logout, { refreshToken }).subscribe({
+      this.http.post(this._url(apiPaths.auth.logout), { refreshToken }).subscribe({
         error: () => undefined,
       });
     }
@@ -66,6 +71,10 @@ export class AuthService {
 
   getRefreshToken(): string | null {
     return localStorage.getItem(REFRESH_TOKEN_KEY);
+  }
+
+  private _url(path: string): string {
+    return `${this.baseUrl}${path}`;
   }
 
   private _persistSession(response: LoginResponse): void {

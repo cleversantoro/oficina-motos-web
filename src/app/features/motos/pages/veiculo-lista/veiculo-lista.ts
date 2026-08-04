@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { forkJoin } from 'rxjs';
+import { AuthService } from '../../../../core/auth/auth.service';
+import { canPerformBusinessAction } from '../../../../core/auth/rbac-access.helper';
 import { VeiculosService } from '../../../../core/services/veiculos.service';
 
 @Component({
@@ -23,7 +25,11 @@ export class VeiculoLista implements OnInit {
   first = 0;
   rows  = 5;
 
-  constructor(private svc: VeiculosService, private router: Router) {}
+  constructor(
+    private svc: VeiculosService,
+    private router: Router,
+    private authService: AuthService,
+  ) {}
 
   ngOnInit(): void {
     this.load();
@@ -92,6 +98,10 @@ export class VeiculoLista implements OnInit {
 
   openDetalhe(id: number): void {
     this.router.navigate(['/motos', id]);
+  }
+
+  canDeleteVeiculo(): boolean {
+    return canPerformBusinessAction(this.authService.currentRole(), 'veiculos', 'delete');
   }
 
   prevPage(): void {

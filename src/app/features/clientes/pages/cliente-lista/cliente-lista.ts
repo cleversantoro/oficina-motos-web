@@ -7,6 +7,8 @@ import { InputTextModule } from 'primeng/inputtext';
 import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
 import { TooltipModule } from 'primeng/tooltip';
+import { AuthService } from '../../../../core/auth/auth.service';
+import { canPerformBusinessAction } from '../../../../core/auth/rbac-access.helper';
 import { ClientesService } from '../../../../core/services/clientes.service';
 import { Confirmation } from '../../../../shared/services/confirmation';
 import { Toast } from '../../../../shared/services/toast';
@@ -23,6 +25,7 @@ export class ClienteLista implements OnInit {
   private toast = inject(Toast);
   private confirmation = inject(Confirmation);
   private router = inject(Router);
+  private authService = inject(AuthService);
 
   clientes: any[] = [];
   loading = false;
@@ -99,6 +102,14 @@ export class ClienteLista implements OnInit {
   editarCliente(event: MouseEvent, id: number): void {
     event.stopPropagation();
     this.router.navigate(['/clientes', id, 'editar']);
+  }
+
+  canEditCliente(): boolean {
+    return canPerformBusinessAction(this.authService.currentRole(), 'clientes', 'edit');
+  }
+
+  canDeleteCliente(): boolean {
+    return canPerformBusinessAction(this.authService.currentRole(), 'clientes', 'delete');
   }
 
   async confirmDelete(event: MouseEvent, id: number): Promise<void> {

@@ -66,12 +66,14 @@
                     <circle cx="12" cy="12" r="3"/>
                   </svg>
                 </button>
-                <button class="icon-btn delete-btn" (click)="confirmDelete(os.id); $event.stopPropagation()" title="Excluir">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <polyline points="3 6 5 6 21 6"/>
-                    <path d="m19 6-.867 14.142A2 2 0 0 1 16.138 22H7.862a2 2 0 0 1-1.995-1.858L5 6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
-                  </svg>
-                </button>
+                @if (canDeleteOrdem()) {
+                  <button class="icon-btn delete-btn" (click)="confirmDelete(os.id); $event.stopPropagation()" title="Excluir">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="3 6 5 6 21 6"/>
+                      <path d="m19 6-.867 14.142A2 2 0 0 1 16.138 22H7.862a2 2 0 0 1-1.995-1.858L5 6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                    </svg>
+                  </button>
+                }
               </td>
             </tr>
           }

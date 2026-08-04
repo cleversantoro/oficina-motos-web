@@ -4,6 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { TableModule } from 'primeng/table';
+import { AuthService } from '../../../../core/auth/auth.service';
+import { canPerformBusinessAction } from '../../../../core/auth/rbac-access.helper';
 import { FornecedoresService } from '../../../../core/services/fornecedores.service';
 import { Fornecedor } from '../../../../core/models/fornecedor';
 
@@ -25,6 +27,7 @@ export class FornecedorLista implements OnInit {
   constructor(
     private svc: FornecedoresService,
     private router: Router,
+    private authService: AuthService,
   ) {}
 
   ngOnInit(): void {
@@ -80,6 +83,10 @@ export class FornecedorLista implements OnInit {
 
   displayName(f: Fornecedor): string {
     return f.nomeFantasia || f.razaoSocial;
+  }
+
+  canDeleteFornecedor(): boolean {
+    return canPerformBusinessAction(this.authService.currentRole(), 'fornecedores', 'delete');
   }
 
   next(): void {
