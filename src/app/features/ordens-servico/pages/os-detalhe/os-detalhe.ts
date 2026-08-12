@@ -45,13 +45,16 @@ export class OsDetalhe implements OnInit {
   get filtered(): any[] {
     const q = this.filterText.trim().toLowerCase();
     if (!q) return this.ordens;
-    return this.ordens.filter(os =>
-      String(os.id ?? '').includes(q) ||
-      (os.status            ?? '').toLowerCase().includes(q) ||
-      (os.descricaoProblema ?? '').toLowerCase().includes(q) ||
-      String(os.clienteId  ?? '').includes(q) ||
-      String(os.mecanicoId ?? '').includes(q)
-    );
+    return this.ordens.filter(os => {
+      const status = String(os?.status ?? '').trim().toLowerCase();
+      const problema = String(os?.descricaoProblema ?? '').trim().toLowerCase();
+
+      return String(os?.id ?? '').includes(q) ||
+        status.includes(q) ||
+        problema.includes(q) ||
+        String(os?.clienteId ?? '').includes(q) ||
+        String(os?.mecanicoId ?? '').includes(q);
+    });
   }
 
   openDetails(item: any) {

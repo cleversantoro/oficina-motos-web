@@ -74,11 +74,13 @@ export class DashboardPrincipal implements OnInit {
     const mesAtual = hoje.getMonth();
     const anoAtual = hoje.getFullYear();
 
+    const normalizeText = (value: unknown): string => String(value ?? '').trim().toLowerCase();
+
     // ── OS ─────────────────────────────────────────────────────────────────
     const ordens: any[] = data.ordens ?? [];
 
     const osConcluidas = ordens.filter(o => {
-      const status = (o.status ?? '').toLowerCase();
+      const status = normalizeText(o.status);
       if (!status.includes('conclu') && !status.includes('fechad')) return false;
       const d = new Date(o.dataConclusao ?? o.dataAbertura);
       return d.getMonth() === mesAtual && d.getFullYear() === anoAtual;
@@ -94,7 +96,7 @@ export class DashboardPrincipal implements OnInit {
     // OS agrupadas por status (exceto concluídas/canceladas)
     const etapaMap = new Map<string, number>();
     const statusAberto = ordens.filter(o => {
-      const st = (o.status ?? '').toLowerCase();
+      const st = normalizeText(o.status);
       return !st.includes('conclu') && !st.includes('cancelad') && !st.includes('fechad');
     });
     for (const o of statusAberto) {
