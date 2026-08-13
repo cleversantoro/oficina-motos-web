@@ -43,7 +43,7 @@ describe('AuthService', () => {
 
     expect(localStorage.getItem('oficina_token')).toBe('access-token');
     expect(localStorage.getItem('oficina_refresh_token')).toBe('refresh-token');
-    expect(localStorage.getItem('oficina_user')).not.toBeNull();
+    expect(JSON.parse(localStorage.getItem('oficina_user')!).permissions).toEqual(['dashboard:visualizar']);
   });
 
   it('refreshes the session using the persisted refresh token', () => {
@@ -70,5 +70,19 @@ describe('AuthService', () => {
 
     expect(localStorage.getItem('oficina_token')).toBe('renewed-token');
     expect(localStorage.getItem('oficina_refresh_token')).toBe('new-refresh-token');
+  });
+
+  it('restores permissions from the persisted session', () => {
+    localStorage.setItem('oficina_user', JSON.stringify({
+      email: 'admin@oficina.local',
+      name: 'Admin',
+      role: 'Admin',
+      permissions: ['ordens:visualizar'],
+      expiresAt: '2099-08-03T00:00:00.000Z',
+    }));
+
+    const restored = TestBed.inject(AuthService);
+
+    expect(restored.permissions()).toEqual(['ordens:visualizar']);
   });
 });

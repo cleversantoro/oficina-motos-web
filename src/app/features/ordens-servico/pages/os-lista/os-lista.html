@@ -1,0 +1,37 @@
+<section class="os-shell">
+  <header class="lista-header">
+    <div>
+      <p class="eyebrow">Ordem de Serviço</p>
+      <h1>Ordens de Serviço</h1>
+      <p class="muted">Consulte atendimentos, status e responsáveis.</p>
+    </div>
+
+    @if (canCreateOrdem()) {
+      <button pButton type="button" icon="pi pi-plus" label="Nova OS" class="btn-cta" (click)="openNew()"></button>
+    }
+  </header>
+
+  @if (error(); as message) {
+    <div class="state-card state-error" role="alert">
+      <i class="pi pi-exclamation-triangle"></i>
+      <span>{{ message }}</span>
+      <button pButton type="button" label="Tentar novamente" class="p-button-outlined" (click)="fetchOrdens()"></button>
+    </div>
+  }
+
+  <app-data-table
+    [data]="ordens()"
+    [columns]="columns"
+    [actions]="actions"
+    [loading]="loading()"
+    [config]="{
+      responsive: true,
+      showGridlines: true,
+      hoverable: true,
+      emptyMessage: 'Nenhuma ordem de serviço cadastrada.',
+      globalFilter: true,
+      globalFilterPlaceholder: 'Buscar por ID, status, cliente...'
+    }"
+    [paginationConfig]="{ rows: 10, rowsPerPageOptions: [5, 10, 25, 50], showPaginator: true }"
+  />
+</section>

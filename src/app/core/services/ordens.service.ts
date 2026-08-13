@@ -6,8 +6,8 @@ import { apiPaths } from './api-paths';
 export class OrdensService {
   constructor(private api: ApiClientService) {}
 
-  list(params?: Record<string, any>) {
-    return this.api.list(apiPaths.ordens.base, params);
+  list<T = any>(params?: Record<string, any>) {
+    return this.api.list<T>(apiPaths.ordens.base, params);
   }
   get(id: string | number) {
     return this.api.getById(apiPaths.ordens.base, id);

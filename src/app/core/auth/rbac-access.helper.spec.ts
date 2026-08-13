@@ -1,4 +1,9 @@
-import { canPerformBusinessAction, getAllowedRoles, normalizeRole } from './rbac-access.helper';
+import {
+  canPerformBusinessAction,
+  canPerformPermission,
+  getAllowedRoles,
+  normalizeRole,
+} from './rbac-access.helper';
 
 describe('rbac-access.helper', () => {
   it('normalizes roles with accents and whitespace', () => {
@@ -15,5 +20,11 @@ describe('rbac-access.helper', () => {
 
   it('exposes the allowed roles for a module action', () => {
     expect(getAllowedRoles('clientes', 'delete')).toEqual(['Administrador', 'Gerente']);
+  });
+
+  it('validates canonical permissions by module and action', () => {
+    expect(canPerformPermission(['ordens:visualizar'], 'ordens', 'visualizar')).toBe(true);
+    expect(canPerformPermission(['ordens:criar'], 'ordens', 'visualizar')).toBe(false);
+    expect(canPerformPermission([], 'ordens', 'criar')).toBe(false);
   });
 });

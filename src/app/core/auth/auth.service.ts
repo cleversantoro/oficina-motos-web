@@ -27,6 +27,9 @@ export class AuthService {
   /** Papel atual do usuário autenticado, se houver. */
   readonly currentRole = computed(() => this._currentUser()?.role ?? null);
 
+  /** Permissões canônicas da sessão atual. */
+  readonly permissions = computed(() => this._currentUser()?.permissions ?? []);
+
   constructor(private readonly http: HttpClient, private readonly router: Router) {}
 
   login(credentials: LoginRequest): Observable<LoginResponse> {
@@ -82,6 +85,7 @@ export class AuthService {
       email: response.email,
       name: response.name,
       role: response.role,
+      permissions: response.permissions ?? [],
       expiresAt: new Date(response.expiresAt),
       refreshToken: response.refreshToken,
       refreshTokenExpiresAt: response.refreshTokenExpiresAt ? new Date(response.refreshTokenExpiresAt) : undefined,
@@ -100,6 +104,7 @@ export class AuthService {
       const raw = localStorage.getItem(USER_KEY);
       if (!raw) return null;
       const user = JSON.parse(raw) as CurrentUser;
+      user.permissions = user.permissions ?? [];
       if (new Date(user.expiresAt) <= new Date()) {
         localStorage.removeItem(TOKEN_KEY);
         localStorage.removeItem(REFRESH_TOKEN_KEY);

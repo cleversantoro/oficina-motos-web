@@ -11,12 +11,14 @@ export interface LoginResponse {
   name: string;
   role: string;
   expiresAt: string;
+  permissions?: string[];
 }
 
 export interface CurrentUser {
   email: string;
   name: string;
   role: string;
+  permissions: string[];
   expiresAt: Date;
   refreshToken?: string;
   refreshTokenExpiresAt?: Date;

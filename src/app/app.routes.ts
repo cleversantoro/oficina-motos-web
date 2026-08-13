@@ -3,7 +3,6 @@ import { ClienteLista } from './features/clientes/pages/cliente-lista/cliente-li
 import { ClienteDetalhe } from './features/clientes/pages/cliente-detalhe/cliente-detalhe';
 import { ClienteCadastro } from './features/clientes/pages/cliente-cadastro/cliente-cadastro';
 import { ClienteEditar } from './features/clientes/pages/cliente-editar/cliente-editar';
-import { OsDetalhe } from './features/ordens-servico/pages/os-detalhe/os-detalhe';
 import { EstoqueLista } from './features/estoque/pages/estoque-lista/estoque-lista';
 import { MecanicoLista } from './features/mecanicos/pages/mecanico-lista/mecanico-lista';
 import { VeiculoDetalhe } from './features/motos/pages/veiculo-detalhe/veiculo-detalhe';
@@ -15,6 +14,7 @@ import { DashboardPrincipal } from './features/dashboard/pages/dashboard-princip
 import { MainLayout } from './layout/main-layout/main-layout';
 import { LoginPage } from './features/auth/login/login';
 import { authGuard } from './core/auth/auth.guard';
+import { ordensPermissionGuard } from './core/auth/ordens-permission.guard';
 
 export const routes: Routes = [
   // Rota pública — login
@@ -49,7 +49,21 @@ export const routes: Routes = [
       },
       {
         path: 'ordens',
-        component: OsDetalhe,
+        canActivate: [ordensPermissionGuard],
+        data: { ordensAction: 'visualizar' },
+        loadComponent: () => import('./features/ordens-servico/pages/os-lista/os-lista').then(m => m.OsListaComponent),
+      },
+      {
+        path: 'ordens/novo',
+        canActivate: [ordensPermissionGuard],
+        data: { ordensAction: 'criar' },
+        loadComponent: () => import('./features/ordens-servico/pages/os-novo/os-novo').then(m => m.OsNovoComponent),
+      },
+      {
+        path: 'ordens/:id',
+        canActivate: [ordensPermissionGuard],
+        data: { ordensAction: 'visualizar' },
+        loadComponent: () => import('./features/ordens-servico/pages/os-detalhe/os-detalhe').then(m => m.OsDetalheComponent),
       },
       {
         path: 'financeiro',

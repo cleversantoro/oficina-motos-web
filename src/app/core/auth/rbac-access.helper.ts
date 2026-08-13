@@ -9,6 +9,39 @@ export type BusinessModule =
 
 export type BusinessAction = 'create' | 'edit' | 'delete' | 'approve';
 
+export type PermissionAction = 'visualizar' | 'criar';
+
+const PERMISSION_ROLE_MATRIX: Record<BusinessModule, Record<PermissionAction, string[]>> = {
+  clientes: {
+    visualizar: ['Administrador', 'Gerente', 'Recepcionista', 'Financeiro', 'Mecânico', 'Consulta'],
+    criar: ['Administrador', 'Gerente', 'Recepcionista'],
+  },
+  veiculos: {
+    visualizar: ['Administrador', 'Gerente', 'Recepcionista', 'Financeiro', 'Mecânico', 'Consulta'],
+    criar: ['Administrador', 'Gerente', 'Recepcionista'],
+  },
+  fornecedores: {
+    visualizar: ['Administrador', 'Gerente', 'Recepcionista', 'Financeiro', 'Mecânico', 'Consulta'],
+    criar: ['Administrador', 'Gerente'],
+  },
+  mecanicos: {
+    visualizar: ['Administrador', 'Gerente', 'Recepcionista', 'Financeiro', 'Mecânico', 'Consulta'],
+    criar: ['Administrador', 'Gerente'],
+  },
+  estoque: {
+    visualizar: ['Administrador', 'Gerente', 'Recepcionista', 'Financeiro', 'Mecânico', 'Consulta'],
+    criar: ['Administrador', 'Gerente', 'Mecânico'],
+  },
+  ordens: {
+    visualizar: ['Administrador', 'Gerente', 'Recepcionista', 'Financeiro', 'Mecânico', 'Consulta'],
+    criar: ['Administrador', 'Gerente', 'Recepcionista', 'Mecânico'],
+  },
+  financeiro: {
+    visualizar: ['Administrador', 'Gerente', 'Financeiro', 'Consulta'],
+    criar: ['Administrador', 'Gerente', 'Financeiro'],
+  },
+};
+
 export type RoleName = string | null | undefined;
 
 const ROLE_MATRIX: Record<BusinessModule, Record<BusinessAction, string[]>> = {
@@ -80,4 +113,18 @@ export function canPerformBusinessAction(
 
 export function getAllowedRoles(module: BusinessModule, action: BusinessAction): string[] {
   return [...ROLE_MATRIX[module][action]];
+}
+
+export function canPerformPermission(
+  permissions: string[] | null | undefined,
+  module: BusinessModule,
+  action: PermissionAction,
+  role?: RoleName,
+): boolean {
+  const expected = `${module}:${action}`.toLowerCase();
+  if (permissions?.length) {
+    return permissions.some(permission => permission.trim().toLowerCase() === expected);
+  }
+
+  return hasAnyRole(role, PERMISSION_ROLE_MATRIX[module][action]);
 }
