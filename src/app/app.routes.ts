@@ -57,7 +57,7 @@ export const routes: Routes = [
         path: 'ordens/novo',
         canActivate: [ordensPermissionGuard],
         data: { ordensAction: 'criar' },
-        loadComponent: () => import('./features/ordens-servico/pages/os-novo/os-novo').then(m => m.OsNovoComponent),
+        loadComponent: () => import('./features/ordens-servico/pages/os-novo/os-novo').then(m => m.OsCadastroComponent),
       },
       {
         path: 'ordens/:id',

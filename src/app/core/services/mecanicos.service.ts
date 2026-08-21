@@ -9,6 +9,10 @@ export class MecanicosService {
   list(params?: Record<string, any>) {
     return this.api.list(apiPaths.mecanicos.base, params);
   }
+
+  getAll<T = any>() {
+    return this.api.list<T>(apiPaths.mecanicos.base);
+  }
   get(id: string | number) {
     return this.api.getById(apiPaths.mecanicos.base, id);
   }

@@ -14,7 +14,7 @@ describe('ordensPermissionGuard', () => {
     const warnings: string[] = [];
     TestBed.configureTestingModule({
       providers: [
-        { provide: AuthService, useValue: { permissions: () => permissions } },
+        { provide: AuthService, useValue: { permissions: () => permissions, currentRole: () => null } },
         { provide: Router, useValue: { createUrlTree: () => redirect } },
         { provide: Toast, useValue: { warn: (_summary: string, detail: string) => warnings.push(detail) } },
       ],

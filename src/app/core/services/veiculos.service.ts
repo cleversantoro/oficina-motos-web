@@ -9,6 +9,10 @@ export class VeiculosService {
   list(params?: Record<string, any>) {
     return this.api.list(apiPaths.veiculos.base, params);
   }
+
+  listByCliente<T = any>(clienteId: number) {
+    return this.api.list<T>(apiPaths.veiculos.base, { clienteId });
+  }
   get(id: string | number) {
     return this.api.getById(apiPaths.veiculos.base, id);
   }

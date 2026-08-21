@@ -11,6 +11,10 @@ export class ClientesService {
     return this.api.list(apiPaths.clientes.base, params);
   }
 
+  search<T = any>(term: string) {
+    return this.api.list<T>(apiPaths.clientes.base, { search: term });
+  }
+
   listTable(params?: Record<string, any>) {
     return this.api.listTable(apiPaths.clientes.table, params);
   }

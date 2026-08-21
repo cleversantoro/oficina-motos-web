@@ -91,6 +91,7 @@ export interface OrdemServico {
 
 export interface CreateOrdemServicoRequest {
   clienteId: number;
+  veiculoId: number;
   mecanicoId: number;
   descricaoProblema: string;
   status: string;

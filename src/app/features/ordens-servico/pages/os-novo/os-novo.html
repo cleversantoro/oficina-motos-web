@@ -3,8 +3,64 @@
     <div>
       <p class="eyebrow">Ordem de Serviço</p>
       <h1>Nova OS</h1>
-      <p class="muted">O formulário de criação será disponibilizado nesta rota.</p>
+      <p class="muted">Registre o atendimento e vincule o veículo correto.</p>
     </div>
-    <a routerLink="/ordens" class="back-link">Voltar para ordens</a>
+    <button type="button" class="back-link link-button" (click)="backToOrdens()">Voltar para ordens</button>
   </header>
+
+  @if (errorMessage(); as message) {
+    <div class="state error" role="alert">{{ message }}</div>
+  }
+
+  <form class="form-card" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+    <div class="field field-wide">
+      <label for="cliente">Cliente *</label>
+      <input id="cliente" type="search" [value]="clienteTermo()" (input)="searchClientes($any($event.target).value)" placeholder="Buscar por nome ou documento" autocomplete="off" />
+      @if (loadingClientes()) { <small class="hint">Buscando clientes...</small> }
+      @if (clientes().length > 0) {
+        <div class="suggestions" role="listbox">
+          @for (cliente of clientes(); track cliente.id) {
+            <button type="button" class="suggestion" (click)="selectCliente(cliente)">
+              <span>{{ displayCliente(cliente) }}</span>
+              @if (cliente.documento) { <small>{{ cliente.documento }}</small> }
+            </button>
+          }
+        </div>
+      }
+      @if (hasError('clienteId')) { <small class="field-error">Selecione um cliente.</small> }
+    </div>
+
+    <div class="field">
+      <label for="veiculo">Veículo *</label>
+      <select id="veiculo" formControlName="veiculoId" [disabled]="!form.controls.clienteId.value || loadingVeiculos()">
+        <option [ngValue]="0">{{ loadingVeiculos() ? 'Carregando veículos...' : 'Selecione um veículo' }}</option>
+        @for (veiculo of veiculos(); track veiculo.id) {
+          <option [ngValue]="veiculo.id">{{ veiculo.placa }}{{ veiculo.modelo ? ' - ' + veiculo.modelo : '' }}</option>
+        }
+      </select>
+      @if (hasError('veiculoId')) { <small class="field-error">Selecione um veículo.</small> }
+    </div>
+
+    <div class="field">
+      <label for="mecanico">Mecânico *</label>
+      <select id="mecanico" formControlName="mecanicoId" [disabled]="loadingMecanicos()">
+        <option [ngValue]="0">{{ loadingMecanicos() ? 'Carregando mecânicos...' : 'Selecione um mecânico' }}</option>
+        @for (mecanico of mecanicos(); track mecanico.id) {
+          <option [ngValue]="mecanico.id">{{ mecanico.nome }}{{ mecanico.sobrenome ? ' ' + mecanico.sobrenome : '' }}</option>
+        }
+      </select>
+      @if (hasError('mecanicoId')) { <small class="field-error">Selecione um mecânico.</small> }
+    </div>
+
+    <div class="field field-wide">
+      <label for="descricao">Descrição do problema *</label>
+      <textarea id="descricao" formControlName="descricaoProblema" rows="5" maxlength="500" placeholder="Descreva o problema relatado pelo cliente"></textarea>
+      @if (hasError('descricaoProblema')) { <small class="field-error">Informe a descrição do problema.</small> }
+    </div>
+
+    <div class="form-actions">
+      <button type="button" class="back-link link-button" (click)="backToOrdens()">Cancelar</button>
+      <button pButton type="submit" icon="pi pi-check" label="Criar OS" [disabled]="submitting() || loadingMecanicos()"></button>
+    </div>
+  </form>
 </section>

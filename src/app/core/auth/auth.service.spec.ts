@@ -24,7 +24,7 @@ describe('AuthService', () => {
   it('persists access and refresh token after login', () => {
     service.login({ email: 'admin@oficina.local', password: '123456' }).subscribe();
 
-    const req = httpMock.expectOne(apiPaths.auth.login);
+    const req = httpMock.expectOne(request => request.url.endsWith(apiPaths.auth.login));
     expect(req.request.method).toBe('POST');
 
     req.flush({
@@ -51,7 +51,7 @@ describe('AuthService', () => {
 
     service.refreshToken().subscribe();
 
-    const req = httpMock.expectOne(apiPaths.auth.refresh);
+    const req = httpMock.expectOne(request => request.url.endsWith(apiPaths.auth.refresh));
     expect(req.request.method).toBe('POST');
 
     req.flush({
@@ -73,6 +73,7 @@ describe('AuthService', () => {
   });
 
   it('restores permissions from the persisted session', () => {
+    TestBed.resetTestingModule();
     localStorage.setItem('oficina_user', JSON.stringify({
       email: 'admin@oficina.local',
       name: 'Admin',
@@ -81,6 +82,7 @@ describe('AuthService', () => {
       expiresAt: '2099-08-03T00:00:00.000Z',
     }));
 
+    TestBed.configureTestingModule({ imports: [HttpClientTestingModule, RouterTestingModule] });
     const restored = TestBed.inject(AuthService);
 
     expect(restored.permissions()).toEqual(['ordens:visualizar']);

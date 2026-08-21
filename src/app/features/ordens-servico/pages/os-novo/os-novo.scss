@@ -1,4 +1,6 @@
 .os-shell {
+  display: grid;
+  gap: 1rem;
   color: #e2e8f0;
 }
 
@@ -35,9 +37,125 @@ h1 {
   color: #fdba74;
 }
 
+.link-button {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+}
+
+.form-card {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  padding: 1.25rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.field {
+  position: relative;
+  display: grid;
+  gap: 0.4rem;
+}
+
+.field-wide {
+  grid-column: 1 / -1;
+}
+
+label {
+  color: #f8fafc;
+  font-weight: 700;
+}
+
+input,
+select,
+textarea {
+  width: 100%;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 0.65rem;
+  background: rgba(15, 23, 42, 0.75);
+  color: #f8fafc;
+  padding: 0.7rem 0.8rem;
+}
+
+textarea {
+  resize: vertical;
+}
+
+.hint,
+.muted {
+  color: #cbd5e1;
+}
+
+.field-error {
+  color: #fca5a5;
+}
+
+.state.error {
+  padding: 0.9rem 1rem;
+  border: 1px solid rgba(248, 113, 113, 0.45);
+  border-radius: 0.75rem;
+  background: rgba(127, 29, 29, 0.2);
+  color: #fecaca;
+}
+
+.suggestions {
+  position: absolute;
+  z-index: 2;
+  top: calc(100% - 0.2rem);
+  right: 0;
+  left: 0;
+  display: grid;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 0.65rem;
+  background: #111827;
+}
+
+.suggestion {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.7rem 0.8rem;
+  border: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: transparent;
+  color: #f8fafc;
+  text-align: left;
+  cursor: pointer;
+}
+
+.suggestion:hover {
+  background: rgba(249, 115, 22, 0.16);
+}
+
+.form-actions {
+  display: flex;
+  grid-column: 1 / -1;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 1rem;
+}
+
 @media (max-width: 640px) {
   .page-header {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .form-card {
+    grid-template-columns: 1fr;
+  }
+
+  .field-wide {
+    grid-column: auto;
+  }
+
+  .form-actions {
+    align-items: stretch;
+    flex-direction: column-reverse;
   }
 }
