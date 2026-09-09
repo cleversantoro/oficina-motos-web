@@ -1,44 +1,212 @@
-import { ChangeDetectionStrategy, Component, OnInit, signal } from '@angular/core';
-import { DatePipe } from '@angular/common';
+import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
+import { CommonModule, CurrencyPipe, DatePipe } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { OrdemServico } from '../../../../core/models';
+import { ButtonModule } from 'primeng/button';
+import { TagModule } from 'primeng/tag';
+import {
+  Cliente,
+  OrdemServico,
+  OS_STATUS_LABELS,
+  OS_STATUS_SEVERITIES,
+  OS_STATUS_TRANSITIONS,
+  UpdateOrdemServicoRequest,
+  Veiculo,
+} from '../../../../core/models';
+import { ClientesService } from '../../../../core/services/clientes.service';
+import { MecanicosService } from '../../../../core/services/mecanicos.service';
 import { OrdensService } from '../../../../core/services/ordens.service';
+import { VeiculosService } from '../../../../core/services/veiculos.service';
+import { Toast } from '../../../../shared/services/toast';
 
 @Component({
   selector: 'app-os-detalhe',
   standalone: true,
-  imports: [DatePipe, RouterLink],
+  imports: [CommonModule, DatePipe, CurrencyPipe, RouterLink, ButtonModule, TagModule, FormsModule],
   templateUrl: './os-detalhe.html',
   styleUrl: './os-detalhe.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class OsDetalheComponent implements OnInit {
+  private readonly route = inject(ActivatedRoute);
+  private readonly ordensService = inject(OrdensService);
+  private readonly clientesService = inject(ClientesService);
+  private readonly veiculosService = inject(VeiculosService);
+  private readonly mecanicosService = inject(MecanicosService);
+  private readonly toast = inject(Toast);
+
   readonly ordem = signal<OrdemServico | null>(null);
+  readonly cliente = signal<Cliente | null>(null);
+  readonly veiculo = signal<Veiculo | null>(null);
+  readonly mecanicoNome = signal<string | null>(null);
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
+  readonly submittingStatus = signal(false);
+  readonly statusSelecionado = signal<string>('');
 
-  constructor(
-    private readonly route: ActivatedRoute,
-    private readonly ordensService: OrdensService,
-  ) {}
+  readonly transicoesValidas = computed(() => {
+    const status = this.ordem()?.status;
+    if (!status) return [];
+    return OS_STATUS_TRANSITIONS[status] || [];
+  });
+
+  readonly statusLabel = computed(() => {
+    const status = this.ordem()?.status;
+    if (!status) return '';
+    return OS_STATUS_LABELS[status] || status;
+  });
+
+  readonly statusSeverity = computed(() => {
+    const status = this.ordem()?.status;
+    if (!status) return 'info';
+    return OS_STATUS_SEVERITIES[status] || 'info';
+  });
+
+  readonly isTerminal = computed(() => {
+    const status = this.ordem()?.status;
+    return status === 'Concluida' || status === 'Cancelada';
+  });
+
+  readonly totalItens = computed(() => {
+    const itens = this.ordem()?.itens;
+    if (!itens || itens.length === 0) return 0;
+    return itens.reduce((acc, item) => {
+      const itemTotal = Number(item.total) || (Number(item.quantidade) * Number(item.valorUnitario)) || 0;
+      return acc + itemTotal;
+    }, 0);
+  });
+
+  readonly totalPago = computed(() => {
+    const pagamentos = this.ordem()?.pagamentos;
+    if (!pagamentos || pagamentos.length === 0) return 0;
+    return pagamentos.reduce((acc, p) => acc + (Number(p.valor) || 0), 0);
+  });
+
+  readonly saldoPendente = computed(() => {
+    return Math.max(0, this.totalItens() - this.totalPago());
+  });
 
   ngOnInit(): void {
-    const id = Number(this.route.snapshot.paramMap.get('id'));
-    if (!Number.isInteger(id) || id <= 0) {
+    const param = this.route.snapshot.paramMap.get('id');
+    const id = Number(param);
+    if (!param || !Number.isInteger(id) || id <= 0) {
       this.error.set('Identificador de ordem inválido.');
       return;
     }
 
+    this.carregarOrdem(id);
+  }
+
+  carregarOrdem(id: number): void {
     this.loading.set(true);
+    this.error.set(null);
+
     this.ordensService.get(id).subscribe({
       next: response => {
-        this.ordem.set(response as OrdemServico);
+        const ordem = response as OrdemServico;
+        this.ordem.set(ordem);
         this.loading.set(false);
+
+        if (ordem.clienteId) {
+          this.carregarCliente(ordem.clienteId);
+        }
+        if (ordem.veiculoId) {
+          this.carregarVeiculo(ordem.veiculoId);
+        }
+        if (ordem.mecanicoId) {
+          this.carregarMecanico(ordem.mecanicoId);
+        }
       },
       error: () => {
-        this.error.set('Não foi possível carregar a ordem de serviço.');
+        this.error.set('Ordem de serviço não encontrada ou indisponível.');
         this.loading.set(false);
       },
     });
   }
+
+  private carregarCliente(clienteId: number): void {
+    this.clientesService.get(clienteId).subscribe({
+      next: res => this.cliente.set(res as Cliente),
+      error: () => this.cliente.set(null),
+    });
+  }
+
+  private carregarVeiculo(veiculoId: number): void {
+    this.veiculosService.get(veiculoId).subscribe({
+      next: res => this.veiculo.set(res as Veiculo),
+      error: () => this.veiculo.set(null),
+    });
+  }
+
+  private carregarMecanico(mecanicoId: number): void {
+    this.mecanicosService.get(mecanicoId).subscribe({
+      next: (res: any) => {
+        if (res) {
+          const nome = [res.nome, res.sobrenome].filter(Boolean).join(' ');
+          this.mecanicoNome.set(nome || `Mecânico #${mecanicoId}`);
+        }
+      },
+      error: () => this.mecanicoNome.set(`Mecânico #${mecanicoId}`),
+    });
+  }
+
+  alterarStatus(novoStatus?: string): void {
+    const statusDestino = novoStatus || this.statusSelecionado();
+    if (!statusDestino || this.submittingStatus()) return;
+
+    const ordemAtual = this.ordem();
+    if (!ordemAtual || statusDestino === ordemAtual.status) return;
+
+    if (!this.transicoesValidas().includes(statusDestino)) {
+      this.toast.error('Transição inválida', `A transição de ${ordemAtual.status} para ${statusDestino} não é permitida.`);
+      return;
+    }
+
+    this.submittingStatus.set(true);
+    const payload: UpdateOrdemServicoRequest = {
+      clienteId: ordemAtual.clienteId,
+      mecanicoId: ordemAtual.mecanicoId,
+      veiculoId: ordemAtual.veiculoId,
+      descricaoProblema: ordemAtual.descricaoProblema,
+      status: statusDestino,
+      dataAbertura: ordemAtual.dataAbertura || null,
+      dataConclusao: statusDestino === 'Concluida' ? (ordemAtual.dataConclusao || new Date().toISOString()) : ordemAtual.dataConclusao,
+    };
+
+    this.ordensService.update(ordemAtual.id, payload).subscribe({
+      next: () => {
+        this.ordem.set({
+          ...ordemAtual,
+          status: statusDestino,
+          dataConclusao: payload.dataConclusao,
+        });
+        this.statusSelecionado.set('');
+        this.submittingStatus.set(false);
+        this.toast.success(
+          'Status atualizado',
+          `Status da OS #${ordemAtual.id} alterado para "${OS_STATUS_LABELS[statusDestino] || statusDestino}" com sucesso.`,
+        );
+      },
+      error: () => {
+        this.submittingStatus.set(false);
+        this.toast.error('Erro', 'Não foi possível atualizar o status da ordem de serviço.');
+      },
+    });
+  }
+
+  onStatusChange(event: Event): void {
+    const target = event.target as HTMLSelectElement;
+    const valor = target.value;
+    if (!valor) return;
+    this.statusSelecionado.set(valor);
+  }
+
+  getStatusLabel(status: string): string {
+    return OS_STATUS_LABELS[status] || status;
+  }
+
+  getStatusSeverity(status: string): 'info' | 'warn' | 'success' | 'danger' | 'secondary' {
+    return OS_STATUS_SEVERITIES[status] || 'info';
+  }
 }
+

@@ -73,19 +73,45 @@ export interface OrdemServicoPagamento {
 export interface OrdemServico {
   id: number;
   clienteId: number;
+  veiculoId: number;
   mecanicoId: number;
   descricaoProblema: string;
   status: string;
   dataAbertura: string;
   dataConclusao: string | null;
-  anexos: OrdemServicoAnexo[];
-  avaliacoes: OrdemServicoAvaliacao[];
-  checklists: OrdemServicoChecklist[];
+  anexos?: OrdemServicoAnexo[];
+  avaliacoes?: OrdemServicoAvaliacao[];
+  checklists?: OrdemServicoChecklist[];
   itens: OrdemServicoItem[];
   observacoes: OrdemServicoObservacao[];
-  historico: OrdemServicoHistorico[];
+  historico?: OrdemServicoHistorico[];
   pagamentos: OrdemServicoPagamento[];
 }
+
+export const OS_STATUS_TRANSITIONS: Record<string, string[]> = {
+  Aberta: ['EmAndamento', 'Cancelada'],
+  EmAndamento: ['AguardandoPeca', 'Concluida', 'Cancelada'],
+  AguardandoPeca: ['EmAndamento', 'Cancelada'],
+  Concluida: [],
+  Cancelada: [],
+};
+
+export const OS_STATUS_LABELS: Record<string, string> = {
+  Aberta: 'Aberta',
+  EmAndamento: 'Em Andamento',
+  AguardandoPeca: 'Aguardando Peça',
+  Concluida: 'Concluída',
+  Cancelada: 'Cancelada',
+};
+
+export const OS_STATUS_SEVERITIES: Record<string, 'info' | 'warn' | 'success' | 'danger' | 'secondary'> = {
+  Aberta: 'info',
+  EmAndamento: 'warn',
+  AguardandoPeca: 'secondary',
+  Concluida: 'success',
+  Cancelada: 'danger',
+};
+
 
 // ---- Requests ----
 

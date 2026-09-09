@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { ApiClientService } from './api-client.service';
 import { apiPaths } from './api-paths';
-import { CreateOrdemServicoRequest, OrdemServico } from '../models';
+import { CreateOrdemServicoRequest, OrdemServico, UpdateOrdemServicoRequest } from '../models';
 
 @Injectable({ providedIn: 'root' })
 export class OrdensService {
@@ -16,8 +16,8 @@ export class OrdensService {
   create<T = OrdemServico, B = CreateOrdemServicoRequest>(body: B) {
     return this.api.create<T, B>(apiPaths.ordens.base, body);
   }
-  update(id: string | number, body: any) {
-    return this.api.update(apiPaths.ordens.base, id, body);
+  update<T = OrdemServico, B = UpdateOrdemServicoRequest>(id: string | number, body: B) {
+    return this.api.update<T, B>(apiPaths.ordens.base, id, body);
   }
   delete(id: string | number) {
     return this.api.remove(apiPaths.ordens.base, id);

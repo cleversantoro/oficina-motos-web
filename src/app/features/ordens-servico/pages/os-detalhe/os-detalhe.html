@@ -1,26 +1,278 @@
 <section class="os-shell">
   @if (loading()) {
-    <p class="state">Carregando ordem de serviço...</p>
+    <div class="state loading-state">
+      <i class="pi pi-spin pi-spinner state-icon"></i>
+      <p>Carregando dados da ordem de serviço...</p>
+    </div>
   } @else if (error(); as message) {
-    <p class="state error" role="alert">{{ message }}</p>
+    <div class="state error-state" role="alert">
+      <i class="pi pi-exclamation-triangle state-icon"></i>
+      <p>{{ message }}</p>
+      <a routerLink="/ordens" class="btn-back">
+        <i class="pi pi-arrow-left"></i> Voltar para a lista de ordens
+      </a>
+    </div>
   } @else if (ordem(); as item) {
+    <!-- CABEÇALHO DA PÁGINA -->
     <header class="page-header">
-      <div>
-        <p class="eyebrow">Ordem de Serviço</p>
-        <h1>#{{ item.id }}</h1>
-        <p class="muted">Status: {{ item.status }}</p>
+      <div class="header-main">
+        <a routerLink="/ordens" class="back-link">
+          <i class="pi pi-arrow-left"></i> Voltar para ordens
+        </a>
+        <div class="title-group">
+          <h1>Ordem de Serviço #{{ item.id }}</h1>
+          <p-tag [value]="statusLabel()" [severity]="statusSeverity()"></p-tag>
+        </div>
       </div>
-      <a routerLink="/ordens" class="back-link">Voltar para ordens</a>
+
+      <!-- CONTROLE DE TRANSIÇÃO DE STATUS -->
+      <div class="status-control-card">
+        @if (!isTerminal()) {
+          <div class="status-action-group">
+            <label for="statusSelect" class="status-label">Transição de status:</label>
+            <div class="status-input-row">
+              <select
+                id="statusSelect"
+                class="status-select"
+                [ngModel]="statusSelecionado()"
+                (ngModelChange)="statusSelecionado.set($event)"
+                [disabled]="submittingStatus()"
+              >
+                <option value="" disabled>Selecione o próximo status...</option>
+                @for (opcao of transicoesValidas(); track opcao) {
+                  <option [value]="opcao">{{ getStatusLabel(opcao) }}</option>
+                }
+              </select>
+
+              <button
+                pButton
+                type="button"
+                label="Alterar Status"
+                icon="pi pi-check"
+                class="p-button-primary p-button-sm"
+                [disabled]="!statusSelecionado() || submittingStatus()"
+                [loading]="submittingStatus()"
+                (click)="alterarStatus()"
+              ></button>
+            </div>
+          </div>
+        } @else {
+          <div class="terminal-status-notice">
+            <i class="pi pi-lock"></i>
+            <span>Ordem de serviço finalizada ({{ statusLabel() }}). Nenhuma nova transição permitida.</span>
+          </div>
+        }
+      </div>
     </header>
 
-    <article class="detail-card">
-      <dl>
-        <div><dt>Cliente</dt><dd>{{ item.clienteId }}</dd></div>
-        <div><dt>Mecânico</dt><dd>{{ item.mecanicoId }}</dd></div>
-        <div><dt>Abertura</dt><dd>{{ item.dataAbertura | date: 'dd/MM/yyyy HH:mm' }}</dd></div>
-      </dl>
-      <h2>Descrição do problema</h2>
-      <p>{{ item.descricaoProblema }}</p>
-    </article>
+    <div class="os-layout-grid">
+      <!-- 1. CARD: DADOS GERAIS (T-010.3 / US1) -->
+      <article class="detail-card dados-gerais-card">
+        <h2 class="card-title">
+          <i class="pi pi-info-circle"></i> Dados Gerais
+        </h2>
+
+        <div class="info-grid">
+          <div class="info-block">
+            <span class="info-label">Cliente</span>
+            <span class="info-value primary">
+              {{ cliente()?.nome || cliente()?.nomeExibicao || ('Cliente #' + item.clienteId) }}
+            </span>
+            @if (cliente()?.documento || cliente()?.telefone) {
+              <span class="info-subtext">
+                {{ cliente()?.documento || '' }}
+                @if (cliente()?.documento && cliente()?.telefone) { · }
+                {{ cliente()?.telefone || '' }}
+              </span>
+            }
+          </div>
+
+          <div class="info-block">
+            <span class="info-label">Veículo</span>
+            <span class="info-value primary">
+              {{ veiculo()?.placa || ('Veículo #' + item.veiculoId) }}
+            </span>
+            @if (veiculo()?.cor || veiculo()?.anoMod) {
+              <span class="info-subtext">
+                {{ veiculo()?.cor || '' }}
+                @if (veiculo()?.cor && veiculo()?.anoMod) { · }
+                @if (veiculo()?.anoMod) { Ano {{ veiculo()?.anoMod }} }
+              </span>
+            }
+          </div>
+
+          <div class="info-block">
+            <span class="info-label">Mecânico Responsável</span>
+            <span class="info-value">
+              {{ mecanicoNome() || ('Mecânico #' + item.mecanicoId) }}
+            </span>
+          </div>
+
+          <div class="info-block">
+            <span class="info-label">Data de Abertura</span>
+            <span class="info-value">
+              {{ item.dataAbertura | date: 'dd/MM/yyyy HH:mm' }}
+            </span>
+          </div>
+
+          @if (item.dataConclusao) {
+            <div class="info-block">
+              <span class="info-label">Data de Conclusão</span>
+              <span class="info-value success-text">
+                {{ item.dataConclusao | date: 'dd/MM/yyyy HH:mm' }}
+              </span>
+            </div>
+          }
+        </div>
+
+        <div class="problema-section">
+          <span class="info-label">Descrição do Problema</span>
+          <p class="problema-text">{{ item.descricaoProblema || 'Nenhuma descrição fornecida.' }}</p>
+        </div>
+      </article>
+
+      <!-- 2. SEÇÃO: ITENS DA OS (T-010.4 / US3) -->
+      <article class="detail-card itens-card">
+        <div class="card-header-row">
+          <h2 class="card-title">
+            <i class="pi pi-wrench"></i> Itens da OS
+          </h2>
+          @if (item.itens && item.itens.length > 0) {
+            <span class="total-badge">
+              Total Itens: {{ totalItens() | currency: 'BRL':'symbol':'1.2-2' }}
+            </span>
+          }
+        </div>
+
+        @if (item.itens && item.itens.length > 0) {
+          <div class="table-responsive">
+            <table class="detail-table">
+              <thead>
+                <tr>
+                  <th>Descrição</th>
+                  <th class="text-right">Qtd</th>
+                  <th class="text-right">Valor Unitário</th>
+                  <th class="text-right">Subtotal</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (peca of item.itens; track peca.id || $index) {
+                  <tr>
+                    <td>{{ peca.descricao }}</td>
+                    <td class="text-right">{{ peca.quantidade }}</td>
+                    <td class="text-right">{{ peca.valorUnitario | currency: 'BRL':'symbol':'1.2-2' }}</td>
+                    <td class="text-right font-semibold">
+                      {{ (peca.total || (peca.quantidade * peca.valorUnitario)) | currency: 'BRL':'symbol':'1.2-2' }}
+                    </td>
+                  </tr>
+                }
+              </tbody>
+              <tfoot>
+                <tr>
+                  <td colspan="3" class="text-right font-bold">Total Geral dos Itens:</td>
+                  <td class="text-right font-bold total-highlight">
+                    {{ totalItens() | currency: 'BRL':'symbol':'1.2-2' }}
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        } @else {
+          <div class="empty-notice">
+            <i class="pi pi-inbox"></i>
+            <p>Nenhum item adicionado a esta OS.</p>
+          </div>
+        }
+      </article>
+
+      <!-- 3. SEÇÃO: OBSERVAÇÕES (T-010.6 / US4) -->
+      <article class="detail-card observacoes-card">
+        <h2 class="card-title">
+          <i class="pi pi-comment"></i> Observações
+        </h2>
+
+        @if (item.observacoes && item.observacoes.length > 0) {
+          <ul class="observacoes-list">
+            @for (obs of item.observacoes; track obs.id || $index) {
+              <li class="observacao-item">
+                <div class="observacao-meta">
+                  <span class="observacao-user">
+                    <i class="pi pi-user"></i> {{ obs.usuario || 'Sistema' }}
+                  </span>
+                </div>
+                <p class="observacao-text">{{ obs.texto }}</p>
+              </li>
+            }
+          </ul>
+        } @else {
+          <div class="empty-notice">
+            <i class="pi pi-comment"></i>
+            <p>Nenhuma observação registrada para esta OS.</p>
+          </div>
+        }
+      </article>
+
+      <!-- 4. SEÇÃO: PAGAMENTOS (T-010.7 / US5) -->
+      <article class="detail-card pagamentos-card">
+        <div class="card-header-row">
+          <h2 class="card-title">
+            <i class="pi pi-wallet"></i> Pagamentos
+          </h2>
+        </div>
+
+        <!-- RESUMO FINANCEIRO -->
+        <div class="financial-summary-grid">
+          <div class="summary-metric">
+            <span class="metric-label">Total da OS</span>
+            <span class="metric-value">{{ totalItens() | currency: 'BRL':'symbol':'1.2-2' }}</span>
+          </div>
+          <div class="summary-metric success">
+            <span class="metric-label">Total Pago</span>
+            <span class="metric-value">{{ totalPago() | currency: 'BRL':'symbol':'1.2-2' }}</span>
+          </div>
+          <div class="summary-metric" [class.warn]="saldoPendente() > 0" [class.neutral]="saldoPendente() === 0">
+            <span class="metric-label">Saldo Pendente</span>
+            <span class="metric-value">{{ saldoPendente() | currency: 'BRL':'symbol':'1.2-2' }}</span>
+          </div>
+        </div>
+
+        @if (item.pagamentos && item.pagamentos.length > 0) {
+          <div class="table-responsive">
+            <table class="detail-table">
+              <thead>
+                <tr>
+                  <th>Método</th>
+                  <th>Status</th>
+                  <th>Data</th>
+                  <th class="text-right">Valor</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (pag of item.pagamentos; track pag.id || $index) {
+                  <tr>
+                    <td>{{ pag.metodo || 'Não informado' }}</td>
+                    <td>
+                      <span class="payment-status-badge">{{ pag.status || 'Registrado' }}</span>
+                    </td>
+                    <td>
+                      {{ pag.dataPagamento ? (pag.dataPagamento | date: 'dd/MM/yyyy') : '-' }}
+                    </td>
+                    <td class="text-right font-semibold">
+                      {{ pag.valor | currency: 'BRL':'symbol':'1.2-2' }}
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        } @else {
+          <div class="empty-notice">
+            <i class="pi pi-credit-card"></i>
+            <p>Nenhum pagamento registrado para esta OS.</p>
+          </div>
+        }
+      </article>
+    </div>
   }
 </section>
+
