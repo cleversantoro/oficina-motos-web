@@ -1,0 +1,97 @@
+<p-dialog
+  [visible]="visible"
+  (visibleChange)="fechar()"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  header="Adicionar Serviço / Mão de Obra"
+  styleClass="os-item-modal dark-dialog"
+  [style]="{ width: '90vw', maxWidth: '580px' }"
+>
+  <div class="modal-form">
+    <!-- DESCRIÇÃO DO SERVIÇO -->
+    <div class="form-group">
+      <div class="label-row">
+        <label for="servicoDescricao" class="form-label">
+          Descrição do Serviço / Mão de Obra <span class="required">*</span>
+        </label>
+        <span class="char-counter" [class.danger]="caracteresRestantes() < 10">
+          {{ caracteresRestantes() }} caracteres
+        </span>
+      </div>
+      <textarea
+        id="servicoDescricao"
+        class="form-input textarea-input"
+        rows="3"
+        placeholder="Ex.: Troca de óleo, regulagem de válvulas, alinhamento..."
+        [value]="descricao()"
+        (input)="descricao.set($any($event.target).value)"
+        maxlength="240"
+      ></textarea>
+    </div>
+
+    <!-- LINHA: QUANTIDADE E VALOR MÃO DE OBRA -->
+    <div class="form-row">
+      <div class="form-group col-half">
+        <label for="servicoQuantidade" class="form-label">
+          Quantidade <span class="required">*</span>
+        </label>
+        <input
+          id="servicoQuantidade"
+          type="number"
+          class="form-input"
+          min="1"
+          step="1"
+          [value]="quantidade()"
+          (input)="quantidade.set(+$any($event.target).value)"
+        />
+      </div>
+
+      <div class="form-group col-half">
+        <label for="servicoValorUnitario" class="form-label">
+          Valor da Mão de Obra (R$) <span class="required">*</span>
+        </label>
+        <input
+          id="servicoValorUnitario"
+          type="number"
+          class="form-input"
+          min="0"
+          step="0.01"
+          [value]="valorUnitario()"
+          (input)="valorUnitario.set(+$any($event.target).value)"
+        />
+      </div>
+    </div>
+
+    <!-- SUBTOTAL COMPUTADO -->
+    <div class="subtotal-banner">
+      <span class="subtotal-label">Subtotal do Serviço:</span>
+      <span class="subtotal-value">
+        {{ subtotal() | currency: 'BRL':'symbol':'1.2-2' }}
+      </span>
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="modal-footer">
+      <button
+        pButton
+        type="button"
+        label="Cancelar"
+        class="p-button-text p-button-secondary"
+        (click)="fechar()"
+        [disabled]="submitting()"
+      ></button>
+      <button
+        pButton
+        type="button"
+        label="Adicionar Serviço"
+        icon="pi pi-check"
+        class="p-button-primary"
+        (click)="salvar()"
+        [disabled]="!isValido() || submitting()"
+        [loading]="submitting()"
+      ></button>
+    </div>
+  </ng-template>
+</p-dialog>

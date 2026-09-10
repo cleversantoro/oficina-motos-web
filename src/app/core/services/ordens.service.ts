@@ -1,7 +1,13 @@
 import { Injectable } from '@angular/core';
 import { ApiClientService } from './api-client.service';
 import { apiPaths } from './api-paths';
-import { CreateOrdemServicoRequest, OrdemServico, UpdateOrdemServicoRequest } from '../models';
+import {
+  CreateOrdemServicoItemRequest,
+  CreateOrdemServicoRequest,
+  OrdemServico,
+  OrdemServicoItem,
+  UpdateOrdemServicoRequest,
+} from '../models';
 
 @Injectable({ providedIn: 'root' })
 export class OrdensService {
@@ -31,6 +37,12 @@ export class OrdensService {
   }
   itens(params?: Record<string, any>) {
     return this.api.list(apiPaths.ordens.itens, params);
+  }
+  addItem<T = OrdemServicoItem, B = CreateOrdemServicoItemRequest>(body: B) {
+    return this.api.create<T, B>(apiPaths.ordens.itens, body);
+  }
+  deleteItem(itemId: string | number) {
+    return this.api.remove(apiPaths.ordens.itens, itemId);
   }
   historicos(params?: Record<string, any>) {
     return this.api.list(apiPaths.ordens.historicos, params);

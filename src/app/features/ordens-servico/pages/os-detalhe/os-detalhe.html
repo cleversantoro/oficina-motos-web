@@ -134,9 +134,31 @@
       <!-- 2. SEÇÃO: ITENS DA OS (T-010.4 / US3) -->
       <article class="detail-card itens-card">
         <div class="card-header-row">
-          <h2 class="card-title">
-            <i class="pi pi-wrench"></i> Itens da OS
-          </h2>
+          <div class="title-with-actions">
+            <h2 class="card-title">
+              <i class="pi pi-wrench"></i> Itens da OS
+            </h2>
+            @if (!isTerminal()) {
+              <div class="item-actions-group">
+                <button
+                  pButton
+                  type="button"
+                  label="Adicionar Peça"
+                  icon="pi pi-plus"
+                  class="p-button-outlined p-button-sm btn-item-action"
+                  (click)="abrirModalPeca()"
+                ></button>
+                <button
+                  pButton
+                  type="button"
+                  label="Adicionar Serviço"
+                  icon="pi pi-plus"
+                  class="p-button-outlined p-button-sm btn-item-action"
+                  (click)="abrirModalServico()"
+                ></button>
+              </div>
+            }
+          </div>
           @if (item.itens && item.itens.length > 0) {
             <span class="total-badge">
               Total Itens: {{ totalItens() | currency: 'BRL':'symbol':'1.2-2' }}
@@ -153,6 +175,9 @@
                   <th class="text-right">Qtd</th>
                   <th class="text-right">Valor Unitário</th>
                   <th class="text-right">Subtotal</th>
+                  @if (!isTerminal()) {
+                    <th class="text-center actions-col">Ações</th>
+                  }
                 </tr>
               </thead>
               <tbody>
@@ -164,6 +189,20 @@
                     <td class="text-right font-semibold">
                       {{ (peca.total || (peca.quantidade * peca.valorUnitario)) | currency: 'BRL':'symbol':'1.2-2' }}
                     </td>
+                    @if (!isTerminal()) {
+                      <td class="text-center actions-col">
+                        <button
+                          pButton
+                          type="button"
+                          icon="pi pi-trash"
+                          class="p-button-danger p-button-text p-button-sm btn-delete-item"
+                          title="Remover item"
+                          [disabled]="deletingItemId() === peca.id"
+                          [loading]="deletingItemId() === peca.id"
+                          (click)="confirmarExclusaoItem(peca)"
+                        ></button>
+                      </td>
+                    }
                   </tr>
                 }
               </tbody>
@@ -173,6 +212,9 @@
                   <td class="text-right font-bold total-highlight">
                     {{ totalItens() | currency: 'BRL':'symbol':'1.2-2' }}
                   </td>
+                  @if (!isTerminal()) {
+                    <td></td>
+                  }
                 </tr>
               </tfoot>
             </table>
@@ -273,6 +315,21 @@
         }
       </article>
     </div>
+
+    <!-- MODAIS DE ITENS DA OS -->
+    <app-os-item-peca-modal
+      [visible]="modalPecaAberto()"
+      [ordemServicoId]="item.id"
+      (visibleChange)="modalPecaAberto.set($event)"
+      (itemAdded)="onItemAdicionado($event)"
+    ></app-os-item-peca-modal>
+
+    <app-os-item-servico-modal
+      [visible]="modalServicoAberto()"
+      [ordemServicoId]="item.id"
+      (visibleChange)="modalServicoAberto.set($event)"
+      (itemAdded)="onItemAdicionado($event)"
+    ></app-os-item-servico-modal>
   }
 </section>
 

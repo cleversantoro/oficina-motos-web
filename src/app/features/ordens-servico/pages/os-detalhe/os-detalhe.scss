@@ -181,6 +181,25 @@
     .card-title {
       margin-bottom: 0;
     }
+
+    .title-with-actions {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .item-actions-group {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+
+      .btn-item-action {
+        font-size: 0.8rem;
+        padding: 0.4rem 0.75rem;
+      }
+    }
   }
 
   .card-title {
@@ -338,6 +357,21 @@
   .total-highlight {
     color: #38bdf8;
     font-size: 1.05rem;
+  }
+
+  .actions-col {
+    width: 60px;
+    text-align: center;
+  }
+
+  .btn-delete-item {
+    padding: 0.25rem 0.5rem;
+    color: #f87171;
+
+    &:hover:not(:disabled) {
+      background: rgba(239, 68, 68, 0.15);
+      color: #ef4444;
+    }
   }
 }
 

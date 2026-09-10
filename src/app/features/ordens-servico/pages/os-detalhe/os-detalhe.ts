@@ -7,6 +7,7 @@ import { TagModule } from 'primeng/tag';
 import {
   Cliente,
   OrdemServico,
+  OrdemServicoItem,
   OS_STATUS_LABELS,
   OS_STATUS_SEVERITIES,
   OS_STATUS_TRANSITIONS,
@@ -17,12 +18,25 @@ import { ClientesService } from '../../../../core/services/clientes.service';
 import { MecanicosService } from '../../../../core/services/mecanicos.service';
 import { OrdensService } from '../../../../core/services/ordens.service';
 import { VeiculosService } from '../../../../core/services/veiculos.service';
+import { Confirmation } from '../../../../shared/services/confirmation';
 import { Toast } from '../../../../shared/services/toast';
+import { OsItemPecaModalComponent } from '../../components/os-item-peca-modal/os-item-peca-modal';
+import { OsItemServicoModalComponent } from '../../components/os-item-servico-modal/os-item-servico-modal';
 
 @Component({
   selector: 'app-os-detalhe',
   standalone: true,
-  imports: [CommonModule, DatePipe, CurrencyPipe, RouterLink, ButtonModule, TagModule, FormsModule],
+  imports: [
+    CommonModule,
+    DatePipe,
+    CurrencyPipe,
+    RouterLink,
+    ButtonModule,
+    TagModule,
+    FormsModule,
+    OsItemPecaModalComponent,
+    OsItemServicoModalComponent,
+  ],
   templateUrl: './os-detalhe.html',
   styleUrl: './os-detalhe.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -34,6 +48,7 @@ export class OsDetalheComponent implements OnInit {
   private readonly veiculosService = inject(VeiculosService);
   private readonly mecanicosService = inject(MecanicosService);
   private readonly toast = inject(Toast);
+  private readonly confirmation = inject(Confirmation);
 
   readonly ordem = signal<OrdemServico | null>(null);
   readonly cliente = signal<Cliente | null>(null);
@@ -43,6 +58,9 @@ export class OsDetalheComponent implements OnInit {
   readonly error = signal<string | null>(null);
   readonly submittingStatus = signal(false);
   readonly statusSelecionado = signal<string>('');
+  readonly modalPecaAberto = signal(false);
+  readonly modalServicoAberto = signal(false);
+  readonly deletingItemId = signal<number | null>(null);
 
   readonly transicoesValidas = computed(() => {
     const status = this.ordem()?.status;
@@ -207,6 +225,54 @@ export class OsDetalheComponent implements OnInit {
 
   getStatusSeverity(status: string): 'info' | 'warn' | 'success' | 'danger' | 'secondary' {
     return OS_STATUS_SEVERITIES[status] || 'info';
+  }
+
+  abrirModalPeca(): void {
+    if (!this.isTerminal()) {
+      this.modalPecaAberto.set(true);
+    }
+  }
+
+  abrirModalServico(): void {
+    if (!this.isTerminal()) {
+      this.modalServicoAberto.set(true);
+    }
+  }
+
+  onItemAdicionado(novoItem: OrdemServicoItem): void {
+    this.ordem.update(atual => {
+      if (!atual) return null;
+      return {
+        ...atual,
+        itens: [...(atual.itens || []), novoItem],
+      };
+    });
+  }
+
+  async confirmarExclusaoItem(item: OrdemServicoItem): Promise<void> {
+    if (this.isTerminal() || this.deletingItemId() !== null) return;
+
+    const confirmado = await this.confirmation.confirmDelete(item.descricao);
+    if (!confirmado) return;
+
+    this.deletingItemId.set(item.id);
+    this.ordensService.deleteItem(item.id).subscribe({
+      next: () => {
+        this.ordem.update(atual => {
+          if (!atual) return null;
+          return {
+            ...atual,
+            itens: (atual.itens || []).filter(i => i.id !== item.id),
+          };
+        });
+        this.deletingItemId.set(null);
+        this.toast.success('Item excluído', `"${item.descricao}" removido da ordem de serviço.`);
+      },
+      error: () => {
+        this.deletingItemId.set(null);
+        this.toast.error('Erro ao excluir', 'Não foi possível remover o item da ordem de serviço.');
+      },
+    });
   }
 }
 

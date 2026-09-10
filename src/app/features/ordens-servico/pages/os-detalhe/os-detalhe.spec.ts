@@ -1,13 +1,16 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Subject, of, throwError } from 'rxjs';
 import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
+import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { OsDetalheComponent } from './os-detalhe';
 import { OrdensService } from '../../../../core/services/ordens.service';
 import { ClientesService } from '../../../../core/services/clientes.service';
 import { VeiculosService } from '../../../../core/services/veiculos.service';
 import { MecanicosService } from '../../../../core/services/mecanicos.service';
+import { EstoqueService } from '../../../../core/services/estoque.service';
+import { Confirmation } from '../../../../shared/services/confirmation';
 import { Toast } from '../../../../shared/services/toast';
-import { OrdemServico } from '../../../../core/models';
+import { OrdemServico, OrdemServicoItem } from '../../../../core/models';
 
 describe('OsDetalheComponent', () => {
   let fixture: ComponentFixture<OsDetalheComponent>;
@@ -17,6 +20,8 @@ describe('OsDetalheComponent', () => {
   let clientesGetSubject: Subject<any>;
   let veiculosGetSubject: Subject<any>;
   let mecanicosGetSubject: Subject<any>;
+  let deleteItemMock: any;
+  let confirmDeleteMock: any;
   let toastSuccesses: string[];
   let toastErrors: string[];
 
@@ -47,6 +52,8 @@ describe('OsDetalheComponent', () => {
     clientesGetSubject = new Subject<any>();
     veiculosGetSubject = new Subject<any>();
     mecanicosGetSubject = new Subject<any>();
+    deleteItemMock = vi.fn().mockReturnValue(of(null));
+    confirmDeleteMock = vi.fn().mockResolvedValue(true);
     toastSuccesses = [];
     toastErrors = [];
 
@@ -67,6 +74,8 @@ describe('OsDetalheComponent', () => {
           useValue: {
             get: () => ordensGetSubject.asObservable(),
             update: () => ordensUpdateSubject.asObservable(),
+            deleteItem: deleteItemMock,
+            addItem: vi.fn(),
           },
         },
         {
@@ -85,6 +94,18 @@ describe('OsDetalheComponent', () => {
           provide: MecanicosService,
           useValue: {
             get: () => mecanicosGetSubject.asObservable(),
+          },
+        },
+        {
+          provide: EstoqueService,
+          useValue: {
+            pecas: () => of([]),
+          },
+        },
+        {
+          provide: Confirmation,
+          useValue: {
+            confirmDelete: confirmDeleteMock,
           },
         },
         {
@@ -227,6 +248,97 @@ describe('OsDetalheComponent', () => {
     it('deve retornar 0 quando a OS não possuir itens', () => {
       ordensGetSubject.next({ ...mockOrdemAberta, itens: [] });
       expect(component.totalItens()).toBe(0);
+    });
+  });
+
+  describe('Gestão de Itens da OS (US-011)', () => {
+    beforeEach(async () => {
+      await setupTestBed('1');
+      component.ngOnInit();
+      ordensGetSubject.next(mockOrdemAberta);
+    });
+
+    it('deve abrir modal de peça quando OS não for terminal', () => {
+      component.abrirModalPeca();
+      expect(component.modalPecaAberto()).toBe(true);
+    });
+
+    it('não deve abrir modal de peça quando OS for terminal', () => {
+      ordensGetSubject.next({ ...mockOrdemAberta, status: 'Concluida' });
+      component.abrirModalPeca();
+      expect(component.modalPecaAberto()).toBe(false);
+    });
+
+    it('deve abrir modal de serviço quando OS não for terminal', () => {
+      component.abrirModalServico();
+      expect(component.modalServicoAberto()).toBe(true);
+    });
+
+    it('não deve abrir modal de serviço quando OS for terminal', () => {
+      ordensGetSubject.next({ ...mockOrdemAberta, status: 'Cancelada' });
+      component.abrirModalServico();
+      expect(component.modalServicoAberto()).toBe(false);
+    });
+
+    it('deve adicionar item e recalcular totalItens e saldoPendente reativamente sem reload', () => {
+      const novoItem: OrdemServicoItem = {
+        id: 103,
+        ordemServicoId: 1,
+        pecaId: 5,
+        descricao: 'Óleo Motul 5100',
+        quantidade: 1,
+        valorUnitario: 65,
+        total: 65,
+      };
+
+      // Total antes: 180 (pago: 50, saldo: 130)
+      component.onItemAdicionado(novoItem);
+
+      expect(component.ordem()?.itens.length).toBe(3);
+      // Total depois: 180 + 65 = 245
+      expect(component.totalItens()).toBe(245);
+      // Saldo depois: 245 - 50 = 195
+      expect(component.saldoPendente()).toBe(195);
+    });
+
+    it('deve excluir item da OS quando confirmado e recalcular totais', async () => {
+      confirmDeleteMock.mockResolvedValue(true);
+      const itemParaExcluir = mockOrdemAberta.itens[0]; // id 101, total 100
+
+      await component.confirmarExclusaoItem(itemParaExcluir);
+
+      expect(confirmDeleteMock).toHaveBeenCalledWith('Pastilha Dianteira');
+      expect(deleteItemMock).toHaveBeenCalledWith(101);
+      expect(component.ordem()?.itens.length).toBe(1);
+      expect(component.ordem()?.itens[0].id).toBe(102);
+      // Total restante: 80, Pago: 50 => Saldo: 30
+      expect(component.totalItens()).toBe(80);
+      expect(component.saldoPendente()).toBe(30);
+      expect(toastSuccesses.length).toBe(1);
+    });
+
+    it('não deve excluir item se usuário cancelar o diálogo de confirmação', async () => {
+      confirmDeleteMock.mockResolvedValue(false);
+      const item = mockOrdemAberta.itens[0];
+
+      await component.confirmarExclusaoItem(item);
+
+      expect(confirmDeleteMock).toHaveBeenCalled();
+      expect(deleteItemMock).not.toHaveBeenCalled();
+      expect(component.ordem()?.itens.length).toBe(2);
+      expect(component.totalItens()).toBe(180);
+    });
+
+    it('deve tratar erro ao excluir item mantendo a lista inalterada', async () => {
+      confirmDeleteMock.mockResolvedValue(true);
+      deleteItemMock.mockReturnValue(throwError(() => new Error('Falha')));
+      const item = mockOrdemAberta.itens[0];
+
+      await component.confirmarExclusaoItem(item);
+
+      expect(toastErrors.length).toBe(1);
+      expect(component.ordem()?.itens.length).toBe(2);
+      expect(component.deletingItemId()).toBeNull();
     });
   });
 

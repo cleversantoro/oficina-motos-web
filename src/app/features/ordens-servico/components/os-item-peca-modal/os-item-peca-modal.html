@@ -1,0 +1,156 @@
+<p-dialog
+  [visible]="visible"
+  (visibleChange)="fechar()"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  header="Adicionar Peça do Estoque"
+  styleClass="os-item-modal dark-dialog"
+  [style]="{ width: '90vw', maxWidth: '580px' }"
+>
+  <div class="modal-form">
+    <!-- CAMPO BUSCA DE PEÇA -->
+    <div class="form-group">
+      <label for="pecaBusca" class="form-label">
+        Buscar Peça no Estoque <span class="required">*</span>
+      </label>
+      <div class="search-box">
+        <i class="pi pi-search search-icon"></i>
+        <input
+          id="pecaBusca"
+          type="text"
+          class="form-input search-input"
+          placeholder="Digite código ou nome da peça (mín. 2 letras)..."
+          [value]="termoBusca()"
+          (input)="buscarPecas($any($event.target).value)"
+          autocomplete="off"
+        />
+        @if (buscandoPecas()) {
+          <i class="pi pi-spin pi-spinner spinner-icon"></i>
+        } @else if (pecaSelecionada()) {
+          <button type="button" class="btn-clear" (click)="limparPeca()" title="Limpar seleção">
+            <i class="pi pi-times"></i>
+          </button>
+        }
+      </div>
+
+      <!-- SUGESTÕES DE AUTOCOMPLETE -->
+      @if (pecasSugeridas().length > 0) {
+        <ul class="suggestions-list" role="listbox">
+          @for (peca of pecasSugeridas(); track peca.id) {
+            <li class="suggestion-item" (click)="selecionarPeca(peca)" role="option">
+              <div class="item-primary">
+                <span class="item-code">{{ peca.codigo }}</span>
+                <span class="item-desc">{{ peca.descricao }}</span>
+              </div>
+              <div class="item-meta">
+                <span class="item-stock" [class.low]="peca.quantidade <= 0">
+                  Estoque: {{ peca.quantidade }} {{ peca.unidade || 'UN' }}
+                </span>
+                <span class="item-price">
+                  {{ peca.precoUnitario | currency: 'BRL':'symbol':'1.2-2' }}
+                </span>
+              </div>
+            </li>
+          }
+        </ul>
+      }
+    </div>
+
+    <!-- PEÇA SELECIONADA DETALHES -->
+    @if (pecaSelecionada(); as sel) {
+      <div class="selected-peca-card">
+        <div class="selected-info">
+          <span class="selected-title">{{ sel.descricao }}</span>
+          <span class="selected-code">Código: {{ sel.codigo }}</span>
+        </div>
+        <div class="selected-stock-tag">
+          <p-tag
+            [value]="'Estoque: ' + sel.quantidade + ' ' + (sel.unidade || 'UN')"
+            [severity]="sel.quantidade > 0 ? 'success' : 'danger'"
+          ></p-tag>
+        </div>
+      </div>
+    }
+
+    <!-- CAMPO DESCRIÇÃO -->
+    <div class="form-group">
+      <label for="pecaDescricao" class="form-label">
+        Descrição do Item na OS <span class="required">*</span>
+      </label>
+      <input
+        id="pecaDescricao"
+        type="text"
+        class="form-input"
+        placeholder="Descrição da peça na ordem de serviço"
+        [value]="descricao()"
+        (input)="descricao.set($any($event.target).value)"
+        maxlength="240"
+      />
+    </div>
+
+    <!-- LINHA: QUANTIDADE E VALOR UNITÁRIO -->
+    <div class="form-row">
+      <div class="form-group col-half">
+        <label for="pecaQuantidade" class="form-label">
+          Quantidade <span class="required">*</span>
+        </label>
+        <input
+          id="pecaQuantidade"
+          type="number"
+          class="form-input"
+          min="1"
+          step="1"
+          [value]="quantidade()"
+          (input)="quantidade.set(+$any($event.target).value)"
+        />
+      </div>
+
+      <div class="form-group col-half">
+        <label for="pecaValorUnitario" class="form-label">
+          Valor Unitário (R$) <span class="required">*</span>
+        </label>
+        <input
+          id="pecaValorUnitario"
+          type="number"
+          class="form-input"
+          min="0"
+          step="0.01"
+          [value]="valorUnitario()"
+          (input)="valorUnitario.set(+$any($event.target).value)"
+        />
+      </div>
+    </div>
+
+    <!-- SUBTOTAL COMPUTADO -->
+    <div class="subtotal-banner">
+      <span class="subtotal-label">Subtotal da Peça:</span>
+      <span class="subtotal-value">
+        {{ subtotal() | currency: 'BRL':'symbol':'1.2-2' }}
+      </span>
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="modal-footer">
+      <button
+        pButton
+        type="button"
+        label="Cancelar"
+        class="p-button-text p-button-secondary"
+        (click)="fechar()"
+        [disabled]="submitting()"
+      ></button>
+      <button
+        pButton
+        type="button"
+        label="Adicionar Peça"
+        icon="pi pi-check"
+        class="p-button-primary"
+        (click)="salvar()"
+        [disabled]="!isValido() || submitting()"
+        [loading]="submitting()"
+      ></button>
+    </div>
+  </ng-template>
+</p-dialog>
