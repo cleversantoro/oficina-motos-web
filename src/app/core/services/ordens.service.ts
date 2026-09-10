@@ -3,9 +3,11 @@ import { ApiClientService } from './api-client.service';
 import { apiPaths } from './api-paths';
 import {
   CreateOrdemServicoItemRequest,
+  CreateOrdemServicoPagamentoRequest,
   CreateOrdemServicoRequest,
   OrdemServico,
   OrdemServicoItem,
+  OrdemServicoPagamento,
   UpdateOrdemServicoRequest,
 } from '../models';
 
@@ -31,6 +33,9 @@ export class OrdensService {
 
   pagamentos(params?: Record<string, any>) {
     return this.api.list(apiPaths.ordens.pagamentos, params);
+  }
+  addPagamento<T = OrdemServicoPagamento, B = CreateOrdemServicoPagamentoRequest>(body: B) {
+    return this.api.create<T, B>(apiPaths.ordens.pagamentos, body);
   }
   observacoes(params?: Record<string, any>) {
     return this.api.list(apiPaths.ordens.observacoes, params);

@@ -1,0 +1,137 @@
+<p-dialog
+  [visible]="visible"
+  (visibleChange)="fechar()"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  header="Registrar Pagamento"
+  styleClass="os-pagamento-modal dark-dialog"
+  [style]="{ width: '90vw', maxWidth: '540px' }"
+>
+  <div class="modal-form">
+    <!-- CARD RESUMO DO SALDO -->
+    <div class="saldo-card">
+      <div class="saldo-info">
+        <span class="saldo-label">Saldo Pendente da OS:</span>
+        <span class="saldo-valor">{{ saldoPendente | currency: 'BRL':'symbol':'1.2-2' }}</span>
+      </div>
+      @if (saldoPendente > 0) {
+        <button
+          type="button"
+          class="btn-preencher-total"
+          (click)="preencherTotal()"
+          title="Preencher com valor total pendente"
+        >
+          <i class="pi pi-check"></i> Quitar Total
+        </button>
+      }
+    </div>
+
+    <!-- CAMPO VALOR -->
+    <div class="form-group">
+      <label for="pagamentoValor" class="form-label">
+        Valor Pago (R$) <span class="required">*</span>
+      </label>
+      <div class="input-prefix-wrapper">
+        <span class="prefix">R$</span>
+        <input
+          id="pagamentoValor"
+          type="number"
+          step="0.01"
+          min="0.01"
+          [max]="saldoPendente"
+          class="form-input with-prefix"
+          [class.input-error]="valorExcedente()"
+          placeholder="0,00"
+          [value]="valor()"
+          (input)="onValorInput($event)"
+        />
+      </div>
+      @if (valorExcedente()) {
+        <span class="error-msg">
+          <i class="pi pi-exclamation-triangle"></i> O valor não pode exceder o saldo pendente de {{ saldoPendente | currency: 'BRL':'symbol':'1.2-2' }}.
+        </span>
+      } @else if (isIntegral()) {
+        <div class="quitar-notice">
+          <i class="pi pi-info-circle"></i>
+          <span><strong>Pagamento Integral:</strong> A OS será atualizada automaticamente para <strong>Concluída</strong>.</span>
+        </div>
+      }
+    </div>
+
+    <!-- CAMPO FORMA DE PAGAMENTO -->
+    <div class="form-group">
+      <label for="pagamentoMetodo" class="form-label">
+        Forma de Pagamento <span class="required">*</span>
+      </label>
+      <div class="select-wrapper">
+        <select
+          id="pagamentoMetodo"
+          class="form-select"
+          [value]="metodo()"
+          (change)="metodo.set($any($event.target).value)"
+        >
+          @for (opcao of metodosHomologados; track opcao.value) {
+            <option [value]="opcao.value">{{ opcao.label }}</option>
+          }
+        </select>
+        <i class="pi pi-chevron-down select-icon"></i>
+      </div>
+    </div>
+
+    <!-- CAMPO DATA DO PAGAMENTO -->
+    <div class="form-group">
+      <label for="pagamentoData" class="form-label">
+        Data do Pagamento <span class="required">*</span>
+      </label>
+      <input
+        id="pagamentoData"
+        type="date"
+        class="form-input"
+        [value]="dataPagamento()"
+        (input)="dataPagamento.set($any($event.target).value)"
+      />
+    </div>
+
+    <!-- CAMPO OBSERVAÇÃO -->
+    <div class="form-group">
+      <label for="pagamentoObservacao" class="form-label">
+        Observações <span class="optional">(opcional)</span>
+      </label>
+      <textarea
+        id="pagamentoObservacao"
+        class="form-textarea"
+        rows="3"
+        placeholder="Ex: Comprovante Pix #12345, entrada parcelada, etc."
+        [value]="observacao()"
+        (input)="observacao.set($any($event.target).value)"
+        maxlength="500"
+      ></textarea>
+    </div>
+  </div>
+
+  <!-- RODAPÉ DE AÇÕES -->
+  <ng-template pTemplate="footer">
+    <div class="modal-actions">
+      <button
+        pButton
+        type="button"
+        label="Cancelar"
+        class="p-button-text p-button-secondary"
+        (click)="fechar()"
+        [disabled]="submitting()"
+      ></button>
+      <button
+        pButton
+        type="button"
+        label="Confirmar Pagamento"
+        icon="pi pi-check"
+        class="p-button-success"
+        (click)="salvar()"
+        [disabled]="!formularioValido() || submitting()"
+        [loading]="submitting()"
+      ></button>
+    </div>
+  </ng-template>
+</p-dialog>
+

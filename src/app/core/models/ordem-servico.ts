@@ -66,6 +66,8 @@ export interface OrdemServicoPagamento {
   dataPagamento: string | null;
   metodo: string | null;
   observacao: string | null;
+  statusOrdemServico?: string;
+  createdAt?: string;
 }
 
 // ---- Response: entidade principal ----
@@ -180,7 +182,7 @@ export type UpdateOrdemServicoHistoricoRequest = CreateOrdemServicoHistoricoRequ
 export interface CreateOrdemServicoPagamentoRequest {
   ordemServicoId: number;
   valor: number;
-  status: string;
+  status?: string;
   dataPagamento: string | null;
   metodo: string | null;
   observacao: string | null;

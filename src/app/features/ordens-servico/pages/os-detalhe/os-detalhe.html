@@ -260,6 +260,20 @@
           <h2 class="card-title">
             <i class="pi pi-wallet"></i> Pagamentos
           </h2>
+          @if (!isTerminal() && saldoPendente() > 0 && totalItens() > 0) {
+            <button
+              pButton
+              type="button"
+              label="Registrar Pagamento"
+              icon="pi pi-plus"
+              class="p-button-success p-button-sm btn-pagamento-action"
+              (click)="abrirModalPagamento()"
+            ></button>
+          } @else if (saldoPendente() === 0 && totalItens() > 0) {
+            <span class="paid-badge">
+              <i class="pi pi-check-circle"></i> OS Quitada
+            </span>
+          }
         </div>
 
         <!-- RESUMO FINANCEIRO -->
@@ -330,6 +344,14 @@
       (visibleChange)="modalServicoAberto.set($event)"
       (itemAdded)="onItemAdicionado($event)"
     ></app-os-item-servico-modal>
+
+    <app-os-pagamento-modal
+      [visible]="modalPagamentoAberto()"
+      [ordemServicoId]="item.id"
+      [saldoPendente]="saldoPendente()"
+      (visibleChange)="modalPagamentoAberto.set($event)"
+      (pagamentoRegistrado)="onPagamentoRegistrado($event)"
+    ></app-os-pagamento-modal>
   }
 </section>
 

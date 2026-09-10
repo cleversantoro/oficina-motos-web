@@ -8,6 +8,7 @@ import {
   Cliente,
   OrdemServico,
   OrdemServicoItem,
+  OrdemServicoPagamento,
   OS_STATUS_LABELS,
   OS_STATUS_SEVERITIES,
   OS_STATUS_TRANSITIONS,
@@ -22,6 +23,7 @@ import { Confirmation } from '../../../../shared/services/confirmation';
 import { Toast } from '../../../../shared/services/toast';
 import { OsItemPecaModalComponent } from '../../components/os-item-peca-modal/os-item-peca-modal';
 import { OsItemServicoModalComponent } from '../../components/os-item-servico-modal/os-item-servico-modal';
+import { OsPagamentoModalComponent } from '../../components/os-pagamento-modal/os-pagamento-modal';
 
 @Component({
   selector: 'app-os-detalhe',
@@ -36,6 +38,7 @@ import { OsItemServicoModalComponent } from '../../components/os-item-servico-mo
     FormsModule,
     OsItemPecaModalComponent,
     OsItemServicoModalComponent,
+    OsPagamentoModalComponent,
   ],
   templateUrl: './os-detalhe.html',
   styleUrl: './os-detalhe.scss',
@@ -60,6 +63,7 @@ export class OsDetalheComponent implements OnInit {
   readonly statusSelecionado = signal<string>('');
   readonly modalPecaAberto = signal(false);
   readonly modalServicoAberto = signal(false);
+  readonly modalPagamentoAberto = signal(false);
   readonly deletingItemId = signal<number | null>(null);
 
   readonly transicoesValidas = computed(() => {
@@ -237,6 +241,33 @@ export class OsDetalheComponent implements OnInit {
     if (!this.isTerminal()) {
       this.modalServicoAberto.set(true);
     }
+  }
+
+  abrirModalPagamento(): void {
+    if (!this.isTerminal() && this.saldoPendente() > 0 && this.totalItens() > 0) {
+      this.modalPagamentoAberto.set(true);
+    }
+  }
+
+  onPagamentoRegistrado(novoPagamento: OrdemServicoPagamento): void {
+    this.ordem.update(atual => {
+      if (!atual) return null;
+      const pagamentosAtualizados = [...(atual.pagamentos || []), novoPagamento];
+      const totalPagoAtualizado = pagamentosAtualizados.reduce((acc, p) => acc + (Number(p.valor) || 0), 0);
+      const totalItensAtual = (atual.itens || []).reduce((acc, item) => {
+        const itemTotal = Number(item.total) || (Number(item.quantidade) * Number(item.valorUnitario)) || 0;
+        return acc + itemTotal;
+      }, 0);
+      const quitada = totalPagoAtualizado >= totalItensAtual && totalItensAtual > 0;
+      const novoStatus = novoPagamento.statusOrdemServico || (quitada ? 'Concluida' : atual.status);
+
+      return {
+        ...atual,
+        status: novoStatus,
+        dataConclusao: novoStatus === 'Concluida' ? (atual.dataConclusao || new Date().toISOString()) : atual.dataConclusao,
+        pagamentos: pagamentosAtualizados,
+      };
+    });
   }
 
   onItemAdicionado(novoItem: OrdemServicoItem): void {

@@ -366,5 +366,67 @@ describe('OsDetalheComponent', () => {
       expect(component.totalPago()).toBe(180);
       expect(component.saldoPendente()).toBe(0);
     });
+
+    it('deve abrir modal de pagamento quando OS não for terminal e possuir saldo pendente', () => {
+      ordensGetSubject.next(mockOrdemAberta);
+      expect(component.modalPagamentoAberto()).toBe(false);
+      component.abrirModalPagamento();
+      expect(component.modalPagamentoAberto()).toBe(true);
+    });
+
+    it('não deve abrir modal de pagamento se OS estiver concluída ou sem saldo pendente', () => {
+      const ordemQuitada: OrdemServico = {
+        ...mockOrdemAberta,
+        status: 'Concluida',
+        pagamentos: [
+          { id: 301, ordemServicoId: 1, valor: 180, status: 'Liquidado', metodo: 'PIX', dataPagamento: '2026-09-08', observacao: null },
+        ],
+      };
+      ordensGetSubject.next(ordemQuitada);
+      component.abrirModalPagamento();
+      expect(component.modalPagamentoAberto()).toBe(false);
+    });
+
+    it('deve registrar pagamento parcial e manter status da OS', () => {
+      ordensGetSubject.next(mockOrdemAberta);
+      const novoPagamento = {
+        id: 302,
+        ordemServicoId: 1,
+        valor: 50,
+        status: 'Liquidado',
+        metodo: 'Dinheiro',
+        dataPagamento: '2026-09-09',
+        observacao: null,
+      };
+
+      component.onPagamentoRegistrado(novoPagamento);
+
+      expect(component.ordem()?.pagamentos.length).toBe(2);
+      expect(component.totalPago()).toBe(100);
+      expect(component.saldoPendente()).toBe(80);
+      expect(component.ordem()?.status).toBe('Aberta');
+    });
+
+    it('deve registrar pagamento integral e atualizar status para Concluida automaticamente', () => {
+      ordensGetSubject.next(mockOrdemAberta);
+      const pagamentoIntegral = {
+        id: 303,
+        ordemServicoId: 1,
+        valor: 130, // 50 anterior + 130 = 180 total itens
+        status: 'Liquidado',
+        metodo: 'PIX',
+        dataPagamento: '2026-09-09',
+        observacao: 'Quitação total',
+        statusOrdemServico: 'Concluida',
+      };
+
+      component.onPagamentoRegistrado(pagamentoIntegral);
+
+      expect(component.ordem()?.pagamentos.length).toBe(2);
+      expect(component.totalPago()).toBe(180);
+      expect(component.saldoPendente()).toBe(0);
+      expect(component.ordem()?.status).toBe('Concluida');
+      expect(component.ordem()?.dataConclusao).toBeTruthy();
+    });
   });
 });
