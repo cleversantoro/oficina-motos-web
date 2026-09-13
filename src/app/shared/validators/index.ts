@@ -39,3 +39,11 @@ export {
   formatCep,
   extractCepNumbers,
 } from './cep-validator';
+
+// Validadores de Placa
+export {
+  placaValidator,
+  isPlacaValid,
+  cleanPlaca,
+} from './placa-validator';
+

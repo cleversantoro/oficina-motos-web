@@ -41,6 +41,37 @@
   display: flex;
   align-items: center;
   gap: 0.75rem;
+
+  a {
+    text-decoration: none;
+  }
+}
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.55rem 1rem;
+  border-radius: 0.65rem;
+  border: none;
+  background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+  color: #ffffff;
+  font-size: 0.875rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(249, 115, 22, 0.35);
+  transition: all 0.15s ease;
+
+  &:hover {
+    background: linear-gradient(135deg, #fb923c 0%, #ea580c 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(249, 115, 22, 0.45);
+  }
+
+  .btn-icon {
+    width: 1rem;
+    height: 1rem;
+  }
 }
 
 /* ── Search ───────────────────────────────── */

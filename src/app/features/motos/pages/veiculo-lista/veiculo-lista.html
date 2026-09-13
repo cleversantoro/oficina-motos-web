@@ -5,6 +5,17 @@
       <span class="count-pill">{{ filtered.length }} registros</span>
     </div>
     <div class="header-actions">
+      @if (canCreateVeiculo()) {
+        <a routerLink="/motos/novo">
+          <button class="btn-primary" type="button">
+            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            Nova Moto
+          </button>
+        </a>
+      }
       <div class="search-wrap">
         <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>

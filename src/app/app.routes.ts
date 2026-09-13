@@ -7,6 +7,7 @@ import { EstoqueLista } from './features/estoque/pages/estoque-lista/estoque-lis
 import { MecanicoLista } from './features/mecanicos/pages/mecanico-lista/mecanico-lista';
 import { VeiculoDetalhe } from './features/motos/pages/veiculo-detalhe/veiculo-detalhe';
 import { VeiculoLista } from './features/motos/pages/veiculo-lista/veiculo-lista';
+import { VeiculoCadastroComponent } from './features/motos/pages/veiculo-cadastro/veiculo-cadastro';
 import { FinanceiroDashboard } from './features/financeiro/pages/financeiro-dashboard/financeiro-dashboard';
 import { FornecedorDetalhe } from './features/fornecedores/pages/fornecedor-detalhe/fornecedor-detalhe';
 import { FornecedorLista } from './features/fornecedores/pages/fornecedor-lista/fornecedor-lista';
@@ -36,6 +37,7 @@ export const routes: Routes = [
       { path: 'clientes/:id', component: ClienteDetalhe },
       { path: 'clientes/:id/editar', component: ClienteEditar },
       { path: 'motos', component: VeiculoLista },
+      { path: 'motos/novo', component: VeiculoCadastroComponent },
       { path: 'motos/:id', component: VeiculoDetalhe },
       {
         path: 'estoque',

@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { canPerformBusinessAction } from '../../../../core/auth/rbac-access.helper';
@@ -10,7 +10,7 @@ import { VeiculosService } from '../../../../core/services/veiculos.service';
 @Component({
   selector: 'app-veiculo-lista',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './veiculo-lista.html',
   styleUrl: './veiculo-lista.scss',
 })
@@ -98,6 +98,10 @@ export class VeiculoLista implements OnInit {
 
   openDetalhe(id: number): void {
     this.router.navigate(['/motos', id]);
+  }
+
+  canCreateVeiculo(): boolean {
+    return canPerformBusinessAction(this.authService.currentRole(), 'veiculos', 'create');
   }
 
   canDeleteVeiculo(): boolean {

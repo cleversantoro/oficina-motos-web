@@ -1,0 +1,368 @@
+<form [formGroup]="form" (ngSubmit)="salvar()" novalidate class="cadastro-veiculo-container">
+  <section class="cadastro-shell">
+
+    <!-- ── Cabeçalho da Página ──────────────────────────── -->
+    <header class="content-head">
+      <div>
+        <a class="back-link" routerLink="/motos">
+          <i class="pi pi-arrow-left"></i> Voltar para a lista
+        </a>
+        <h1 class="page-title">Cadastrar Motocicleta</h1>
+        <p class="muted">Informe os dados do veículo e vincule ao proprietário.</p>
+      </div>
+      <div class="actions">
+        <button type="button" class="btn-cancel" routerLink="/motos">
+          Cancelar
+        </button>
+        <button type="submit" class="btn-submit" [disabled]="submitting()">
+          @if (submitting()) {
+            <span class="btn-spinner"></span>
+            Salvando...
+          } @else {
+            <i class="pi pi-check"></i>
+            Salvar Veículo
+          }
+        </button>
+      </div>
+    </header>
+
+    <!-- ── Card 1: Proprietário (Obrigatório) ─────────────── -->
+    <section class="card">
+      <div class="card-head">
+        <div class="card-title">
+          <i class="pi pi-user card-icon"></i>
+          <div>
+            <h2>Proprietário</h2>
+            <p class="card-subtitle">Vínculo obrigatório com o cliente proprietário do veículo</p>
+          </div>
+        </div>
+        <span class="required-badge">Obrigatório</span>
+      </div>
+
+      <div class="card-body">
+        @if (clienteSelecionado()) {
+          <div class="cliente-selecionado-box">
+            <div class="cliente-info">
+              <div class="cliente-avatar">
+                <i class="pi pi-user"></i>
+              </div>
+              <div class="cliente-detalhes">
+                <strong class="cliente-nome">{{ clienteSelecionado()?.nomeExibicao || clienteSelecionado()?.nome }}</strong>
+                @if (clienteSelecionado()?.documento) {
+                  <span class="cliente-doc">Doc: {{ clienteSelecionado()?.documento }}</span>
+                }
+              </div>
+            </div>
+            <button type="button" class="btn-remove-cliente" (click)="clearCliente()" title="Trocar cliente">
+              <i class="pi pi-times"></i> Trocar
+            </button>
+          </div>
+        } @else {
+          <div class="autocomplete-wrap">
+            <label class="field" [class.invalid]="hasError('clienteId')">
+              <span class="field-label">Buscar cliente por nome ou documento <em>*</em></span>
+              <div class="input-with-icon">
+                <i class="pi pi-search input-icon"></i>
+                <input
+                  type="text"
+                  #clienteInput
+                  class="form-control"
+                  placeholder="Digite ao menos 2 caracteres para pesquisar..."
+                  [value]="clienteTermo()"
+                  (input)="searchClientes(clienteInput.value)"
+                  autocomplete="off"
+                />
+                @if (loadingClientes()) {
+                  <span class="input-spinner"></span>
+                }
+              </div>
+              @if (hasError('clienteId')) {
+                <span class="error-msg">O vínculo com um cliente proprietário é obrigatório.</span>
+              }
+            </label>
+
+            <!-- Dropdown de Sugestões de Clientes -->
+            @if (sugestoesClientes().length > 0) {
+              <div class="autocomplete-dropdown">
+                <ul class="dropdown-list">
+                  @for (cliente of sugestoesClientes(); track cliente.id) {
+                    <li class="dropdown-item" (click)="selectCliente(cliente)">
+                      <div class="item-main">
+                        <strong>{{ cliente.nomeExibicao || cliente.nome }}</strong>
+                        @if (cliente.documento) {
+                          <span class="item-doc">{{ cliente.documento }}</span>
+                        }
+                      </div>
+                      <i class="pi pi-plus-circle select-icon"></i>
+                    </li>
+                  }
+                </ul>
+              </div>
+            } @else if (clienteTermo().trim().length >= 2 && !loadingClientes() && !clienteSelecionado()) {
+              <div class="autocomplete-dropdown empty">
+                <p>Nenhum cliente encontrado para "{{ clienteTermo() }}".</p>
+                <a routerLink="/clientes/novo" class="link-novo-cliente">
+                  <i class="pi pi-external-link"></i> Cadastrar novo cliente
+                </a>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </section>
+
+    <!-- ── Card 2: Identificação do Veículo ─────────────────── -->
+    <section class="card">
+      <div class="card-head">
+        <div class="card-title">
+          <i class="pi pi-id-card card-icon"></i>
+          <div>
+            <h2>Identificação</h2>
+            <p class="card-subtitle">Placa, números de identificação e cor</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid">
+        <!-- Placa -->
+        <label class="field" [class.invalid]="hasError('placa')">
+          <span class="field-label">Placa <em>*</em></span>
+          <input
+            type="text"
+            class="form-control uppercase plate-input"
+            formControlName="placa"
+            placeholder="Ex: ABC1D23 ou ABC-1234"
+            maxlength="8"
+            (input)="onPlacaInput($event)"
+          />
+          @if (hasError('placa')) {
+            <span class="error-msg">
+              Placa inválida. Formatos aceitos: ABC1D23 (Mercosul) ou ABC-1234 (Tradicional).
+            </span>
+          }
+        </label>
+
+        <!-- Cor -->
+        <label class="field" [class.invalid]="hasError('cor')">
+          <span class="field-label">Cor</span>
+          <input
+            type="text"
+            class="form-control"
+            formControlName="cor"
+            placeholder="Ex: Preto, Azul, Vermelho"
+            maxlength="40"
+          />
+          @if (hasError('cor')) {
+            <span class="error-msg">Máximo de 40 caracteres.</span>
+          }
+        </label>
+
+        <!-- Chassi (VIN) -->
+        <label class="field" [class.invalid]="hasError('chassi')">
+          <span class="field-label">Chassi (VIN)</span>
+          <input
+            type="text"
+            class="form-control uppercase"
+            formControlName="chassi"
+            placeholder="17 caracteres alfanuméricos"
+            maxlength="17"
+            (input)="onChassiInput($event)"
+          />
+          @if (hasError('chassi')) {
+            <span class="error-msg">Chassi deve ter até 17 caracteres.</span>
+          }
+        </label>
+
+        <!-- RENAVAM -->
+        <label class="field" [class.invalid]="hasError('renavam')">
+          <span class="field-label">RENAVAM</span>
+          <input
+            type="text"
+            class="form-control"
+            formControlName="renavam"
+            placeholder="Código RENAVAM"
+            maxlength="20"
+          />
+          @if (hasError('renavam')) {
+            <span class="error-msg">RENAVAM deve ter até 20 caracteres.</span>
+          }
+        </label>
+      </div>
+    </section>
+
+    <!-- ── Card 3: Especificações Técnicas ───────────────────── -->
+    <section class="card">
+      <div class="card-head">
+        <div class="card-title">
+          <i class="pi pi-cog card-icon"></i>
+          <div>
+            <h2>Especificações Técnicas</h2>
+            <p class="card-subtitle">Marca, modelo, anos de fabricação e odômetro</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid">
+        <!-- Marca -->
+        <label class="field" [class.invalid]="hasError('marcaId')">
+          <span class="field-label">Marca <em>*</em></span>
+          <select
+            class="form-control"
+            formControlName="marcaId"
+            (change)="onMarcaChange($event)"
+          >
+            <option [value]="0" disabled>Selecione a marca...</option>
+            @for (marca of marcas(); track marca.id) {
+              <option [value]="marca.id">{{ marca.nome }}</option>
+            }
+          </select>
+          @if (hasError('marcaId')) {
+            <span class="error-msg">Selecione uma marca.</span>
+          }
+        </label>
+
+        <!-- Modelo (Dependente) -->
+        <label class="field" [class.invalid]="hasError('modeloId')">
+          <span class="field-label">Modelo <em>*</em></span>
+          <select
+            class="form-control"
+            formControlName="modeloId"
+          >
+            <option [value]="0" disabled>
+              {{ form.controls.marcaId.value === 0 ? 'Selecione uma marca primeiro' : 'Selecione o modelo...' }}
+            </option>
+            @for (modelo of modelosFiltrados(); track modelo.id) {
+              <option [value]="modelo.id">{{ modelo.nome }}</option>
+            }
+          </select>
+          @if (hasError('modeloId')) {
+            <span class="error-msg">Selecione um modelo.</span>
+          }
+        </label>
+
+        <!-- Ano Fabricação -->
+        <label class="field" [class.invalid]="hasError('anoFab')">
+          <span class="field-label">Ano de Fabricação</span>
+          <input
+            type="number"
+            class="form-control"
+            formControlName="anoFab"
+            placeholder="Ex: 2023"
+            min="1950"
+            [max]="anoMaximo"
+          />
+          @if (hasError('anoFab')) {
+            <span class="error-msg">Ano de fabricação inválido (a partir de 1950).</span>
+          }
+        </label>
+
+        <!-- Ano Modelo -->
+        <label class="field" [class.invalid]="hasError('anoMod')">
+          <span class="field-label">Ano do Modelo</span>
+          <input
+            type="number"
+            class="form-control"
+            formControlName="anoMod"
+            placeholder="Ex: 2024"
+            min="1950"
+            [max]="anoMaximo"
+          />
+          @if (hasError('anoMod')) {
+            <span class="error-msg">Ano do modelo inválido (até {{ anoMaximo }}).</span>
+          }
+        </label>
+
+        <!-- Combustível -->
+        <label class="field">
+          <span class="field-label">Combustível</span>
+          <select class="form-control" formControlName="combustivel">
+            <option value="Gasolina">Gasolina</option>
+            <option value="Etanol">Etanol</option>
+            <option value="Flex">Flex (Gasolina / Etanol)</option>
+            <option value="Diesel">Diesel</option>
+            <option value="Elétrico">Elétrico</option>
+            <option value="Híbrido">Híbrido</option>
+          </select>
+        </label>
+
+        <!-- Quilometragem (KM) -->
+        <label class="field" [class.invalid]="hasError('km')">
+          <span class="field-label">Quilometragem Atual (KM)</span>
+          <input
+            type="number"
+            class="form-control"
+            formControlName="km"
+            placeholder="Ex: 12500"
+            min="0"
+          />
+          @if (hasError('km')) {
+            <span class="error-msg">A quilometragem não pode ser negativa.</span>
+          }
+        </label>
+      </div>
+    </section>
+
+    <!-- ── Card 4: Informações Adicionais ────────────────────── -->
+    <section class="card">
+      <div class="card-head">
+        <div class="card-title">
+          <i class="pi pi-file-edit card-icon"></i>
+          <div>
+            <h2>Informações Adicionais</h2>
+            <p class="card-subtitle">Configurações e observações gerais</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-options">
+        <label class="checkbox-label">
+          <input type="checkbox" formControlName="principal" />
+          <span class="checkbox-text">
+            <strong>Moto Principal</strong>
+            <small>Definir como o veículo padrão deste proprietário para atendimentos e ordens.</small>
+          </span>
+        </label>
+
+        <label class="checkbox-label">
+          <input type="checkbox" formControlName="ativo" />
+          <span class="checkbox-text">
+            <strong>Veículo Ativo</strong>
+            <small>Permitir a abertura de novas Ordens de Serviço para este veículo.</small>
+          </span>
+        </label>
+      </div>
+
+      <div class="field full-width" [class.invalid]="hasError('observacao')">
+        <span class="field-label">Observações Gerais</span>
+        <textarea
+          class="form-control"
+          formControlName="observacao"
+          rows="3"
+          placeholder="Ex: Moto com escapamento esportivo, pequenos arranhões na carenagem direita, etc."
+          maxlength="500"
+        ></textarea>
+        @if (hasError('observacao')) {
+          <span class="error-msg">Máximo de 500 caracteres.</span>
+        }
+      </div>
+    </section>
+
+    <!-- ── Rodapé de Ações ────────────────────────────────────── -->
+    <footer class="form-footer">
+      <button type="button" class="btn-cancel" routerLink="/motos">
+        Cancelar
+      </button>
+      <button type="submit" class="btn-submit" [disabled]="submitting()">
+        @if (submitting()) {
+          <span class="btn-spinner"></span>
+          Salvando...
+        } @else {
+          <i class="pi pi-check"></i>
+          Salvar Veículo
+        }
+      </button>
+    </footer>
+
+  </section>
+</form>
+
