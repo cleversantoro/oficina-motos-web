@@ -1,0 +1,321 @@
+<form [formGroup]="form" (ngSubmit)="salvar()" novalidate class="cadastro-mecanico-container">
+  <section class="cadastro-shell">
+
+    <!-- ── Cabeçalho da Página ──────────────────────────── -->
+    <header class="content-head">
+      <div>
+        <a class="back-link" routerLink="/mecanicos">
+          <i class="pi pi-arrow-left"></i> Voltar para a lista
+        </a>
+        <h1 class="page-title">Cadastrar Mecânico</h1>
+        <p class="muted">Informe os dados cadastrais, profissionais e especialidades do colaborador.</p>
+      </div>
+      <div class="actions">
+        <button type="button" class="btn-cancel" routerLink="/mecanicos">
+          Cancelar
+        </button>
+        <button type="submit" class="btn-submit" [disabled]="submitting()">
+          @if (submitting()) {
+            <span class="btn-spinner"></span>
+            Salvando...
+          } @else {
+            <i class="pi pi-check"></i>
+            Salvar Mecânico
+          }
+        </button>
+      </div>
+    </header>
+
+    <!-- ── Card 1: Identificação Pessoal ─────────────────────── -->
+    <section class="card">
+      <div class="card-head">
+        <div class="card-title">
+          <i class="pi pi-user card-icon"></i>
+          <div>
+            <h2>Identificação Pessoal</h2>
+            <p class="card-subtitle">Identificação civil e funcional do profissional</p>
+          </div>
+        </div>
+        <span class="badge-tag">Obrigatório</span>
+      </div>
+
+      <div class="grid">
+        <!-- Código -->
+        <label class="field" [class.invalid]="hasError('codigo')">
+          <span class="field-label">Código Funcional <em>*</em></span>
+          <input
+            type="text"
+            class="form-control"
+            formControlName="codigo"
+            placeholder="Ex: MEC-001"
+            maxlength="40"
+          />
+          @if (hasError('codigo')) {
+            <span class="error-msg">{{ getErrorMessage('codigo') }}</span>
+          }
+        </label>
+
+        <!-- Nome -->
+        <label class="field" [class.invalid]="hasError('nome')">
+          <span class="field-label">Nome <em>*</em></span>
+          <input
+            type="text"
+            class="form-control"
+            formControlName="nome"
+            placeholder="Primeiro nome"
+            maxlength="160"
+          />
+          @if (hasError('nome')) {
+            <span class="error-msg">{{ getErrorMessage('nome') }}</span>
+          }
+        </label>
+
+        <!-- Sobrenome -->
+        <label class="field" [class.invalid]="hasError('sobrenome')">
+          <span class="field-label">Sobrenome</span>
+          <input
+            type="text"
+            class="form-control"
+            formControlName="sobrenome"
+            placeholder="Sobrenome"
+            maxlength="160"
+          />
+          @if (hasError('sobrenome')) {
+            <span class="error-msg">{{ getErrorMessage('sobrenome') }}</span>
+          }
+        </label>
+
+        <!-- Nome Social / Apelido -->
+        <label class="field" [class.invalid]="hasError('nomeSocial')">
+          <span class="field-label">Nome Social / Apelido</span>
+          <input
+            type="text"
+            class="form-control"
+            formControlName="nomeSocial"
+            placeholder="Como prefere ser chamado"
+            maxlength="160"
+          />
+          @if (hasError('nomeSocial')) {
+            <span class="error-msg">{{ getErrorMessage('nomeSocial') }}</span>
+          }
+        </label>
+
+        <!-- CPF -->
+        <label class="field" [class.invalid]="hasError('documentoPrincipal')">
+          <span class="field-label">CPF (Documento Principal) <em>*</em></span>
+          <input
+            type="text"
+            class="form-control"
+            formControlName="documentoPrincipal"
+            placeholder="000.000.000-00"
+            maxlength="14"
+            (input)="onCpfInput($event)"
+          />
+          @if (hasError('documentoPrincipal')) {
+            <span class="error-msg">{{ getErrorMessage('documentoPrincipal') }}</span>
+          }
+        </label>
+
+        <!-- Data de Nascimento -->
+        <label class="field" [class.invalid]="hasError('dataNascimento')">
+          <span class="field-label">Data de Nascimento</span>
+          <input
+            type="date"
+            class="form-control"
+            formControlName="dataNascimento"
+          />
+          @if (hasError('dataNascimento')) {
+            <span class="error-msg">{{ getErrorMessage('dataNascimento') }}</span>
+          }
+        </label>
+      </div>
+    </section>
+
+    <!-- ── Card 2: Dados Profissionais & Contratuais ─────────── -->
+    <section class="card">
+      <div class="card-head">
+        <div class="card-title">
+          <i class="pi pi-briefcase card-icon"></i>
+          <div>
+            <h2>Dados Profissionais</h2>
+            <p class="card-subtitle">Informações de contratação, remuneração e carga horária</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid">
+        <!-- Data de Admissão -->
+        <label class="field" [class.invalid]="hasError('dataAdmissao')">
+          <span class="field-label">Data de Admissão <em>*</em></span>
+          <input
+            type="date"
+            class="form-control"
+            formControlName="dataAdmissao"
+          />
+          @if (hasError('dataAdmissao')) {
+            <span class="error-msg">{{ getErrorMessage('dataAdmissao') }}</span>
+          }
+        </label>
+
+        <!-- Status -->
+        <label class="field" [class.invalid]="hasError('status')">
+          <span class="field-label">Status <em>*</em></span>
+          <select class="form-control" formControlName="status">
+            @for (st of statusOptions; track st) {
+              <option [value]="st">{{ st }}</option>
+            }
+          </select>
+          @if (hasError('status')) {
+            <span class="error-msg">{{ getErrorMessage('status') }}</span>
+          }
+        </label>
+
+        <!-- Nível -->
+        <label class="field" [class.invalid]="hasError('nivel')">
+          <span class="field-label">Nível de Senioridade <em>*</em></span>
+          <select class="form-control" formControlName="nivel">
+            @for (nv of niveis; track nv) {
+              <option [value]="nv">{{ nv }}</option>
+            }
+          </select>
+          @if (hasError('nivel')) {
+            <span class="error-msg">{{ getErrorMessage('nivel') }}</span>
+          }
+        </label>
+
+        <!-- Valor da Hora -->
+        <label class="field" [class.invalid]="hasError('valorHora')">
+          <span class="field-label">Valor Hora (R$) <em>*</em></span>
+          <input
+            type="number"
+            step="0.01"
+            min="0"
+            class="form-control"
+            formControlName="valorHora"
+            placeholder="0.00"
+          />
+          @if (hasError('valorHora')) {
+            <span class="error-msg">{{ getErrorMessage('valorHora') }}</span>
+          }
+        </label>
+
+        <!-- Carga Horária Semanal -->
+        <label class="field" [class.invalid]="hasError('cargaHorariaSemanal')">
+          <span class="field-label">Carga Horária Semanal (horas) <em>*</em></span>
+          <input
+            type="number"
+            min="1"
+            class="form-control"
+            formControlName="cargaHorariaSemanal"
+            placeholder="44"
+          />
+          @if (hasError('cargaHorariaSemanal')) {
+            <span class="error-msg">{{ getErrorMessage('cargaHorariaSemanal') }}</span>
+          }
+        </label>
+      </div>
+    </section>
+
+    <!-- ── Card 3: Especialidades Técnicas ───────────────────── -->
+    <section class="card">
+      <div class="card-head">
+        <div class="card-title">
+          <i class="pi pi-cog card-icon"></i>
+          <div>
+            <h2>Especialidades Técnicas</h2>
+            <p class="card-subtitle">Selecione as especialidades do mecânico e defina uma como principal</p>
+          </div>
+        </div>
+      </div>
+
+      @if (especialidades().length === 0) {
+        <p class="empty-state-text">Nenhuma especialidade cadastrada ou carregando...</p>
+      } @else {
+        <div class="especialidades-grid">
+          @for (esp of especialidades(); track esp.id) {
+            <div
+              class="especialidade-chip"
+              [class.selected]="isEspecialidadeSelected(esp.id)"
+              [class.principal]="isEspecialidadePrincipal(esp.id)"
+              (click)="toggleEspecialidade(esp.id)"
+            >
+              <div class="chip-main">
+                <input
+                  type="checkbox"
+                  [checked]="isEspecialidadeSelected(esp.id)"
+                  (click)="$event.stopPropagation()"
+                  (change)="toggleEspecialidade(esp.id)"
+                />
+                <span class="chip-name">{{ esp.nome }}</span>
+              </div>
+
+              @if (isEspecialidadeSelected(esp.id)) {
+                <div class="chip-actions">
+                  @if (isEspecialidadePrincipal(esp.id)) {
+                    <span class="badge-principal" title="Especialidade Principal">
+                      <i class="pi pi-star-fill"></i> Principal
+                    </span>
+                  } @else {
+                    <button
+                      type="button"
+                      class="btn-make-principal"
+                      (click)="setPrincipal(esp.id, $event)"
+                      title="Definir como especialidade principal"
+                    >
+                      <i class="pi pi-star"></i> Tornar Principal
+                    </button>
+                  }
+                </div>
+              }
+            </div>
+          }
+        </div>
+      }
+    </section>
+
+    <!-- ── Card 4: Observações Gerais ────────────────────────── -->
+    <section class="card">
+      <div class="card-head">
+        <div class="card-title">
+          <i class="pi pi-file-edit card-icon"></i>
+          <div>
+            <h2>Observações Gerais</h2>
+            <p class="card-subtitle">Notas complementares, certificações ou históricos</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="field full-width" [class.invalid]="hasError('observacoes')">
+        <span class="field-label">Observações</span>
+        <textarea
+          class="form-control"
+          formControlName="observacoes"
+          rows="4"
+          placeholder="Adicione informações adicionais sobre o mecânico..."
+          maxlength="500"
+        ></textarea>
+        @if (hasError('observacoes')) {
+          <span class="error-msg">{{ getErrorMessage('observacoes') }}</span>
+        }
+      </div>
+    </section>
+
+    <!-- ── Rodapé de Ações ────────────────────────────────────── -->
+    <footer class="form-footer">
+      <button type="button" class="btn-cancel" routerLink="/mecanicos">
+        Cancelar
+      </button>
+      <button type="submit" class="btn-submit" [disabled]="submitting()">
+        @if (submitting()) {
+          <span class="btn-spinner"></span>
+          Salvando...
+        } @else {
+          <i class="pi pi-check"></i>
+          Salvar Mecânico
+        }
+      </button>
+    </footer>
+
+  </section>
+</form>
+

@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { canPerformBusinessAction } from '../../../../core/auth/rbac-access.helper';
 import { MecanicosService } from '../../../../core/services/mecanicos.service';
@@ -10,7 +11,7 @@ import { MecanicoDetalhe } from '../mecanico-detalhe/mecanico-detalhe';
 @Component({
   selector: 'app-mecanico-lista',
   standalone: true,
-  imports: [CommonModule, FormsModule, MecanicoDetalhe],
+  imports: [CommonModule, FormsModule, RouterLink, MecanicoDetalhe],
   templateUrl: './mecanico-lista.html',
   styleUrl: './mecanico-lista.scss',
   providers: [MecanicosService]
@@ -65,6 +66,10 @@ export class MecanicoLista implements OnInit {
   }
 
   closeDetails(): void { this.selected = null; }
+
+  canCreateMecanico(): boolean {
+    return canPerformBusinessAction(this.authService.currentRole(), 'mecanicos', 'create');
+  }
 
   canDeleteMecanico(): boolean {
     return canPerformBusinessAction(this.authService.currentRole(), 'mecanicos', 'delete');

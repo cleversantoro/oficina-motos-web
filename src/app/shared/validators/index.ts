@@ -47,3 +47,13 @@ export {
   cleanPlaca,
 } from './placa-validator';
 
+// Validadores de CPF Único de Mecânico
+export {
+  cpfUnicoMecanicoValidator,
+  cpfUnicoMecanicoAsyncValidator,
+  formatCpf,
+  type MecanicoDocumentoItem,
+  type MecanicosFonte,
+} from './cpf-unico-mecanico.validator';
+
+

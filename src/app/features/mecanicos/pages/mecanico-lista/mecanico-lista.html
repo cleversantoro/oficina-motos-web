@@ -1,4 +1,4 @@
-﻿<section class="mec-shell">
+<section class="mec-shell">
   <header class="lista-header">
     <div class="header-title">
       <h1>Mecânicos</h1>
@@ -17,7 +17,9 @@
           (ngModelChange)="first = 0"
         />
       </div>
-      <button class="btn-cta">+ Novo Mecânico</button>
+      @if (canCreateMecanico()) {
+        <button class="btn-cta" routerLink="/mecanicos/novo">+ Novo Mecânico</button>
+      }
     </div>
   </header>
 
