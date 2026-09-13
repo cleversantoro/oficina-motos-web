@@ -72,6 +72,7 @@ export class VeiculoCadastroComponent implements OnInit {
     chassi: ['', [Validators.maxLength(17)]],
     renavam: ['', [Validators.maxLength(20)]],
     km: ['', [Validators.min(0)]],
+    proximoKmRevisao: [null as number | null, [Validators.min(0)]],
     combustivel: ['Gasolina'],
     observacao: ['', [Validators.maxLength(500)]],
     principal: [false],
@@ -217,6 +218,12 @@ export class VeiculoCadastroComponent implements OnInit {
       chassi: fv.chassi ? fv.chassi.trim() : null,
       renavam: fv.renavam ? fv.renavam.trim() : null,
       km: fv.km !== null && fv.km !== undefined && String(fv.km).trim() !== '' ? String(fv.km) : null,
+      proximoKmRevisao:
+        fv.proximoKmRevisao !== null &&
+        fv.proximoKmRevisao !== undefined &&
+        String(fv.proximoKmRevisao).trim() !== ''
+          ? Number(fv.proximoKmRevisao)
+          : null,
       combustivel: fv.combustivel ? String(fv.combustivel) : null,
       observacao: fv.observacao ? fv.observacao.trim() : null,
       principal: !!fv.principal,

@@ -35,6 +35,12 @@
             <span>Último KM</span>
           </div>
         }
+        @if (veiculo.proximoKmRevisao) {
+          <div class="kpi">
+            <strong>{{ veiculo.proximoKmRevisao }} km</strong>
+            <span>Próx. Revisão</span>
+          </div>
+        }
         <div class="kpi status-kpi">
           <span class="status-pill" [class.ativo]="veiculo.ativo" [class.inativo]="!veiculo.ativo">
             {{ veiculo.ativo ? 'Ativo' : 'Inativo' }}
@@ -93,6 +99,12 @@
             <div class="data">
               <p class="label">KM Atual</p>
               <p class="value">{{ veiculo.km }}</p>
+            </div>
+          }
+          @if (veiculo.proximoKmRevisao) {
+            <div class="data">
+              <p class="label">Próxima Revisão (KM)</p>
+              <p class="value">{{ veiculo.proximoKmRevisao }} km</p>
             </div>
           }
           @if (veiculo.observacao) {

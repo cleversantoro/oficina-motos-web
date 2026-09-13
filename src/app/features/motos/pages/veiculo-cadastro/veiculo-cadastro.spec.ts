@@ -173,6 +173,7 @@ describe('VeiculoCadastroComponent', () => {
     component.form.controls.placa.setValue('BRA2E19');
     component.form.controls.cor.setValue('Azul');
     component.form.controls.km.setValue('5000');
+    component.form.controls.proximoKmRevisao.setValue(12000);
 
     expect(component.form.valid).toBe(true);
 
@@ -185,6 +186,7 @@ describe('VeiculoCadastroComponent', () => {
         modeloId: 10,
         cor: 'Azul',
         km: '5000',
+        proximoKmRevisao: 12000,
       })
     );
     expect(toastMock.success).toHaveBeenCalledWith(
@@ -192,6 +194,30 @@ describe('VeiculoCadastroComponent', () => {
       expect.stringContaining('BRA2E19')
     );
     expect(router.navigate).toHaveBeenCalledWith(['/motos']);
+  });
+
+  it('deve invalidar o formulário quando proximoKmRevisao for negativo', () => {
+    component.form.controls.proximoKmRevisao.setValue(-100);
+    expect(component.form.controls.proximoKmRevisao.invalid).toBe(true);
+    expect(component.form.controls.proximoKmRevisao.hasError('min')).toBe(true);
+  });
+
+  it('deve enviar proximoKmRevisao como null quando o campo não for preenchido', () => {
+    veiculosServiceMock.create.mockReturnValue(of({ id: 102, placa: 'ABC1D23' }));
+
+    component.onMarcaChange({ target: { value: '1' } } as unknown as Event);
+    component.form.controls.modeloId.setValue(10);
+    component.selectCliente(clientesMock[0]);
+    component.form.controls.placa.setValue('ABC1D23');
+    component.form.controls.proximoKmRevisao.setValue(null);
+
+    component.salvar();
+
+    expect(veiculosServiceMock.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        proximoKmRevisao: null,
+      })
+    );
   });
 
   it('deve exibir toast de erro quando a API falhar no cadastro', () => {

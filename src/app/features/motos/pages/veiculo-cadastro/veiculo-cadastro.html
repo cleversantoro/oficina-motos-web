@@ -299,6 +299,21 @@
             <span class="error-msg">A quilometragem não pode ser negativa.</span>
           }
         </label>
+
+        <!-- Próxima Revisão (KM) -->
+        <label class="field" [class.invalid]="hasError('proximoKmRevisao')">
+          <span class="field-label">Próxima Revisão (KM)</span>
+          <input
+            type="number"
+            class="form-control"
+            formControlName="proximoKmRevisao"
+            placeholder="Ex: 15000"
+            min="0"
+          />
+          @if (hasError('proximoKmRevisao')) {
+            <span class="error-msg">A quilometragem da próxima revisão não pode ser negativa.</span>
+          }
+        </label>
       </div>
     </section>
 

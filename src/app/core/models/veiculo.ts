@@ -30,6 +30,7 @@ export interface Veiculo {
   chassi: string | null;
   renavam: string | null;
   km: string | null;
+  proximoKmRevisao?: number | null;
   combustivel: string | null;
   observacao: string | null;
   principal: boolean;
@@ -48,6 +49,7 @@ export interface CreateVeiculoRequest {
   chassi: string | null;
   renavam: string | null;
   km: string | null;
+  proximoKmRevisao?: number | null;
   combustivel: string | null;
   observacao: string | null;
   principal: boolean;
