@@ -1,284 +1,327 @@
-﻿<p-dialog
-  [visible]="visible"
-  [modal]="true"
-  [showHeader]="false"
-  [style]="{ width: '980px' }"
-  [contentStyle]="{ padding: '0', overflow: 'hidden', 'border-radius': '1rem' }"
-  (onHide)="close()">
-
-  @if (mecanico; as m) {
-    <div class="detalhe-root">
-
-      <!-- Coluna esquerda: perfil -->
-      <aside class="profile-col">
-        <div class="avatar-wrap">
-          <div class="avatar-initials">{{ initials }}</div>
-          <div class="status-dot" [class.inactive]="!isAtivo"></div>
-        </div>
-
-        <h2 class="mec-name">{{ m.nome }} {{ m.sobrenome }}</h2>
-        <span class="mec-role">{{ m.nivel }}</span>
-        <span class="status-badge" [class.active]="isAtivo">{{ m.status }}</span>
-
-        <div class="kpi-row">
-          <div class="kpi">
-            <strong>R$ {{ m.valorHora.toFixed(2) }}</strong>
-            <span>Valor/Hora</span>
-          </div>
-          <div class="kpi">
-            <strong>{{ m.cargaHorariaSemanal }}h</strong>
-            <span>Semanal</span>
-          </div>
-        </div>
-
-        <div class="profile-info">
-          @if (primaryContact !== '-') {
-            <p class="info-row"><i class="pi pi-phone"></i> {{ primaryContact }}</p>
-          }
-          @if (primaryCity !== '-') {
-            <p class="info-row"><i class="pi pi-map-marker"></i> {{ primaryCity }}</p>
-          }
-          @if (m.dataAdmissao) {
-            <p class="info-row"><i class="pi pi-briefcase"></i> Admissão: {{ formatDate(m.dataAdmissao) }}</p>
-          }
-          @if (m.documentoPrincipal) {
-            <p class="info-row"><i class="pi pi-id-card"></i> {{ m.documentoPrincipal }}</p>
-          }
+@if (isRoutedPage) {
+  <section class="mec-detalhe-page">
+    <header class="page-header">
+      <a class="back-link" routerLink="/mecanicos">
+        ← Voltar para Mecânicos
+      </a>
+      @if (mecanico; as m) {
+        <div class="header-meta">
+          <h1 class="page-title">{{ m.nome }} {{ m.sobrenome }}</h1>
           @if (m.codigo) {
-            <p class="info-row"><i class="pi pi-hashtag"></i> Cód: {{ m.codigo }}</p>
+            <span class="code-pill">#{{ m.codigo }}</span>
           }
         </div>
+      }
+    </header>
 
-        <button class="close-btn" (click)="close()">
-          <i class="pi pi-times"></i> Fechar
+    @if (loading) {
+      <div class="state-card">
+        <div class="spinner"></div>
+        <p>Carregando dados do mecânico...</p>
+      </div>
+    }
+
+    @if (!loading && error) {
+      <div class="state-card error-card">
+        <p class="error-msg">{{ error }}</p>
+        <button class="btn-back" type="button" (click)="voltar()">
+          ← Voltar para Mecânicos
         </button>
-      </aside>
+      </div>
+    }
 
-      <!-- Coluna direita: abas de detalhes -->
-      <main class="details-col">
-        <p-tabs value="0">
-          <p-tablist>
-            <p-tab value="0">Especialidades</p-tab>
-            <p-tab value="1">Disponibilidade</p-tab>
-            <p-tab value="2">Certificações</p-tab>
-            <p-tab value="3">Experiências</p-tab>
-            <p-tab value="4">Documentos</p-tab>
-            <p-tab value="5">Endereços</p-tab>
-            <p-tab value="6">Contatos</p-tab>
-          </p-tablist>
+    @if (!loading && !error && mecanico) {
+      <div class="page-card">
+        <ng-container *ngTemplateOutlet="detalheBody; context: { $implicit: mecanico }"></ng-container>
+      </div>
+    }
+  </section>
+} @else {
+  <p-dialog
+    [visible]="visible"
+    [modal]="true"
+    [showHeader]="false"
+    [style]="{ width: '980px' }"
+    [contentStyle]="{ padding: '0', overflow: 'hidden', 'border-radius': '1rem' }"
+    (onHide)="close()">
+    @if (mecanico) {
+      <ng-container *ngTemplateOutlet="detalheBody; context: { $implicit: mecanico }"></ng-container>
+    }
+  </p-dialog>
+}
 
-          <p-tabpanels>
+<ng-template #detalheBody let-m>
+  <div class="detalhe-root" [class.page-mode]="isRoutedPage">
 
-            <!-- Especialidades -->
-            <p-tabpanel value="0">
-              <div class="tab-section">
-                <h3 class="section-title">Especialidades Técnicas</h3>
-                @if (!m.especialidades.length) {
-                  <p class="empty-msg">Nenhuma especialidade cadastrada.</p>
-                } @else {
-                  <div class="skills-wrap">
-                    @for (esp of m.especialidades; track esp.id) {
-                      <div class="skill-chip" [class.principal]="esp.principal">
-                        <span class="chip-nivel">{{ esp.nivel }}</span>
-                        <span class="chip-id">Esp. #{{ esp.especialidadeId }}</span>
-                        @if (esp.principal) {
-                          <span class="chip-badge">Principal</span>
+    <!-- Coluna esquerda: perfil -->
+    <aside class="profile-col">
+      <div class="avatar-wrap">
+        <div class="avatar-initials">{{ initials }}</div>
+        <div class="status-dot" [class.inactive]="!isAtivo"></div>
+      </div>
+
+      <h2 class="mec-name">{{ m.nome }} {{ m.sobrenome }}</h2>
+      <span class="mec-role">{{ m.nivel }}</span>
+      <span class="status-badge" [class.active]="isAtivo">{{ m.status }}</span>
+
+      <div class="kpi-row">
+        <div class="kpi">
+          <strong>R$ {{ (m.valorHora ?? 0).toFixed(2) }}</strong>
+          <span>Valor/Hora</span>
+        </div>
+        <div class="kpi">
+          <strong>{{ m.cargaHorariaSemanal ?? 0 }}h</strong>
+          <span>Semanal</span>
+        </div>
+      </div>
+
+      <div class="profile-info">
+        @if (primaryContact !== '-') {
+          <p class="info-row"><i class="pi pi-phone"></i> {{ primaryContact }}</p>
+        }
+        @if (primaryCity !== '-') {
+          <p class="info-row"><i class="pi pi-map-marker"></i> {{ primaryCity }}</p>
+        }
+        @if (m.dataAdmissao) {
+          <p class="info-row"><i class="pi pi-briefcase"></i> Admissão: {{ formatDate(m.dataAdmissao) }}</p>
+        }
+        @if (m.documentoPrincipal) {
+          <p class="info-row"><i class="pi pi-id-card"></i> {{ m.documentoPrincipal }}</p>
+        }
+        @if (m.codigo) {
+          <p class="info-row"><i class="pi pi-hashtag"></i> Cód: {{ m.codigo }}</p>
+        }
+      </div>
+
+      <button class="close-btn" type="button" (click)="close()">
+        <i class="pi" [class.pi-arrow-left]="isRoutedPage" [class.pi-times]="!isRoutedPage"></i>
+        {{ isRoutedPage ? 'Voltar' : 'Fechar' }}
+      </button>
+    </aside>
+
+    <!-- Coluna direita: abas de detalhes -->
+    <main class="details-col">
+      <p-tabs value="0">
+        <p-tablist>
+          <p-tab value="0">Especialidades</p-tab>
+          <p-tab value="1">Disponibilidade</p-tab>
+          <p-tab value="2">Certificações</p-tab>
+          <p-tab value="3">Experiências</p-tab>
+          <p-tab value="4">Documentos</p-tab>
+          <p-tab value="5">Endereços</p-tab>
+          <p-tab value="6">Contatos</p-tab>
+        </p-tablist>
+
+        <p-tabpanels>
+
+          <!-- Especialidades -->
+          <p-tabpanel value="0">
+            <div class="tab-section">
+              <h3 class="section-title">Especialidades Técnicas</h3>
+              @if (!m.especialidades?.length) {
+                <p class="empty-msg">Nenhuma especialidade cadastrada.</p>
+              } @else {
+                <div class="skills-wrap">
+                  @for (esp of m.especialidades; track esp.id) {
+                    <div class="skill-chip" [class.principal]="esp.principal">
+                      <span class="chip-nivel">{{ esp.nivel }}</span>
+                      <span class="chip-id">Esp. #{{ esp.especialidadeId }}</span>
+                      @if (esp.principal) {
+                        <span class="chip-badge">Principal</span>
+                      }
+                      @if (esp.anotacoes) {
+                        <span class="chip-note" title="{{ esp.anotacoes }}">
+                          <i class="pi pi-info-circle"></i>
+                        </span>
+                      }
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          </p-tabpanel>
+
+          <!-- Disponibilidade -->
+          <p-tabpanel value="1">
+            <div class="tab-section">
+              <h3 class="section-title">Disponibilidade Semanal</h3>
+              @if (!m.disponibilidades?.length) {
+                <p class="empty-msg">Nenhuma disponibilidade cadastrada.</p>
+              } @else {
+                <div class="schedule-grid">
+                  @for (d of m.disponibilidades; track d.id) {
+                    <div class="day-card">
+                      <p class="day-label">{{ diaSemanaLabel(d.diaSemana) }}</p>
+                      <div class="time-slot">
+                        <i class="pi pi-clock"></i>
+                        {{ d.horaInicio }} – {{ d.horaFim }}
+                      </div>
+                      @if (d.capacidadeAtendimentos) {
+                        <span class="cap-badge">{{ d.capacidadeAtendimentos }} atend.</span>
+                      }
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          </p-tabpanel>
+
+          <!-- Certificações -->
+          <p-tabpanel value="2">
+            <div class="tab-section">
+              <h3 class="section-title">Certificações & Cursos</h3>
+              @if (!m.certificacoes?.length) {
+                <p class="empty-msg">Nenhuma certificação cadastrada.</p>
+              } @else {
+                <div class="list-items">
+                  @for (cert of m.certificacoes; track cert.id) {
+                    <div class="list-item">
+                      <div class="list-icon">🎓</div>
+                      <div class="list-body">
+                        <strong>{{ cert.titulo }}</strong>
+                        @if (cert.instituicao) {
+                          <p class="meta">{{ cert.instituicao }}</p>
                         }
-                        @if (esp.anotacoes) {
-                          <span class="chip-note" title="{{ esp.anotacoes }}">
-                            <i class="pi pi-info-circle"></i>
-                          </span>
+                        <p class="meta">
+                          Conclusão: {{ formatDate(cert.dataConclusao) }}
+                          @if (cert.dataValidade) {
+                            · Validade: {{ formatDate(cert.dataValidade) }}
+                          }
+                        </p>
+                        @if (cert.codigoCertificacao) {
+                          <span class="code-badge">{{ cert.codigoCertificacao }}</span>
                         }
                       </div>
-                    }
-                  </div>
-                }
-              </div>
-            </p-tabpanel>
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          </p-tabpanel>
 
-            <!-- Disponibilidade -->
-            <p-tabpanel value="1">
-              <div class="tab-section">
-                <h3 class="section-title">Disponibilidade Semanal</h3>
-                @if (!m.disponibilidades.length) {
-                  <p class="empty-msg">Nenhuma disponibilidade cadastrada.</p>
-                } @else {
-                  <div class="schedule-grid">
-                    @for (d of m.disponibilidades; track d.id) {
-                      <div class="day-card">
-                        <p class="day-label">{{ diaSemanaLabel(d.diaSemana) }}</p>
-                        <div class="time-slot">
-                          <i class="pi pi-clock"></i>
-                          {{ d.horaInicio }} – {{ d.horaFim }}
-                        </div>
-                        @if (d.capacidadeAtendimentos) {
-                          <span class="cap-badge">{{ d.capacidadeAtendimentos }} atend.</span>
+          <!-- Experiências -->
+          <p-tabpanel value="3">
+            <div class="tab-section">
+              <h3 class="section-title">Experiência Profissional</h3>
+              @if (!m.experiencias?.length) {
+                <p class="empty-msg">Nenhuma experiência cadastrada.</p>
+              } @else {
+                <div class="list-items">
+                  @for (exp of m.experiencias; track exp.id) {
+                    <div class="list-item">
+                      <div class="list-icon">💼</div>
+                      <div class="list-body">
+                        <strong>{{ exp.cargo }}</strong>
+                        <p class="meta company">{{ exp.empresa }}</p>
+                        <p class="meta">
+                          {{ formatDate(exp.dataInicio) }} – {{ exp.dataFim ? formatDate(exp.dataFim) : 'Atual' }}
+                        </p>
+                        @if (exp.resumoAtividades) {
+                          <p class="meta atividades">{{ exp.resumoAtividades }}</p>
                         }
                       </div>
-                    }
-                  </div>
-                }
-              </div>
-            </p-tabpanel>
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          </p-tabpanel>
 
-            <!-- Certificações -->
-            <p-tabpanel value="2">
-              <div class="tab-section">
-                <h3 class="section-title">Certificações & Cursos</h3>
-                @if (!m.certificacoes.length) {
-                  <p class="empty-msg">Nenhuma certificação cadastrada.</p>
-                } @else {
-                  <div class="list-items">
-                    @for (cert of m.certificacoes; track cert.id) {
-                      <div class="list-item">
-                        <div class="list-icon">🎓</div>
-                        <div class="list-body">
-                          <strong>{{ cert.titulo }}</strong>
-                          @if (cert.instituicao) {
-                            <p class="meta">{{ cert.instituicao }}</p>
+          <!-- Documentos -->
+          <p-tabpanel value="4">
+            <div class="tab-section">
+              <h3 class="section-title">Documentos</h3>
+              @if (!m.documentos?.length) {
+                <p class="empty-msg">Nenhum documento cadastrado.</p>
+              } @else {
+                <div class="list-items">
+                  @for (doc of m.documentos; track doc.id) {
+                    <div class="list-item">
+                      <div class="list-icon">📄</div>
+                      <div class="list-body">
+                        <strong>{{ doc.tipo }}</strong>
+                        <p class="meta">Nº {{ doc.numero }}</p>
+                        @if (doc.orgaoExpedidor) {
+                          <p class="meta">{{ doc.orgaoExpedidor }}</p>
+                        }
+                        <p class="meta">
+                          Emissão: {{ formatDate(doc.dataEmissao) }}
+                          @if (doc.dataValidade) {
+                            · Validade: {{ formatDate(doc.dataValidade) }}
                           }
-                          <p class="meta">
-                            Conclusão: {{ formatDate(cert.dataConclusao) }}
-                            @if (cert.dataValidade) {
-                              · Validade: {{ formatDate(cert.dataValidade) }}
-                            }
-                          </p>
-                          @if (cert.codigoCertificacao) {
-                            <span class="code-badge">{{ cert.codigoCertificacao }}</span>
-                          }
-                        </div>
+                        </p>
                       </div>
-                    }
-                  </div>
-                }
-              </div>
-            </p-tabpanel>
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          </p-tabpanel>
 
-            <!-- Experiências -->
-            <p-tabpanel value="3">
-              <div class="tab-section">
-                <h3 class="section-title">Experiência Profissional</h3>
-                @if (!m.experiencias.length) {
-                  <p class="empty-msg">Nenhuma experiência cadastrada.</p>
-                } @else {
-                  <div class="list-items">
-                    @for (exp of m.experiencias; track exp.id) {
-                      <div class="list-item">
-                        <div class="list-icon">💼</div>
-                        <div class="list-body">
-                          <strong>{{ exp.cargo }}</strong>
-                          <p class="meta company">{{ exp.empresa }}</p>
-                          <p class="meta">
-                            {{ formatDate(exp.dataInicio) }} – {{ exp.dataFim ? formatDate(exp.dataFim) : 'Atual' }}
-                          </p>
-                          @if (exp.resumoAtividades) {
-                            <p class="meta atividades">{{ exp.resumoAtividades }}</p>
-                          }
-                        </div>
+          <!-- Endereços -->
+          <p-tabpanel value="5">
+            <div class="tab-section">
+              <h3 class="section-title">Endereços</h3>
+              @if (!m.enderecos?.length) {
+                <p class="empty-msg">Nenhum endereço cadastrado.</p>
+              } @else {
+                <div class="list-items">
+                  @for (end of m.enderecos; track end.id) {
+                    <div class="list-item">
+                      <div class="list-icon">📍</div>
+                      <div class="list-body">
+                        <strong>
+                          {{ end.tipo }}
+                          @if (end.principal) { <span class="principal-badge">Principal</span> }
+                        </strong>
+                        <p class="meta">{{ end.logradouro }}, {{ end.numero }}{{ end.complemento ? ' - ' + end.complemento : '' }}</p>
+                        <p class="meta">{{ end.bairro }} · {{ end.cidade }}/{{ end.estado }} · CEP {{ end.cep }}</p>
                       </div>
-                    }
-                  </div>
-                }
-              </div>
-            </p-tabpanel>
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          </p-tabpanel>
 
-            <!-- Documentos -->
-            <p-tabpanel value="4">
-              <div class="tab-section">
-                <h3 class="section-title">Documentos</h3>
-                @if (!m.documentos.length) {
-                  <p class="empty-msg">Nenhum documento cadastrado.</p>
-                } @else {
-                  <div class="list-items">
-                    @for (doc of m.documentos; track doc.id) {
-                      <div class="list-item">
-                        <div class="list-icon">📄</div>
-                        <div class="list-body">
-                          <strong>{{ doc.tipo }}</strong>
-                          <p class="meta">Nº {{ doc.numero }}</p>
-                          @if (doc.orgaoExpedidor) {
-                            <p class="meta">{{ doc.orgaoExpedidor }}</p>
-                          }
-                          <p class="meta">
-                            Emissão: {{ formatDate(doc.dataEmissao) }}
-                            @if (doc.dataValidade) {
-                              · Validade: {{ formatDate(doc.dataValidade) }}
-                            }
-                          </p>
-                        </div>
+          <!-- Contatos -->
+          <p-tabpanel value="6">
+            <div class="tab-section">
+              <h3 class="section-title">Contatos</h3>
+              @if (!m.contatos?.length) {
+                <p class="empty-msg">Nenhum contato cadastrado.</p>
+              } @else {
+                <div class="list-items">
+                  @for (ct of m.contatos; track ct.id) {
+                    <div class="list-item">
+                      <div class="list-icon">
+                        @switch ((ct.tipo ?? '').toLowerCase()) {
+                          @case ('celular') { 📱 }
+                          @case ('telefone') { 📞 }
+                          @case ('email') { 📧 }
+                          @default { 💬 }
+                        }
                       </div>
-                    }
-                  </div>
-                }
-              </div>
-            </p-tabpanel>
-
-            <!-- Endereços -->
-            <p-tabpanel value="5">
-              <div class="tab-section">
-                <h3 class="section-title">Endereços</h3>
-                @if (!m.enderecos.length) {
-                  <p class="empty-msg">Nenhum endereço cadastrado.</p>
-                } @else {
-                  <div class="list-items">
-                    @for (end of m.enderecos; track end.id) {
-                      <div class="list-item">
-                        <div class="list-icon">📍</div>
-                        <div class="list-body">
-                          <strong>
-                            {{ end.tipo }}
-                            @if (end.principal) { <span class="principal-badge">Principal</span> }
-                          </strong>
-                          <p class="meta">{{ end.logradouro }}, {{ end.numero }}{{ end.complemento ? ' - ' + end.complemento : '' }}</p>
-                          <p class="meta">{{ end.bairro }} · {{ end.cidade }}/{{ end.estado }} · CEP {{ end.cep }}</p>
-                        </div>
+                      <div class="list-body">
+                        <strong>{{ ct.valor }}</strong>
+                        <p class="meta">
+                          {{ ct.tipo }}
+                          @if (ct.principal) { · <span class="principal-badge">Principal</span> }
+                        </p>
+                        @if (ct.observacao) {
+                          <p class="meta">{{ ct.observacao }}</p>
+                        }
                       </div>
-                    }
-                  </div>
-                }
-              </div>
-            </p-tabpanel>
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          </p-tabpanel>
 
-            <!-- Contatos -->
-            <p-tabpanel value="6">
-              <div class="tab-section">
-                <h3 class="section-title">Contatos</h3>
-                @if (!m.contatos.length) {
-                  <p class="empty-msg">Nenhum contato cadastrado.</p>
-                } @else {
-                  <div class="list-items">
-                    @for (ct of m.contatos; track ct.id) {
-                      <div class="list-item">
-                        <div class="list-icon">
-                          @switch (ct.tipo.toLowerCase()) {
-                            @case ('celular') { 📱 }
-                            @case ('telefone') { 📞 }
-                            @case ('email') { 📧 }
-                            @default { 💬 }
-                          }
-                        </div>
-                        <div class="list-body">
-                          <strong>{{ ct.valor }}</strong>
-                          <p class="meta">
-                            {{ ct.tipo }}
-                            @if (ct.principal) { · <span class="principal-badge">Principal</span> }
-                          </p>
-                          @if (ct.observacao) {
-                            <p class="meta">{{ ct.observacao }}</p>
-                          }
-                        </div>
-                      </div>
-                    }
-                  </div>
-                }
-              </div>
-            </p-tabpanel>
+        </p-tabpanels>
+      </p-tabs>
+    </main>
 
-          </p-tabpanels>
-        </p-tabs>
-      </main>
-
-    </div>
-  }
-
-</p-dialog>
+  </div>
+</ng-template>

@@ -1,7 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Optional } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { canPerformBusinessAction } from '../../../../core/auth/rbac-access.helper';
 import { MecanicosService } from '../../../../core/services/mecanicos.service';
@@ -28,6 +28,7 @@ export class MecanicoLista implements OnInit {
   constructor(
     private mecanicosService: MecanicosService,
     private authService: AuthService,
+    @Optional() private router?: Router,
   ) {}
 
   ngOnInit(): void {
@@ -58,8 +59,13 @@ export class MecanicoLista implements OnInit {
   }
 
   openDetails(item: any): void {
+    const id = typeof item === 'object' ? item?.id : item;
+    if (id != null && this.router) {
+      this.router.navigate(['/mecanicos', id]);
+      return;
+    }
     this.loading = true;
-    this.mecanicosService.get(item.id).subscribe({
+    this.mecanicosService.get(id).subscribe({
       next: (resp: any) => { this.selected = resp; this.loading = false; },
       error: () => { this.loading = false; },
     });
@@ -92,3 +98,4 @@ export class MecanicoLista implements OnInit {
   }
 }
 
+export { MecanicoLista as MecanicoListaComponent };

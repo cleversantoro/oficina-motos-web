@@ -58,7 +58,7 @@
                 <div class="nome-cell">
                   <span class="avatar">{{ (m.nome ?? '?')[0] }}</span>
                   <div>
-                    <p class="name">{{ m.nome }} {{ m.sobrenome }}</p>
+                    <a class="name name-link" [routerLink]="['/mecanicos', m.id]">{{ m.nome }} {{ m.sobrenome }}</a>
                     <p class="sub">{{ m.nivel }}</p>
                   </div>
                 </div>
@@ -72,12 +72,12 @@
               <td class="hide-sm mono">{{ m.documentoPrincipal ?? '—' }}</td>
               <td class="hide-sm">{{ m.valorHora != null ? 'R$ ' + m.valorHora.toFixed(2) : '—' }}</td>
               <td class="action-cell">
-                <button class="icon-btn view-btn" (click)="openDetails(m); $event.stopPropagation()" title="Visualizar">
+                <a class="icon-btn view-btn" [routerLink]="['/mecanicos', m.id]" (click)="openDetails(m); $event.stopPropagation()" title="Visualizar">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
                     <circle cx="12" cy="12" r="3"/>
                   </svg>
-                </button>
+                </a>
                 @if (canDeleteMecanico()) {
                   <button class="icon-btn delete-btn" (click)="confirmDelete(m.id); $event.stopPropagation()" title="Excluir">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
