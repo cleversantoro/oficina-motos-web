@@ -41,6 +41,9 @@ export class EstoqueService {
   fornecedores(params?: Record<string, any>) {
     return this.api.list(apiPaths.estoque.fornecedores, params);
   }
+  vincularFornecedor(body: any) {
+    return this.api.create(apiPaths.estoque.fornecedores, body);
+  }
   historicos(params?: Record<string, any>) {
     return this.api.list(apiPaths.estoque.historicos, params);
   }

@@ -4,6 +4,7 @@ import { ClienteDetalhe } from './features/clientes/pages/cliente-detalhe/client
 import { ClienteCadastro } from './features/clientes/pages/cliente-cadastro/cliente-cadastro';
 import { ClienteEditar } from './features/clientes/pages/cliente-editar/cliente-editar';
 import { EstoqueLista } from './features/estoque/pages/estoque-lista/estoque-lista';
+import { EstoquePecaCadastroComponent } from './features/estoque/pages/estoque-peca-cadastro/estoque-peca-cadastro';
 import { MecanicoLista } from './features/mecanicos/pages/mecanico-lista/mecanico-lista';
 import { MecanicoCadastroComponent } from './features/mecanicos/pages/mecanico-cadastro/mecanico-cadastro';
 import { MecanicoDetalheComponent } from './features/mecanicos/pages/mecanico-detalhe/mecanico-detalhe';
@@ -45,6 +46,10 @@ export const routes: Routes = [
       {
         path: 'estoque',
         component: EstoqueLista,
+      },
+      {
+        path: 'estoque/novo',
+        component: EstoquePecaCadastroComponent,
       },
       { path: 'fornecedores', component: FornecedorLista },
       { path: 'fornecedores/novo', component: FornecedorCadastroComponent },

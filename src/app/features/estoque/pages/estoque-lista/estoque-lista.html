@@ -50,7 +50,7 @@
           <input class="search" type="text" placeholder="Buscar por nome, código ou SKU..."
             [(ngModel)]="filterText" (ngModelChange)="first = 0" />
         </div>
-        <button class="cta primary">+ Nova peça</button>
+        <button class="cta primary" routerLink="/estoque/novo">+ Nova peça</button>
       </div>
 
       <table class="data-table">
@@ -88,10 +88,15 @@
               <td class="hide-sm">{{ getFabricante(item.fabricanteId) }}</td>
               <td class="hide-sm"><span class="location">{{ getLocalizacao(item.localizacaoId) }}</span></td>
               <td>
-                <span class="stock" [class.low]="isCritico(item)">
-                  @if (isCritico(item)) {⚠}
-                  {{ item.quantidade }} un
-                </span>
+                <div class="stock-cell">
+                  <span class="stock" [class.low]="isCritico(item)">
+                    @if (isCritico(item)) {⚠}
+                    {{ item.quantidade }} {{ (item.unidade || 'un').toLowerCase() }}
+                  </span>
+                  @if (isCritico(item)) {
+                    <span class="badge-critico">Crítico</span>
+                  }
+                </div>
               </td>
               <td class="action-cell">
                 <button class="icon-btn view-btn" title="Visualizar" (click)="$event.stopPropagation()">

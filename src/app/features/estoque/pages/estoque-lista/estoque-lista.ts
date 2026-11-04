@@ -1,20 +1,26 @@
-﻿import { DecimalPipe } from '@angular/common';
+import { DecimalPipe } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { canPerformBusinessAction } from '../../../../core/auth/rbac-access.helper';
 import { EstoqueService } from '../../../../core/services/estoque.service';
-import { EstoquePeca, EstoqueCategoria, EstoqueFabricante, EstoqueLocalizacao } from '../../../../core/models';
+import {
+  EstoquePeca,
+  EstoqueCategoria,
+  EstoqueFabricante,
+  EstoqueLocalizacao,
+} from '../../../../core/models';
 
 type Filtro = { label: string; checked: boolean };
 
 @Component({
   selector: 'app-estoque-lista',
   standalone: true,
-  imports: [DecimalPipe, FormsModule],
+  imports: [DecimalPipe, FormsModule, RouterLink],
   templateUrl: './estoque-lista.html',
   styleUrl: './estoque-lista.scss',
-  providers: [EstoqueService]
+  providers: [EstoqueService],
 })
 export class EstoqueLista implements OnInit {
   itens: EstoquePeca[] = [];
@@ -39,25 +45,40 @@ export class EstoqueLista implements OnInit {
   ngOnInit(): void {
     this.loading = true;
     this.estoqueService.pecas().subscribe({
-      next: (resp: any) => { this.itens = resp; this.loading = false; },
-      error: () => { this.loading = false; }
+      next: (resp: any) => {
+        this.itens = Array.isArray(resp) ? resp : resp?.data ?? [];
+        this.loading = false;
+      },
+      error: () => {
+        this.loading = false;
+      },
     });
     this.estoqueService.categorias().subscribe({
-      next: (resp: any) => { this.categorias = resp; }
+      next: (resp: any) => {
+        this.categorias = Array.isArray(resp) ? resp : resp?.data ?? [];
+      },
     });
     this.estoqueService.fabricantes().subscribe({
-      next: (resp: any) => { this.fabricantes = resp; }
+      next: (resp: any) => {
+        this.fabricantes = Array.isArray(resp) ? resp : resp?.data ?? [];
+      },
     });
     this.estoqueService.localizacoes().subscribe({
-      next: (resp: any) => { this.localizacoes = resp; }
+      next: (resp: any) => {
+        this.localizacoes = Array.isArray(resp) ? resp : resp?.data ?? [];
+      },
     });
   }
 
   get estatisticas() {
-    const valorTotal = this.itens.reduce((s, i) => s + (i.precoUnitario * i.quantidade), 0);
-    const criticos = this.itens.filter(i => i.quantidade <= i.estoqueMinimo).length;
+    const valorTotal = this.itens.reduce((s, i) => s + i.precoUnitario * i.quantidade, 0);
+    const criticos = this.itens.filter((i) => this.isCritico(i)).length;
     return [
-      { label: 'Valor em estoque', valor: `R$ ${valorTotal.toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`, alerta: false },
+      {
+        label: 'Valor em estoque',
+        valor: `R$ ${valorTotal.toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`,
+        alerta: false,
+      },
       { label: 'Estoque cr\u00edtico', valor: `${criticos} itens`, alerta: criticos > 0 },
       { label: 'Total de SKUs', valor: String(this.itens.length) },
     ];
@@ -66,14 +87,15 @@ export class EstoqueLista implements OnInit {
   get filtered(): EstoquePeca[] {
     const q = this.filterText.trim().toLowerCase();
     if (!q) return this.itens;
-    return this.itens.filter(i =>
-      (i.descricao ?? '').toLowerCase().includes(q) ||
-      (i.codigo    ?? '').toLowerCase().includes(q)
+    return this.itens.filter(
+      (i) =>
+        (i.descricao ?? '').toLowerCase().includes(q) ||
+        (i.codigo ?? '').toLowerCase().includes(q)
     );
   }
 
   isCritico(item: EstoquePeca): boolean {
-    return item.quantidade <= item.estoqueMinimo;
+    return item.quantidade < item.estoqueMinimo;
   }
 
   canDeleteItem(): boolean {
@@ -82,21 +104,25 @@ export class EstoqueLista implements OnInit {
 
   getCategoria(id: number | null): string {
     if (!id) return '-';
-    return this.categorias.find(c => c.id === id)?.nome ?? String(id);
+    return this.categorias.find((c) => c.id === id)?.nome ?? String(id);
   }
 
   getFabricante(id: number | null): string {
     if (!id) return '-';
-    return this.fabricantes.find(f => f.id === id)?.nome ?? String(id);
+    return this.fabricantes.find((f) => f.id === id)?.nome ?? String(id);
   }
 
   getLocalizacao(id: number | null): string {
     if (!id) return '-';
-    return this.localizacoes.find(l => l.id === id)?.descricao ?? String(id);
+    return this.localizacoes.find((l) => l.id === id)?.descricao ?? String(id);
   }
 
-  prevPage(): void { this.first = Math.max(0, this.first - this.rows); }
-  nextPage(): void { if (this.first + this.rows < this.filtered.length) this.first += this.rows; }
+  prevPage(): void {
+    this.first = Math.max(0, this.first - this.rows);
+  }
+  nextPage(): void {
+    if (this.first + this.rows < this.filtered.length) this.first += this.rows;
+  }
 
   get pageEnd(): number {
     const end = this.first + this.rows;
@@ -106,8 +132,12 @@ export class EstoqueLista implements OnInit {
   confirmDelete(id: number): void {
     if (!confirm('Tem certeza que deseja excluir este item do estoque?')) return;
     this.estoqueService.removerPeca(id).subscribe({
-      next: () => { this.itens = this.itens.filter(i => i.id !== id); },
+      next: () => {
+        this.itens = this.itens.filter((i) => i.id !== id);
+      },
       error: () => alert('Erro ao excluir item.'),
     });
   }
 }
+
+export { EstoqueLista as EstoqueListaComponent };

@@ -1,0 +1,301 @@
+<div class="cadastro-peca-container">
+  <section class="cadastro-shell">
+    <!-- Cabeçalho -->
+    <div class="content-head">
+      <div>
+        <a routerLink="/estoque" class="back-link">
+          ← Voltar para Estoque
+        </a>
+        <h1 class="page-title">Nova Peça no Estoque</h1>
+        <p class="muted">
+          Cadastre peças e insumos com classificação por fabricante, categoria, fornecedor e níveis de estoque.
+        </p>
+      </div>
+      <div class="actions">
+        <button type="button" class="btn-ghost" (click)="cancelar()">Cancelar</button>
+        <button
+          type="button"
+          class="btn-primary"
+          [disabled]="submitting()"
+          (click)="salvar()"
+        >
+          @if (submitting()) {
+            <span>Salvando...</span>
+          } @else {
+            <span>Salvar Peça</span>
+          }
+        </button>
+      </div>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="salvar()" novalidate class="cadastro-form">
+      <!-- Card 1: Identificação da Peça -->
+      <section class="card">
+        <header class="card-head">
+          <div class="card-title">
+            <span class="card-icon">⚙️</span>
+            <div>
+              <h2>Identificação da Peça</h2>
+              <p class="card-subtitle">Código SKU, descrição técnica, unidade de medida e status</p>
+            </div>
+          </div>
+          <span class="badge-tag">Obrigatório</span>
+        </header>
+
+        <div class="grid">
+          <!-- Código / SKU -->
+          <label class="field">
+            <span class="field-label">Código / SKU <em>*</em></span>
+            <input
+              type="text"
+              formControlName="codigo"
+              placeholder="PEC-001"
+              maxlength="40"
+              [class.invalid]="hasError('codigo')"
+            />
+            @if (hasError('codigo', 'required')) {
+              <small class="error-msg">Informe o código SKU da peça.</small>
+            }
+          </label>
+
+          <!-- Unidade -->
+          <label class="field">
+            <span class="field-label">Unidade de Medida <em>*</em></span>
+            <select formControlName="unidade" class="select-input">
+              @for (un of unidadesOpcoes; track un.value) {
+                <option [value]="un.value">{{ un.label }}</option>
+              }
+            </select>
+          </label>
+
+          <!-- Status -->
+          <label class="field">
+            <span class="field-label">Status <em>*</em></span>
+            <select formControlName="status" class="select-input">
+              @for (st of statusOpcoes; track st.value) {
+                <option [value]="st.value">{{ st.label }}</option>
+              }
+            </select>
+          </label>
+
+          <!-- Descrição -->
+          <label class="field full-width">
+            <span class="field-label">Descrição da Peça <em>*</em></span>
+            <input
+              type="text"
+              formControlName="descricao"
+              placeholder="Ex.: Kit Relação Transmissão DID Honda CG 160 Titan"
+              maxlength="200"
+              [class.invalid]="hasError('descricao')"
+            />
+            @if (hasError('descricao', 'required')) {
+              <small class="error-msg">Informe a descrição da peça.</small>
+            } @else if (hasError('descricao', 'minlength')) {
+              <small class="error-msg">A descrição deve ter no mínimo 3 caracteres.</small>
+            }
+          </label>
+        </div>
+      </section>
+
+      <!-- Card 2: Classificação, Fabricante & Fornecedor (T-018.3) -->
+      <section class="card">
+        <header class="card-head">
+          <div class="card-title">
+            <span class="card-icon">🏷️</span>
+            <div>
+              <h2>Classificação, Fabricante & Fornecedor</h2>
+              <p class="card-subtitle">Vincule a peça à categoria, marca fabricante, fornecedor e prateleira</p>
+            </div>
+          </div>
+        </header>
+
+        <div class="grid">
+          <!-- Dropdown Categoria -->
+          <label class="field">
+            <span class="field-label">Categoria</span>
+            <select formControlName="categoriaId" class="select-input">
+              <option [ngValue]="null">Selecione uma categoria...</option>
+              @for (cat of categorias(); track cat.id) {
+                <option [ngValue]="cat.id">{{ cat.nome }}</option>
+              }
+            </select>
+          </label>
+
+          <!-- Dropdown Fabricante -->
+          <label class="field">
+            <span class="field-label">Fabricante</span>
+            <select formControlName="fabricanteId" class="select-input">
+              <option [ngValue]="null">Selecione um fabricante...</option>
+              @for (fab of fabricantes(); track fab.id) {
+                <option [ngValue]="fab.id">{{ fab.nome }}</option>
+              }
+            </select>
+          </label>
+
+          <!-- Dropdown Fornecedor -->
+          <label class="field">
+            <span class="field-label">Fornecedor Principal</span>
+            <select formControlName="fornecedorId" class="select-input">
+              <option [ngValue]="null">Selecione um fornecedor...</option>
+              @for (forn of fornecedores(); track forn.id) {
+                <option [ngValue]="forn.id">{{ forn.nomeFantasia || forn.razaoSocial }}</option>
+              }
+            </select>
+          </label>
+
+          <!-- Dropdown Localização -->
+          <label class="field">
+            <span class="field-label">Localização no Estoque</span>
+            <select formControlName="localizacaoId" class="select-input">
+              <option [ngValue]="null">Selecione uma localização...</option>
+              @for (loc of localizacoes(); track loc.id) {
+                <option [ngValue]="loc.id">{{ loc.descricao }}</option>
+              }
+            </select>
+          </label>
+        </div>
+      </section>
+
+      <!-- Card 3: Precificação & Níveis de Estoque -->
+      <section class="card">
+        <header class="card-head">
+          <div class="card-title">
+            <span class="card-icon">📦</span>
+            <div>
+              <h2>Precificação & Níveis de Estoque</h2>
+              <p class="card-subtitle">Defina o preço de venda, custo e limites mínimo/máximo para alerta crítico</p>
+            </div>
+          </div>
+          <span class="badge-tag">Obrigatório</span>
+        </header>
+
+        <div class="grid">
+          <!-- Preço Unitário de Venda -->
+          <label class="field">
+            <span class="field-label">Preço Unitário de Venda (R$) <em>*</em></span>
+            <input
+              type="number"
+              formControlName="precoUnitario"
+              placeholder="0.00"
+              step="0.01"
+              min="0.01"
+              [class.invalid]="hasError('precoUnitario')"
+            />
+            @if (hasError('precoUnitario', 'required')) {
+              <small class="error-msg">Informe o preço de venda.</small>
+            } @else if (hasError('precoUnitario', 'min')) {
+              <small class="error-msg">O preço deve ser maior que zero.</small>
+            }
+          </label>
+
+          <!-- Preço de Custo no Fornecedor -->
+          <label class="field">
+            <span class="field-label">Preço de Custo no Fornecedor (R$)</span>
+            <input
+              type="number"
+              formControlName="precoFornecedor"
+              placeholder="0.00"
+              step="0.01"
+              min="0"
+            />
+          </label>
+
+          <!-- Prazo de Entrega -->
+          <label class="field">
+            <span class="field-label">Prazo Entrega Fornecedor (dias)</span>
+            <input
+              type="number"
+              formControlName="prazoEntregaFornecedor"
+              placeholder="Ex.: 3"
+              min="0"
+            />
+          </label>
+
+          <!-- Quantidade Inicial -->
+          <label class="field">
+            <span class="field-label">Quantidade Inicial <em>*</em></span>
+            <input
+              type="number"
+              formControlName="quantidade"
+              min="0"
+              [class.invalid]="hasError('quantidade')"
+            />
+            @if (hasError('quantidade')) {
+              <small class="error-msg">Informe uma quantidade válida (>= 0).</small>
+            }
+          </label>
+
+          <!-- Estoque Mínimo -->
+          <label class="field">
+            <span class="field-label">Estoque Mínimo (Alerta Crítico) <em>*</em></span>
+            <input
+              type="number"
+              formControlName="estoqueMinimo"
+              min="0"
+              [class.invalid]="hasError('estoqueMinimo')"
+            />
+            @if (hasError('estoqueMinimo')) {
+              <small class="error-msg">Informe o estoque mínimo (>= 0).</small>
+            }
+          </label>
+
+          <!-- Estoque Máximo -->
+          <label class="field">
+            <span class="field-label">Estoque Máximo <em>*</em></span>
+            <input
+              type="number"
+              formControlName="estoqueMaximo"
+              min="0"
+              [class.invalid]="hasError('estoqueMaximo')"
+            />
+            @if (hasError('estoqueMaximo')) {
+              <small class="error-msg">Informe o estoque máximo (>= 0).</small>
+            }
+          </label>
+        </div>
+      </section>
+
+      <!-- Card 4: Observações -->
+      <section class="card">
+        <header class="card-head">
+          <div class="card-title">
+            <span class="card-icon">📝</span>
+            <div>
+              <h2>Observações & Aplicações</h2>
+              <p class="card-subtitle">Modelos de motos compatíveis, códigos OEM equivalentes e notas</p>
+            </div>
+          </div>
+        </header>
+
+        <div class="grid">
+          <label class="field full-width">
+            <span class="field-label">Observações</span>
+            <textarea
+              formControlName="observacoes"
+              rows="3"
+              maxlength="500"
+              placeholder="Ex.: Compatível com Honda CG 160 Fan / Titan / Start (2016 a 2024)."
+            ></textarea>
+          </label>
+        </div>
+      </section>
+
+      <!-- Rodapé -->
+      <div class="form-footer">
+        <button type="button" class="btn-ghost" (click)="cancelar()">Cancelar</button>
+        <button
+          type="submit"
+          class="btn-primary"
+          [disabled]="submitting()"
+        >
+          @if (submitting()) {
+            <span>Salvando...</span>
+          } @else {
+            <span>Salvar Peça</span>
+          }
+        </button>
+      </div>
+    </form>
+  </section>
+</div>
+
