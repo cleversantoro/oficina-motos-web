@@ -41,7 +41,7 @@ export function cepValidator(): ValidatorFn {
     }
 
     // CEP não pode começar com 0
-    if (cep.startsWith('0')) {
+    if (cep.startsWith('00')) {
       return { cep: { message: 'CEP inválido' } };
     }
 
@@ -90,7 +90,7 @@ export function isCepValid(cep: string): boolean {
     return false;
   }
 
-  if (cleaned.startsWith('0')) {
+  if (cleaned.startsWith('00')) {
     return false;
   }
 

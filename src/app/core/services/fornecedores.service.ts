@@ -35,6 +35,9 @@ export class FornecedoresService {
   enderecos(params?: Record<string, any>) {
     return this.api.list(apiPaths.fornecedores.enderecos, params);
   }
+  criarEndereco(body: any) {
+    return this.api.create(apiPaths.fornecedores.enderecos, body);
+  }
   contatos(params?: Record<string, any>) {
     return this.api.list(apiPaths.fornecedores.contatos, params);
   }

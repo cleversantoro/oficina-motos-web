@@ -13,6 +13,7 @@ import { VeiculoCadastroComponent } from './features/motos/pages/veiculo-cadastr
 import { FinanceiroDashboard } from './features/financeiro/pages/financeiro-dashboard/financeiro-dashboard';
 import { FornecedorDetalhe } from './features/fornecedores/pages/fornecedor-detalhe/fornecedor-detalhe';
 import { FornecedorLista } from './features/fornecedores/pages/fornecedor-lista/fornecedor-lista';
+import { FornecedorCadastroComponent } from './features/fornecedores/pages/fornecedor-cadastro/fornecedor-cadastro';
 import { DashboardPrincipal } from './features/dashboard/pages/dashboard-principal/dashboard-principal';
 import { MainLayout } from './layout/main-layout/main-layout';
 import { LoginPage } from './features/auth/login/login';
@@ -46,6 +47,7 @@ export const routes: Routes = [
         component: EstoqueLista,
       },
       { path: 'fornecedores', component: FornecedorLista },
+      { path: 'fornecedores/novo', component: FornecedorCadastroComponent },
       { path: 'fornecedores/:id', component: FornecedorDetalhe },
       {
         path: 'mecanicos',

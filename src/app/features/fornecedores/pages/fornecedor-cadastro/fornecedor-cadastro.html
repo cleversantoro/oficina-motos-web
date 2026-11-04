@@ -1,0 +1,422 @@
+<div class="cadastro-fornecedor-container">
+  <section class="cadastro-shell">
+    <!-- Cabeçalho -->
+    <div class="content-head">
+      <div>
+        <a routerLink="/fornecedores" class="back-link">
+          ← Voltar para Fornecedores
+        </a>
+        <h1 class="page-title">Novo Fornecedor</h1>
+        <p class="muted">
+          Cadastre parceiros comerciais, dados fiscais, segmento de atuação e endereço com busca por CEP.
+        </p>
+      </div>
+      <div class="actions">
+        <button type="button" class="btn-ghost" (click)="cancelar()">Cancelar</button>
+        <button
+          type="button"
+          class="btn-primary"
+          [disabled]="submitting()"
+          (click)="salvar()"
+        >
+          @if (submitting()) {
+            <span>Salvando...</span>
+          } @else {
+            <span>Salvar Fornecedor</span>
+          }
+        </button>
+      </div>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="salvar()" novalidate class="cadastro-form">
+      <!-- Card 1: Identificação Jurídica & Fiscal -->
+      <section class="card">
+        <header class="card-head">
+          <div class="card-title">
+            <span class="card-icon">🏢</span>
+            <div>
+              <h2>Identificação Jurídica & Fiscal</h2>
+              <p class="card-subtitle">Código interno, razão social, nome fantasia e CNPJ</p>
+            </div>
+          </div>
+          <span class="badge-tag">Obrigatório</span>
+        </header>
+
+        <div class="grid">
+          <!-- Código -->
+          <label class="field">
+            <span class="field-label">Código <em>*</em></span>
+            <input
+              type="text"
+              formControlName="codigo"
+              placeholder="FOR-001"
+              maxlength="40"
+              [class.invalid]="hasError('codigo')"
+            />
+            @if (hasError('codigo', 'required')) {
+              <small class="error-msg">Informe o código do fornecedor.</small>
+            }
+          </label>
+
+          <!-- Tipo -->
+          <label class="field">
+            <span class="field-label">Tipo de Fornecedor <em>*</em></span>
+            <select formControlName="tipo" class="select-input">
+              @for (item of tiposOpcoes; track item.value) {
+                <option [value]="item.value">{{ item.label }}</option>
+              }
+            </select>
+          </label>
+
+          <!-- Status -->
+          <label class="field">
+            <span class="field-label">Status <em>*</em></span>
+            <select formControlName="status" class="select-input">
+              @for (st of statusOpcoes; track st.value) {
+                <option [value]="st.value">{{ st.label }}</option>
+              }
+            </select>
+          </label>
+
+          <!-- CNPJ -->
+          <label class="field">
+            <span class="field-label">CNPJ <em>*</em></span>
+            <input
+              type="text"
+              formControlName="documento"
+              placeholder="00.000.000/0000-00"
+              maxlength="18"
+              (input)="onCnpjInput($event)"
+              [class.invalid]="hasError('documento')"
+            />
+            @if (hasError('documento', 'required')) {
+              <small class="error-msg">O CNPJ é obrigatório.</small>
+            } @else if (hasError('documento', 'cnpj')) {
+              <small class="error-msg">
+                {{ form.controls.documento.getError('cnpj')?.message || 'CNPJ inválido.' }}
+              </small>
+            }
+          </label>
+
+          <!-- Razão Social -->
+          <label class="field span-2">
+            <span class="field-label">Razão Social <em>*</em></span>
+            <input
+              type="text"
+              formControlName="razaoSocial"
+              placeholder="Ex.: Moto Peças Brasil Distribuidora Ltda"
+              maxlength="200"
+              [class.invalid]="hasError('razaoSocial')"
+            />
+            @if (hasError('razaoSocial', 'required')) {
+              <small class="error-msg">Informe a razão social.</small>
+            } @else if (hasError('razaoSocial', 'minlength')) {
+              <small class="error-msg">Razão social deve ter no mínimo 3 caracteres.</small>
+            }
+          </label>
+
+          <!-- Nome Fantasia -->
+          <label class="field">
+            <span class="field-label">Nome Fantasia <em>*</em></span>
+            <input
+              type="text"
+              formControlName="nomeFantasia"
+              placeholder="Ex.: MotoBrasil Peças"
+              maxlength="160"
+              [class.invalid]="hasError('nomeFantasia')"
+            />
+            @if (hasError('nomeFantasia', 'required')) {
+              <small class="error-msg">Informe o nome fantasia.</small>
+            }
+          </label>
+
+          <!-- Inscrição Estadual -->
+          <label class="field">
+            <span class="field-label">Inscrição Estadual</span>
+            <input
+              type="text"
+              formControlName="inscricaoEstadual"
+              placeholder="Isento ou número IE"
+              maxlength="40"
+            />
+          </label>
+
+          <!-- Inscrição Municipal -->
+          <label class="field">
+            <span class="field-label">Inscrição Municipal</span>
+            <input
+              type="text"
+              formControlName="inscricaoMunicipal"
+              placeholder="Opcional"
+              maxlength="40"
+            />
+          </label>
+        </div>
+      </section>
+
+      <!-- Card 2: Segmento de Atuação & Contato -->
+      <section class="card">
+        <header class="card-head">
+          <div class="card-title">
+            <span class="card-icon">🏷️</span>
+            <div>
+              <h2>Segmento de Atuação & Contato</h2>
+              <p class="card-subtitle">Categoria principal de fornecimento e canais de atendimento</p>
+            </div>
+          </div>
+        </header>
+
+        <div class="grid">
+          <!-- Dropdown de Segmentos (T-017.4) -->
+          <label class="field">
+            <span class="field-label">Segmento Principal</span>
+            <select formControlName="segmentoPrincipalId" class="select-input">
+              <option [ngValue]="null">Selecione um segmento...</option>
+              @for (seg of segmentos(); track seg.id) {
+                <option [ngValue]="seg.id">{{ seg.nome }}</option>
+              }
+            </select>
+          </label>
+
+          <!-- E-mail -->
+          <label class="field">
+            <span class="field-label">E-mail Comercial</span>
+            <input
+              type="email"
+              formControlName="email"
+              placeholder="comercial@fornecedor.com.br"
+              maxlength="160"
+              [class.invalid]="hasError('email')"
+            />
+            @if (hasError('email', 'email')) {
+              <small class="error-msg">Informe um e-mail válido.</small>
+            }
+          </label>
+
+          <!-- Telefone Principal -->
+          <label class="field">
+            <span class="field-label">Telefone / WhatsApp</span>
+            <input
+              type="text"
+              formControlName="telefonePrincipal"
+              placeholder="(11) 98888-7777"
+              maxlength="30"
+            />
+          </label>
+
+          <!-- Website -->
+          <label class="field">
+            <span class="field-label">Website</span>
+            <input
+              type="url"
+              formControlName="website"
+              placeholder="https://www.fornecedor.com.br"
+              maxlength="200"
+            />
+          </label>
+        </div>
+      </section>
+
+      <!-- Card 3: Endereço Comercial (Integração CepService — T-017.3) -->
+      <section class="card">
+        <header class="card-head">
+          <div class="card-title">
+            <span class="card-icon">📍</span>
+            <div>
+              <h2>Endereço Comercial</h2>
+              <p class="card-subtitle">Informe o CEP para autopreenchimento via ViaCEP</p>
+            </div>
+          </div>
+          @if (searchingCep()) {
+            <span class="cep-status">Consultando CEP...</span>
+          }
+        </header>
+
+        <div class="grid">
+          <!-- CEP -->
+          <div class="field">
+            <span class="field-label">CEP</span>
+            <div class="cep-row">
+              <input
+                type="text"
+                formControlName="cep"
+                placeholder="00000-000"
+                maxlength="9"
+                (input)="onCepInput($event)"
+                [class.invalid]="hasError('cep') || !!cepError()"
+              />
+              <button
+                type="button"
+                class="btn-cep"
+                [disabled]="searchingCep()"
+                (click)="buscarCep()"
+                title="Buscar endereço pelo CEP"
+              >
+                Buscar
+              </button>
+            </div>
+            @if (hasError('cep', 'cep')) {
+              <small class="error-msg">CEP inválido. Formato: 00000-000.</small>
+            } @else if (cepError()) {
+              <small class="error-msg">{{ cepError() }}</small>
+            }
+          </div>
+
+          <!-- Logradouro -->
+          <label class="field span-2">
+            <span class="field-label">Logradouro</span>
+            <input
+              type="text"
+              formControlName="logradouro"
+              placeholder="Rua, Avenida, Alameda..."
+              maxlength="200"
+            />
+          </label>
+
+          <!-- Número -->
+          <label class="field">
+            <span class="field-label">Número</span>
+            <input
+              type="text"
+              formControlName="numero"
+              placeholder="Ex.: 150"
+              maxlength="30"
+            />
+          </label>
+
+          <!-- Complemento -->
+          <label class="field">
+            <span class="field-label">Complemento</span>
+            <input
+              type="text"
+              formControlName="complemento"
+              placeholder="Galpão, Sala, Bloco..."
+              maxlength="120"
+            />
+          </label>
+
+          <!-- Bairro -->
+          <label class="field">
+            <span class="field-label">Bairro</span>
+            <input
+              type="text"
+              formControlName="bairro"
+              placeholder="Bairro"
+              maxlength="120"
+            />
+          </label>
+
+          <!-- Cidade -->
+          <label class="field">
+            <span class="field-label">Cidade</span>
+            <input
+              type="text"
+              formControlName="cidade"
+              placeholder="Município"
+              maxlength="120"
+            />
+          </label>
+
+          <!-- Estado (UF) -->
+          <label class="field">
+            <span class="field-label">Estado (UF)</span>
+            <select formControlName="estado" class="select-input">
+              <option value="">UF...</option>
+              @for (uf of ufs; track uf) {
+                <option [value]="uf">{{ uf }}</option>
+              }
+            </select>
+          </label>
+        </div>
+      </section>
+
+      <!-- Card 4: Condições Comerciais & Observações -->
+      <section class="card">
+        <header class="card-head">
+          <div class="card-title">
+            <span class="card-icon">🤝</span>
+            <div>
+              <h2>Condições Comerciais & Observações</h2>
+              <p class="card-subtitle">Prazos de pagamento, entrega, garantia e atendimento</p>
+            </div>
+          </div>
+        </header>
+
+        <div class="grid">
+          <!-- Condição de Pagamento -->
+          <label class="field">
+            <span class="field-label">Condição de Pagamento Padrão</span>
+            <input
+              type="text"
+              formControlName="condicaoPagamentoPadrao"
+              placeholder="Ex.: 28/56 dias, À vista"
+              maxlength="100"
+            />
+          </label>
+
+          <!-- Prazo Médio de Entrega -->
+          <label class="field">
+            <span class="field-label">Prazo Médio de Entrega (dias)</span>
+            <input
+              type="number"
+              formControlName="prazoEntregaMedio"
+              placeholder="Ex.: 3"
+              min="0"
+            />
+          </label>
+
+          <!-- Prazo de Garantia -->
+          <label class="field">
+            <span class="field-label">Prazo de Garantia Padrão</span>
+            <input
+              type="text"
+              formControlName="prazoGarantiaPadrao"
+              placeholder="Ex.: 90 dias"
+              maxlength="100"
+            />
+          </label>
+
+          <!-- Checkboxes Comerciais -->
+          <div class="field checkboxes-row full-width">
+            <label class="check-label">
+              <input type="checkbox" formControlName="atendimentoPersonalizado" />
+              <span>Possui atendimento personalizado / consultor dedicado</span>
+            </label>
+            <label class="check-label">
+              <input type="checkbox" formControlName="retiradaLocal" />
+              <span>Permite retirada de peças no balcão (Retirada Local)</span>
+            </label>
+          </div>
+
+          <!-- Observações -->
+          <label class="field full-width">
+            <span class="field-label">Observações</span>
+            <textarea
+              formControlName="observacoes"
+              rows="3"
+              maxlength="500"
+              placeholder="Informações sobre marcas atendidas, políticas de troca, pedido mínimo..."
+            ></textarea>
+          </label>
+        </div>
+      </section>
+
+      <!-- Rodapé de Ações -->
+      <div class="form-footer">
+        <button type="button" class="btn-ghost" (click)="cancelar()">Cancelar</button>
+        <button
+          type="submit"
+          class="btn-primary"
+          [disabled]="submitting()"
+        >
+          @if (submitting()) {
+            <span>Salvando...</span>
+          } @else {
+            <span>Salvar Fornecedor</span>
+          }
+        </button>
+      </div>
+    </form>
+  </section>
+</div>
+
