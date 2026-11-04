@@ -92,5 +92,11 @@ describe('EstoqueListaComponent', () => {
     expect(ctaBtn).toBeTruthy();
     expect(ctaBtn.getAttribute('routerlink')).toBe('/estoque/novo');
   });
+
+  it('deve possuir links para o detalhe da peça /estoque/:id (T-019.5)', () => {
+    const prodLinks = fixture.nativeElement.querySelectorAll('a.prod-link');
+    expect(prodLinks.length).toBe(2);
+    expect(prodLinks[0].getAttribute('href')).toBe('/estoque/1');
+  });
 });
 

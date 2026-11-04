@@ -1,0 +1,169 @@
+@if (loading()) {
+  <div class="state-card">
+    <span class="pi pi-spin pi-spinner" style="font-size: 1.75rem; color: #94a3b8"></span>
+    <p>Carregando detalhes da peça...</p>
+  </div>
+}
+
+@if (!loading() && error()) {
+  <div class="state-card error">
+    <span class="pi pi-exclamation-triangle" style="font-size: 1.75rem; color: #f87171"></span>
+    <p>{{ error() }}</p>
+    <button class="btn-secondary" type="button" routerLink="/estoque">← Voltar ao estoque</button>
+  </div>
+}
+
+@if (!loading() && !error() && peca(); as item) {
+  <section class="detalhe-shell">
+    <div class="top-nav">
+      <a class="back-link" routerLink="/estoque">← Voltar para Estoque</a>
+    </div>
+
+    <header class="header-card">
+      <div class="header-info">
+        <div class="sku-row">
+          <span class="sku-badge">SKU: {{ item.codigo }}</span>
+          <span class="status-pill" [class.ativo]="item.status.toUpperCase() === 'ATIVO'">
+            {{ item.status }}
+          </span>
+          @if (isCritico()) {
+            <span class="badge-critico">Crítico</span>
+          }
+        </div>
+        <h1>{{ item.descricao }}</h1>
+        <p class="meta-line">
+          Fabricante: <strong>{{ getFabricanteNome(item.fabricanteId) }}</strong> ·
+          Categoria: <strong>{{ getCategoriaNome(item.categoriaId) }}</strong> ·
+          Localização: <strong>{{ getLocalizacaoNome(item.localizacaoId) }}</strong>
+        </p>
+      </div>
+
+      <div class="header-actions">
+        <button
+          type="button"
+          class="btn-action btn-entrada"
+          (click)="abrirModalEntrada()"
+        >
+          + Registrar Entrada
+        </button>
+        <button
+          type="button"
+          class="btn-action btn-saida"
+          [disabled]="item.quantidade <= 0"
+          (click)="abrirModalSaida()"
+        >
+          - Registrar Saída
+        </button>
+      </div>
+    </header>
+
+    <div class="stats-grid">
+      <div class="stat-card" [class.critico]="isCritico()">
+        <span class="stat-label">Saldo Atual</span>
+        <div class="stat-value-row">
+          <strong class="stat-value">
+            {{ item.quantidade }} {{ (item.unidade || 'UN').toLowerCase() }}
+          </strong>
+          @if (isCritico()) {
+            <span class="badge-critico">Crítico</span>
+          }
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <span class="stat-label">Estoque Mínimo / Máximo</span>
+        <strong class="stat-value">
+          {{ item.estoqueMinimo }} / {{ item.estoqueMaximo }} {{ (item.unidade || 'UN').toLowerCase() }}
+        </strong>
+      </div>
+
+      <div class="stat-card">
+        <span class="stat-label">Preço Unitário</span>
+        <strong class="stat-value">R$ {{ item.precoUnitario | number : '1.2-2' }}</strong>
+      </div>
+
+      <div class="stat-card">
+        <span class="stat-label">Valor Total em Estoque</span>
+        <strong class="stat-value">R$ {{ valorTotalEstoque() | number : '1.2-2' }}</strong>
+      </div>
+    </div>
+
+    @if (item.observacoes) {
+      <section class="card obs-card">
+        <h2>Observações</h2>
+        <p>{{ item.observacoes }}</p>
+      </section>
+    }
+
+    <section class="card historico-card">
+      <div class="card-header">
+        <div>
+          <h2>Histórico de Movimentações</h2>
+          <p class="subtitle">Entradas e saídas registradas para esta peça</p>
+        </div>
+        <span class="count-pill">{{ movimentacoes().length }} registro(s)</span>
+      </div>
+
+      <div class="table-wrap">
+        <table class="historico-table">
+          <thead>
+            <tr>
+              <th>Data / Hora</th>
+              <th>Tipo</th>
+              <th>Quantidade</th>
+              <th>Referência / Motivo</th>
+              <th>Responsável</th>
+            </tr>
+          </thead>
+          <tbody>
+            @if (movimentacoes().length === 0) {
+              <tr>
+                <td colspan="5" class="empty-row">
+                  Nenhuma movimentação registrada para esta peça.
+                </td>
+              </tr>
+            }
+            @for (mov of movimentacoes(); track mov.id) {
+              <tr>
+                <td>{{ mov.dataMovimentacao | date : 'dd/MM/yyyy HH:mm' }}</td>
+                <td>
+                  <span
+                    class="tipo-badge"
+                    [class.entrada]="mov.tipo.toUpperCase() === 'ENTRADA'"
+                    [class.saida]="mov.tipo.toUpperCase() === 'SAIDA'"
+                  >
+                    {{ mov.tipo.toUpperCase() }}
+                  </span>
+                </td>
+                <td
+                  class="qtd-cell"
+                  [class.entrada]="mov.tipo.toUpperCase() === 'ENTRADA'"
+                  [class.saida]="mov.tipo.toUpperCase() === 'SAIDA'"
+                >
+                  {{ mov.tipo.toUpperCase() === 'ENTRADA' ? '+' : '-' }}{{ mov.quantidade }}
+                </td>
+                <td>{{ mov.referencia || '—' }}</td>
+                <td>{{ mov.usuario || '—' }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <app-estoque-entrada-modal
+      [visible]="entradaModalVisible()"
+      (visibleChange)="entradaModalVisible.set($event)"
+      [peca]="item"
+      (saved)="onMovimentacaoSalva()"
+    ></app-estoque-entrada-modal>
+
+    <app-estoque-saida-modal
+      [visible]="saidaModalVisible()"
+      (visibleChange)="saidaModalVisible.set($event)"
+      [peca]="item"
+      (saved)="onMovimentacaoSalva()"
+    ></app-estoque-saida-modal>
+  </section>
+}
+

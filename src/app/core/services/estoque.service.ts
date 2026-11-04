@@ -35,6 +35,9 @@ export class EstoqueService {
   movimentar(body: any) {
     return this.api.create(apiPaths.estoque.movimentacoes, body);
   }
+  listarMovimentacoes(params?: Record<string, any>) {
+    return this.api.list(apiPaths.estoque.movimentacoes, params);
+  }
   anexos(params?: Record<string, any>) {
     return this.api.list(apiPaths.estoque.anexos, params);
   }

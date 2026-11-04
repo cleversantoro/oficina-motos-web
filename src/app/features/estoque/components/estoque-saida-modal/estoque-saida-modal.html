@@ -1,0 +1,94 @@
+<p-dialog
+  [visible]="visible"
+  (visibleChange)="fechar()"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  header="Registrar Saída de Estoque"
+  styleClass="estoque-mov-modal dark-dialog"
+  [style]="{ width: '90vw', maxWidth: '520px' }"
+>
+  @if (peca) {
+    <form class="modal-form" [formGroup]="form" (ngSubmit)="salvar()">
+      <div class="peca-summary">
+        <div>
+          <span class="summary-sku">{{ peca.codigo }}</span>
+          <p class="summary-title">{{ peca.descricao }}</p>
+        </div>
+        <div class="summary-stock">
+          <span class="stock-label">Saldo disponível</span>
+          <strong class="stock-value">{{ saldoDisponivel }} {{ peca.unidade || 'UN' }}</strong>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="saidaQuantidade" class="form-label">
+          Quantidade de Saída <span class="required">*</span>
+        </label>
+        <input
+          id="saidaQuantidade"
+          type="number"
+          class="form-input"
+          formControlName="quantidade"
+          min="1"
+          [max]="saldoDisponivel"
+          step="1"
+        />
+        @if (hasError('quantidade', 'required') || hasError('quantidade', 'min')) {
+          <span class="field-error">Informe uma quantidade válida (mínimo 1).</span>
+        }
+        @if (excedeSaldo || hasError('quantidade', 'max')) {
+          <span class="field-error">
+            A quantidade informada excede o saldo disponível ({{ saldoDisponivel }}).
+          </span>
+        }
+      </div>
+
+      <div class="form-group">
+        <label for="saidaReferencia" class="form-label">
+          Referência / Motivo <span class="required">*</span>
+        </label>
+        <input
+          id="saidaReferencia"
+          type="text"
+          class="form-input"
+          formControlName="referencia"
+          maxlength="200"
+          placeholder="Ex.: OS #102, Uso interno, Ajuste de avaria..."
+        />
+        @if (hasError('referencia', 'required')) {
+          <span class="field-error">A referência ou motivo da saída é obrigatória.</span>
+        }
+      </div>
+
+      <div class="projection-banner saida">
+        <span class="projection-label">Saldo restante após saída:</span>
+        <strong class="projection-value">{{ saldoRestante }} {{ peca.unidade || 'UN' }}</strong>
+      </div>
+    </form>
+  }
+
+  <ng-template pTemplate="footer">
+    <div class="modal-footer">
+      <button
+        pButton
+        type="button"
+        label="Cancelar"
+        class="p-button-text p-button-secondary"
+        (click)="fechar()"
+        [disabled]="submitting()"
+      ></button>
+      <button
+        pButton
+        type="button"
+        label="Confirmar Saída"
+        icon="pi pi-minus-circle"
+        class="p-button-danger"
+        (click)="salvar()"
+        [disabled]="submitting() || saldoDisponivel <= 0"
+        [loading]="submitting()"
+      ></button>
+    </div>
+  </ng-template>
+</p-dialog>
+
