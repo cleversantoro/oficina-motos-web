@@ -1,6 +1,7 @@
 import { CommonModule, DatePipe, DecimalPipe } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { FinanceiroService } from '../../../../core/services/financeiro.service';
 import {
   FinanceiroContaPagar, FinanceiroContaReceber,
@@ -14,7 +15,7 @@ type Kpi = { label: string; valor: number; tipo?: 'entrada' | 'saida' | 'alerta'
 @Component({
   selector: 'app-financeiro-dashboard',
   standalone: true,
-  imports: [CommonModule, DatePipe, DecimalPipe, FormsModule],
+  imports: [CommonModule, DatePipe, DecimalPipe, FormsModule, RouterLink],
   templateUrl: './financeiro-dashboard.html',
   styleUrl: './financeiro-dashboard.scss',
   providers: [FinanceiroService]

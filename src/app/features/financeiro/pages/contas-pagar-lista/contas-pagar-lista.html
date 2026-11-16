@@ -1,0 +1,189 @@
+<section class="contas-pagar-shell">
+  <header class="page-header">
+    <div class="header-left">
+      <a class="back-link" routerLink="/financeiro">← Painel Financeiro</a>
+      <h1>Contas a Pagar</h1>
+      <p class="subtitle">Acompanhe obrigações financeiras, vencimentos e compromissos com fornecedores.</p>
+    </div>
+  </header>
+
+  <div class="kpi-grid">
+    @for (k of kpis(); track k.label) {
+      <div
+        class="kpi-card"
+        [class.saida]="k.tipo === 'saida'"
+        [class.alerta]="k.tipo === 'alerta' && k.quantidade > 0"
+        [class.pago]="k.tipo === 'pago'"
+      >
+        <div class="kpi-top">
+          <p class="kpi-label">{{ k.label }}</p>
+          <span class="kpi-count">{{ k.quantidade }} {{ k.quantidade === 1 ? 'conta' : 'contas' }}</span>
+        </div>
+        <p class="kpi-value">R$ {{ k.valor | number:'1.2-2' }}</p>
+      </div>
+    }
+  </div>
+
+  <div class="filter-bar" role="region" aria-label="Filtros de contas a pagar">
+    <div class="filter-group search-group">
+      <label class="filter-label" for="filtro-busca">Buscar</label>
+      <div class="search-wrap">
+        <input
+          id="filtro-busca"
+          class="filter-input search-input"
+          type="text"
+          placeholder="Descrição, observação ou fornecedor..."
+          [ngModel]="searchTerm()"
+          (ngModelChange)="setSearchTerm($event)"
+        />
+      </div>
+    </div>
+
+    <div class="filter-group">
+      <label class="filter-label" for="filtro-status">Status</label>
+      <select
+        id="filtro-status"
+        class="filter-select"
+        [ngModel]="statusFilter()"
+        (ngModelChange)="setStatusFilter($event)"
+      >
+        @for (opt of statusOptions; track opt.value) {
+          <option [value]="opt.value">{{ opt.label }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label class="filter-label" for="filtro-data-inicio">Vencimento de</label>
+      <input
+        id="filtro-data-inicio"
+        class="filter-input date-input"
+        type="date"
+        [ngModel]="dataInicio()"
+        (ngModelChange)="setDataInicio($event)"
+      />
+    </div>
+
+    <div class="filter-group">
+      <label class="filter-label" for="filtro-data-fim">Até</label>
+      <input
+        id="filtro-data-fim"
+        class="filter-input date-input"
+        type="date"
+        [ngModel]="dataFim()"
+        (ngModelChange)="setDataFim($event)"
+      />
+    </div>
+
+    @if (hasActiveFilters()) {
+      <div class="filter-actions">
+        <button type="button" class="btn-clear-filters" (click)="limparFiltros()">
+          Limpar filtros
+        </button>
+      </div>
+    }
+  </div>
+
+  <div class="list-area">
+    @if (loading()) {
+      <div class="state-box loading-state" role="status">
+        <p>Carregando contas a pagar...</p>
+      </div>
+    } @else if (error()) {
+      <div class="state-box error-state" role="alert">
+        <p>{{ error() }}</p>
+        <button type="button" class="btn-retry" (click)="carregarDados()">Tentar novamente</button>
+      </div>
+    } @else {
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th class="w-date">Vencimento</th>
+            <th>Fornecedor</th>
+            <th>Descrição</th>
+            <th class="hide-sm">Método</th>
+            <th>Status</th>
+            <th class="hide-sm w-date">Pagamento</th>
+            <th class="right">Valor</th>
+          </tr>
+        </thead>
+        <tbody>
+          @if (filteredContas().length === 0) {
+            <tr>
+              <td colspan="7" class="empty-cell">
+                @if (periodoInvalido()) {
+                  A data inicial não pode ser posterior à data final.
+                } @else if (hasActiveFilters()) {
+                  Nenhuma conta a pagar encontrada para os filtros selecionados.
+                } @else {
+                  Nenhuma conta a pagar cadastrada.
+                }
+              </td>
+            </tr>
+          }
+          @for (conta of paginatedContas(); track conta.id) {
+            @let statusEfetivo = getEffectiveStatus(conta);
+            @let vencida = isVencida(conta);
+            <tr class="data-row" [class.row-vencida]="vencida">
+              <td class="w-date" [class.vencimento-atrasado]="vencida">
+                <span class="date-text">{{ conta.vencimento | date:'dd/MM/yyyy' }}</span>
+                @if (vencida) {
+                  <span class="overdue-pill" title="Conta vencida e pendente de baixa">⚠ Em atraso</span>
+                }
+              </td>
+              <td class="fornecedor-cell">{{ getFornecedorNome(conta.fornecedorId) }}</td>
+              <td>
+                <div class="desc-primary">{{ conta.descricao }}</div>
+                @if (conta.observacao) {
+                  <div class="desc-obs">{{ conta.observacao }}</div>
+                }
+              </td>
+              <td class="hide-sm">{{ getMetodoNome(conta.metodoId) }}</td>
+              <td>
+                <span
+                  class="status-badge"
+                  [class.status-vencido]="statusEfetivo === 'VENCIDO'"
+                  [class.status-pendente]="statusEfetivo === 'PENDENTE'"
+                  [class.status-pago]="statusEfetivo === 'PAGO'"
+                  [class.status-cancelado]="statusEfetivo === 'CANCELADO'"
+                >
+                  {{ getStatusLabel(conta) }}
+                </span>
+              </td>
+              <td class="hide-sm w-date">
+                {{ conta.dataPagamento ? (conta.dataPagamento | date:'dd/MM/yyyy') : '-' }}
+              </td>
+              <td class="right valor saida" [class.valor-vencido]="vencida">
+                R$ {{ conta.valor | number:'1.2-2' }}
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+
+      @if (filteredContas().length > rows) {
+        <div class="pagination">
+          <button
+            type="button"
+            class="pg-btn"
+            [disabled]="first() === 0"
+            (click)="prevPage()"
+          >
+            ← Anterior
+          </button>
+          <span class="pg-info">
+            {{ first() + 1 }}–{{ pageEnd() }} de {{ filteredContas().length }}
+          </span>
+          <button
+            type="button"
+            class="pg-btn"
+            [disabled]="first() + rows >= filteredContas().length"
+            (click)="nextPage()"
+          >
+            Próximo →
+          </button>
+        </div>
+      }
+    }
+  </div>
+</section>

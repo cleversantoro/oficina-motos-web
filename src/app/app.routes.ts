@@ -13,6 +13,7 @@ import { VeiculoDetalhe } from './features/motos/pages/veiculo-detalhe/veiculo-d
 import { VeiculoLista } from './features/motos/pages/veiculo-lista/veiculo-lista';
 import { VeiculoCadastroComponent } from './features/motos/pages/veiculo-cadastro/veiculo-cadastro';
 import { FinanceiroDashboard } from './features/financeiro/pages/financeiro-dashboard/financeiro-dashboard';
+import { ContasPagarListaComponent } from './features/financeiro/pages/contas-pagar-lista/contas-pagar-lista';
 import { FornecedorDetalhe } from './features/fornecedores/pages/fornecedor-detalhe/fornecedor-detalhe';
 import { FornecedorLista } from './features/fornecedores/pages/fornecedor-lista/fornecedor-lista';
 import { FornecedorCadastroComponent } from './features/fornecedores/pages/fornecedor-cadastro/fornecedor-cadastro';
@@ -92,6 +93,10 @@ export const routes: Routes = [
       {
         path: 'financeiro',
         component: FinanceiroDashboard,
+      },
+      {
+        path: 'financeiro/contas-pagar',
+        component: ContasPagarListaComponent,
       },
     ],
   },
