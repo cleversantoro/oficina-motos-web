@@ -1,5 +1,9 @@
 import { Injectable } from '@angular/core';
 import {
+  ContaPagarPagamentoResponse,
+  ContaReceberPagamentoResponse,
+  CreateContaPagarPagamentoRequest,
+  CreateContaReceberPagamentoRequest,
   CreateFinanceiroContaPagarRequest,
   CreateFinanceiroContaReceberRequest,
   FinanceiroAnexo,
@@ -48,6 +52,12 @@ export class FinanceiroService {
       payload,
     );
   }
+  registrarBaixaContaPagar(payload: CreateContaPagarPagamentoRequest) {
+    return this.api.create<ContaPagarPagamentoResponse, CreateContaPagarPagamentoRequest>(
+      apiPaths.financeiro.pagarPagamentos,
+      payload,
+    );
+  }
   contasReceber(params?: Record<string, any>) {
     return this.api.list<FinanceiroContaReceber[]>(apiPaths.financeiro.receber, params);
   }
@@ -67,6 +77,12 @@ export class FinanceiroService {
       payload,
     );
   }
+  registrarBaixaContaReceber(payload: CreateContaReceberPagamentoRequest) {
+    return this.api.create<ContaReceberPagamentoResponse, CreateContaReceberPagamentoRequest>(
+      apiPaths.financeiro.receberPagamentos,
+      payload,
+    );
+  }
   historicos(params?: Record<string, any>) {
     return this.api.list<FinanceiroHistorico[]>(apiPaths.financeiro.historicos, params);
   }
@@ -74,5 +90,3 @@ export class FinanceiroService {
     return this.api.list<FinanceiroLancamento[]>(apiPaths.financeiro.lancamentos, params);
   }
 }
-
-

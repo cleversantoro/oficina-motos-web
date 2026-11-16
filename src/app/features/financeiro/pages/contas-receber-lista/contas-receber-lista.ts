@@ -4,12 +4,18 @@ import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { catchError, forkJoin, of } from 'rxjs';
 import {
+  BaixaContaAlvo,
   Cliente,
+  ContaReceberPagamentoResponse,
   FinanceiroContaReceber,
   FinanceiroMetodoPagamento,
 } from '../../../../core/models';
 import { ClientesService } from '../../../../core/services/clientes.service';
 import { FinanceiroService } from '../../../../core/services/financeiro.service';
+import {
+  BaixaPagamentoModalComponent,
+  BaixaPagamentoResult,
+} from '../../components/baixa-pagamento-modal/baixa-pagamento-modal';
 
 export type ContaReceberStatusEfetivo = 'PENDENTE' | 'VENCIDO' | 'RECEBIDO' | 'CANCELADO';
 export type ContaReceberStatusFiltro = 'TODOS' | ContaReceberStatusEfetivo;
@@ -24,7 +30,14 @@ export interface ContaReceberKpi {
 @Component({
   selector: 'app-contas-receber-lista',
   standalone: true,
-  imports: [CommonModule, DatePipe, DecimalPipe, FormsModule, RouterLink],
+  imports: [
+    CommonModule,
+    DatePipe,
+    DecimalPipe,
+    FormsModule,
+    RouterLink,
+    BaixaPagamentoModalComponent,
+  ],
   templateUrl: './contas-receber-lista.html',
   styleUrl: './contas-receber-lista.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -35,6 +48,8 @@ export class ContasReceberListaComponent implements OnInit {
   readonly metodos = signal<FinanceiroMetodoPagamento[]>([]);
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
+  readonly modalBaixaVisivel = signal<boolean>(false);
+  readonly contaSelecionadaBaixa = signal<BaixaContaAlvo | null>(null);
 
   readonly statusFilter = signal<ContaReceberStatusFiltro>('TODOS');
   readonly dataInicio = signal<string>('');
@@ -289,6 +304,45 @@ export class ContasReceberListaComponent implements OnInit {
 
   isVencida(conta: FinanceiroContaReceber): boolean {
     return this.getEffectiveStatus(conta) === 'VENCIDO';
+  }
+
+  podeBaixar(conta: FinanceiroContaReceber): boolean {
+    const st = this.getEffectiveStatus(conta);
+    return st === 'PENDENTE' || st === 'VENCIDO';
+  }
+
+  abrirModalBaixa(conta: FinanceiroContaReceber): void {
+    if (!this.podeBaixar(conta)) {
+      return;
+    }
+    this.contaSelecionadaBaixa.set({
+      id: conta.id,
+      tipo: 'RECEBER',
+      descricao: conta.descricao,
+      valor: conta.valor,
+      vencimento: conta.vencimento,
+      metodoId: conta.metodoId,
+      parceiroNome: this.getClienteNome(conta.clienteId),
+      observacao: conta.observacao,
+    });
+    this.modalBaixaVisivel.set(true);
+  }
+
+  onVisibleBaixaChange(visivel: boolean): void {
+    this.modalBaixaVisivel.set(visivel);
+    if (!visivel) {
+      this.contaSelecionadaBaixa.set(null);
+    }
+  }
+
+  onBaixaRegistrada(resultado: BaixaPagamentoResult): void {
+    const resp = resultado as ContaReceberPagamentoResponse;
+    if (resp?.conta) {
+      this.contas.update((lista) =>
+        lista.map((item) => (item.id === resp.conta.id ? { ...item, ...resp.conta } : item)),
+      );
+    }
+    this.onVisibleBaixaChange(false);
   }
 
   getStatusLabel(conta: FinanceiroContaReceber): string {

@@ -161,6 +161,15 @@
                 R$ {{ conta.valor | number:'1.2-2' }}
               </td>
               <td class="right actions-cell">
+                @if (statusEfetivo === 'PENDENTE' || statusEfetivo === 'VENCIDO') {
+                  <button
+                    type="button"
+                    class="btn-baixa-conta"
+                    (click)="abrirModalBaixa(conta)"
+                  >
+                    Baixar
+                  </button>
+                }
                 <a class="btn-edit-conta" [routerLink]="['/financeiro/contas-pagar', conta.id, 'editar']">
                   Editar
                 </a>
@@ -195,4 +204,12 @@
       }
     }
   </div>
+
+  <app-baixa-pagamento-modal
+    [visible]="modalBaixaVisivel()"
+    [conta]="contaSelecionadaBaixa()"
+    [metodos]="metodos()"
+    (visibleChange)="onVisibleBaixaChange($event)"
+    (baixaRegistrada)="onBaixaRegistrada($event)"
+  />
 </section>

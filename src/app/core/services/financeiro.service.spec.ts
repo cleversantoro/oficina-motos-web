@@ -2,6 +2,10 @@ import { TestBed } from '@angular/core/testing';
 import { of } from 'rxjs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
+  ContaPagarPagamentoResponse,
+  ContaReceberPagamentoResponse,
+  CreateContaPagarPagamentoRequest,
+  CreateContaReceberPagamentoRequest,
   CreateFinanceiroContaPagarRequest,
   CreateFinanceiroContaReceberRequest,
   FinanceiroContaPagar,
@@ -13,7 +17,7 @@ import { ApiClientService } from './api-client.service';
 import { apiPaths } from './api-paths';
 import { FinanceiroService } from './financeiro.service';
 
-describe('FinanceiroService (US-020 / US-021 / US-022 / US-023)', () => {
+describe('FinanceiroService (US-020 / US-021 / US-022 / US-023 / US-024)', () => {
   let service: FinanceiroService;
 
   const apiMock = {
@@ -121,6 +125,36 @@ describe('FinanceiroService (US-020 / US-021 / US-022 / US-023)', () => {
     expect(apiMock.update).toHaveBeenCalledWith('/api/v1/FinanceiroContasPagar', 9201, payload);
   });
 
+  it('deve registrar baixa de conta a pagar via POST /api/v1/ContasPagarPagamentos (T-024.2)', () => {
+    const payload: CreateContaPagarPagamentoRequest = {
+      contaPagarId: 9201,
+      dataPagamento: '2026-11-16',
+      valorPago: 200,
+      metodoId: 904,
+      observacao: 'Adiantamento via PIX',
+    };
+    const mockResponse: ContaPagarPagamentoResponse = {
+      contaPagarId: 9201,
+      pagamentoId: 9501,
+      valorPago: 200,
+      saldoResidual: 380,
+      baixaIntegral: false,
+      conta: {
+        ...mockConta,
+        valor: 380,
+      },
+    };
+    apiMock.create.mockReturnValue(of(mockResponse));
+
+    service.registrarBaixaContaPagar(payload).subscribe((res) => {
+      expect(res.contaPagarId).toBe(9201);
+      expect(res.saldoResidual).toBe(380);
+      expect(res.baixaIntegral).toBe(false);
+    });
+
+    expect(apiMock.create).toHaveBeenCalledWith('/api/v1/ContasPagarPagamentos', payload);
+  });
+
   it('deve listar contas a receber usando apiPaths.financeiro.receber (US-022)', () => {
     apiMock.list.mockReturnValue(of([mockContaReceber]));
 
@@ -181,5 +215,36 @@ describe('FinanceiroService (US-020 / US-021 / US-022 / US-023)', () => {
     });
 
     expect(apiMock.update).toHaveBeenCalledWith('/api/v1/FinanceiroContasReceber', 9301, payload);
+  });
+
+  it('deve registrar baixa de conta a receber via POST /api/v1/ContasReceberPagamentos (T-024.3)', () => {
+    const payload: CreateContaReceberPagamentoRequest = {
+      contaReceberId: 9301,
+      dataPagamento: '2026-11-16',
+      valorPago: 450,
+      metodoId: 904,
+      observacao: 'Recebido integralmente',
+    };
+    const mockResponse: ContaReceberPagamentoResponse = {
+      contaReceberId: 9301,
+      pagamentoId: 9502,
+      valorPago: 450,
+      saldoResidual: 0,
+      baixaIntegral: true,
+      conta: {
+        ...mockContaReceber,
+        status: 'RECEBIDO',
+        dataRecebimento: '2026-11-16',
+      },
+    };
+    apiMock.create.mockReturnValue(of(mockResponse));
+
+    service.registrarBaixaContaReceber(payload).subscribe((res) => {
+      expect(res.contaReceberId).toBe(9301);
+      expect(res.saldoResidual).toBe(0);
+      expect(res.baixaIntegral).toBe(true);
+    });
+
+    expect(apiMock.create).toHaveBeenCalledWith('/api/v1/ContasReceberPagamentos', payload);
   });
 });

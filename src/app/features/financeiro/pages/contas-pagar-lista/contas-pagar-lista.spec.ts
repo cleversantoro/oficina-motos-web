@@ -205,4 +205,54 @@ describe('ContasPagarListaComponent (US-020)', () => {
     expect(editLinks[0].getAttribute('href')).toBe('/financeiro/contas-pagar/9204/editar');
     expect(editLinks[1].getAttribute('href')).toBe('/financeiro/contas-pagar/9202/editar');
   });
+
+  it('deve exibir botão "Baixar" apenas para contas PENDENTE ou VENCIDO e atualizar a lista após baixa parcial ou integral (US-024)', () => {
+    // Das 4 contas mockadas, 9201 (VENCIDO) e 9203 (PENDENTE) permitem baixa; 9202 (PAGO) e 9204 (CANCELADO) não
+    const baixaBtns = fixture.nativeElement.querySelectorAll('button.btn-baixa-conta');
+    expect(baixaBtns.length).toBe(2);
+
+    component.abrirModalBaixa(mockContas[0]);
+    expect(component.modalBaixaVisivel()).toBe(true);
+    expect(component.contaSelecionadaBaixa()?.id).toBe(9201);
+    expect(component.contaSelecionadaBaixa()?.tipo).toBe('PAGAR');
+
+    // Simular baixa parcial de R$ 200,00 em 9201 (saldo residual = R$ 380,00)
+    component.onBaixaRegistrada({
+      contaPagarId: 9201,
+      pagamentoId: 9501,
+      valorPago: 200,
+      saldoResidual: 380,
+      baixaIntegral: false,
+      conta: {
+        ...mockContas[0],
+        valor: 380,
+        status: 'PENDENTE',
+      },
+    });
+    fixture.detectChanges();
+
+    expect(component.modalBaixaVisivel()).toBe(false);
+    const contaParcial = component.contas().find((c) => c.id === 9201);
+    expect(contaParcial?.valor).toBe(380);
+
+    // Simular baixa integral do saldo residual de R$ 380,00
+    component.onBaixaRegistrada({
+      contaPagarId: 9201,
+      pagamentoId: 9502,
+      valorPago: 380,
+      saldoResidual: 0,
+      baixaIntegral: true,
+      conta: {
+        ...mockContas[0],
+        valor: 380,
+        status: 'PAGO',
+        dataPagamento: '2026-11-16',
+      },
+    });
+    fixture.detectChanges();
+
+    const contaQuitada = component.contas().find((c) => c.id === 9201);
+    expect(contaQuitada?.status).toBe('PAGO');
+    expect(component.podeBaixar(contaQuitada!)).toBe(false);
+  });
 });

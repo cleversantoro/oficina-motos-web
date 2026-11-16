@@ -1,0 +1,159 @@
+@if (visible && contaSignal(); as contaAtual) {
+  <div class="baixa-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="baixa-modal-title">
+    <div class="baixa-modal-card">
+      <header class="modal-header">
+        <div>
+          <span class="modal-kicker">
+            {{ contaAtual.tipo === 'PAGAR' ? 'Contas a Pagar' : 'Contas a Receber' }}
+          </span>
+          <h2 id="baixa-modal-title">
+            {{ contaAtual.tipo === 'PAGAR' ? 'Registrar Baixa de Pagamento' : 'Registrar Baixa de Recebimento' }}
+          </h2>
+          <p class="modal-subtitle">
+            <strong>#{{ contaAtual.id }}</strong> — {{ contaAtual.descricao }}
+            @if (contaAtual.parceiroNome && contaAtual.parceiroNome !== '-') {
+              <span>· {{ contaAtual.parceiroNome }}</span>
+            }
+          </p>
+        </div>
+        <button
+          type="button"
+          class="btn-close-modal"
+          aria-label="Fechar modal de baixa"
+          [disabled]="submitting()"
+          (click)="fechar()"
+        >
+          ✕
+        </button>
+      </header>
+
+      <div class="residual-summary">
+        <div class="summary-col">
+          <span class="summary-label">Saldo Atual em Aberto</span>
+          <strong class="summary-value">R$ {{ saldoAtual() | number:'1.2-2' }}</strong>
+          <button type="button" class="btn-fill-total" (click)="preencherValorIntegral()">
+            Usar valor integral
+          </button>
+        </div>
+
+        <div class="summary-col">
+          <span class="summary-label">Saldo Residual Após Baixa</span>
+          <strong
+            class="summary-value"
+            [class.residual-zero]="isIntegral()"
+            [class.residual-open]="isParcial()"
+          >
+            R$ {{ saldoResidual() | number:'1.2-2' }}
+          </strong>
+          @if (isIntegral()) {
+            <span class="baixa-mode-pill mode-integral">
+              ✓ Baixa Integral — Conta será liquidada
+            </span>
+          } @else if (isParcial()) {
+            <span class="baixa-mode-pill mode-parcial">
+              ◐ Pagamento Parcial — Saldo residual permanecerá em aberto
+            </span>
+          } @else if (valorExcedente()) {
+            <span class="baixa-mode-pill mode-error">
+              ⚠ Valor pago excede o saldo em aberto
+            </span>
+          }
+        </div>
+      </div>
+
+      <form class="baixa-form" [formGroup]="form" (ngSubmit)="confirmarBaixa()" novalidate>
+        <div class="form-row-two">
+          <div class="form-field">
+            <label for="baixa-data-pagamento">
+              {{ contaAtual.tipo === 'PAGAR' ? 'Data do Pagamento *' : 'Data do Recebimento *' }}
+            </label>
+            <input
+              id="baixa-data-pagamento"
+              type="date"
+              class="form-control"
+              formControlName="dataPagamento"
+              [class.invalid]="hasError('dataPagamento')"
+            />
+            @if (hasError('dataPagamento', 'required')) {
+              <span class="field-error">Informe a data do pagamento.</span>
+            }
+          </div>
+
+          <div class="form-field">
+            <label for="baixa-valor-pago">Valor Pago (R$) *</label>
+            <input
+              id="baixa-valor-pago"
+              type="number"
+              step="0.01"
+              min="0.01"
+              [max]="saldoAtual()"
+              class="form-control"
+              placeholder="0,00"
+              formControlName="valorPago"
+              [class.invalid]="hasError('valorPago') || valorExcedente()"
+            />
+            @if (hasError('valorPago', 'required') || hasError('valorPago', 'min')) {
+              <span class="field-error">Informe um valor pago maior que zero.</span>
+            } @else if (valorExcedente()) {
+              <span class="field-error">
+                O valor pago não pode exceder o saldo atual (R$ {{ saldoAtual() | number:'1.2-2' }}).
+              </span>
+            }
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label for="baixa-metodo-pagamento">Forma de Pagamento *</label>
+          <select
+            id="baixa-metodo-pagamento"
+            class="form-control"
+            formControlName="metodoId"
+            [class.invalid]="hasError('metodoId')"
+          >
+            <option [ngValue]="null">Selecione a forma de pagamento...</option>
+            @for (metodo of metodosDisponiveis(); track metodo.id) {
+              <option [ngValue]="metodo.id">{{ metodo.nome }}</option>
+            }
+          </select>
+          @if (hasError('metodoId')) {
+            <span class="field-error">Selecione a forma de pagamento.</span>
+          }
+        </div>
+
+        <div class="form-field">
+          <label for="baixa-observacao">Observação (Opcional)</label>
+          <textarea
+            id="baixa-observacao"
+            rows="2"
+            maxlength="240"
+            class="form-control"
+            placeholder="Comprovante, referência bancária ou detalhe do pagamento parcial..."
+            formControlName="observacao"
+            [class.invalid]="hasError('observacao')"
+          ></textarea>
+          @if (hasError('observacao', 'maxlength')) {
+            <span class="field-error">A observação deve ter no máximo 240 caracteres.</span>
+          }
+        </div>
+
+        <footer class="modal-footer">
+          <button
+            type="button"
+            class="btn-cancelar"
+            [disabled]="submitting()"
+            (click)="fechar()"
+          >
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            class="btn-confirmar-baixa"
+            [disabled]="submitting() || valorExcedente()"
+          >
+            {{ submitting() ? 'Registrando baixa...' : 'Confirmar Baixa' }}
+          </button>
+        </footer>
+      </form>
+    </div>
+  </div>
+}

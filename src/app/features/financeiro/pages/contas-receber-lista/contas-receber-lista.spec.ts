@@ -185,4 +185,54 @@ describe('ContasReceberListaComponent (US-022)', () => {
     const alertEl = fixture.nativeElement.querySelector('.error-state');
     expect(alertEl).toBeTruthy();
   });
+
+  it('deve exibir botão "Baixar" apenas para recebíveis PENDENTE ou VENCIDO e atualizar a lista após baixa parcial ou integral (US-024)', () => {
+    // 9101 é RECEBIDO; 9102 (VENCIDO), 9103 (PENDENTE) e 9104 (PENDENTE) permitem baixa
+    const baixaBtns = fixture.nativeElement.querySelectorAll('button.btn-baixa-conta');
+    expect(baixaBtns.length).toBe(3);
+
+    component.abrirModalBaixa(mockContasReceber[1]);
+    expect(component.modalBaixaVisivel()).toBe(true);
+    expect(component.contaSelecionadaBaixa()?.id).toBe(9102);
+    expect(component.contaSelecionadaBaixa()?.tipo).toBe('RECEBER');
+
+    // Simular baixa parcial de R$ 280,00 em 9102 (saldo residual = R$ 400,00)
+    component.onBaixaRegistrada({
+      contaReceberId: 9102,
+      pagamentoId: 9601,
+      valorPago: 280,
+      saldoResidual: 400,
+      baixaIntegral: false,
+      conta: {
+        ...mockContasReceber[1],
+        valor: 400,
+        status: 'PENDENTE',
+      },
+    });
+    fixture.detectChanges();
+
+    expect(component.modalBaixaVisivel()).toBe(false);
+    const contaParcial = component.contas().find((c) => c.id === 9102);
+    expect(contaParcial?.valor).toBe(400);
+
+    // Simular baixa integral do saldo residual de R$ 400,00
+    component.onBaixaRegistrada({
+      contaReceberId: 9102,
+      pagamentoId: 9602,
+      valorPago: 400,
+      saldoResidual: 0,
+      baixaIntegral: true,
+      conta: {
+        ...mockContasReceber[1],
+        valor: 400,
+        status: 'RECEBIDO',
+        dataRecebimento: '2026-11-16',
+      },
+    });
+    fixture.detectChanges();
+
+    const contaQuitada = component.contas().find((c) => c.id === 9102);
+    expect(contaQuitada?.status).toBe('RECEBIDO');
+    expect(component.podeBaixar(contaQuitada!)).toBe(false);
+  });
 });

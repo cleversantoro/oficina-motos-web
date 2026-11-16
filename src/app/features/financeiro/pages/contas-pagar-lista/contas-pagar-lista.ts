@@ -4,12 +4,18 @@ import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { catchError, forkJoin, of } from 'rxjs';
 import {
+  BaixaContaAlvo,
+  ContaPagarPagamentoResponse,
   FinanceiroContaPagar,
   FinanceiroMetodoPagamento,
   Fornecedor,
 } from '../../../../core/models';
 import { FinanceiroService } from '../../../../core/services/financeiro.service';
 import { FornecedoresService } from '../../../../core/services/fornecedores.service';
+import {
+  BaixaPagamentoModalComponent,
+  BaixaPagamentoResult,
+} from '../../components/baixa-pagamento-modal/baixa-pagamento-modal';
 
 export type ContaPagarStatusEfetivo = 'PENDENTE' | 'VENCIDO' | 'PAGO' | 'CANCELADO';
 export type ContaPagarStatusFiltro = 'TODOS' | ContaPagarStatusEfetivo;
@@ -24,7 +30,14 @@ export interface ContaPagarKpi {
 @Component({
   selector: 'app-contas-pagar-lista',
   standalone: true,
-  imports: [CommonModule, DatePipe, DecimalPipe, FormsModule, RouterLink],
+  imports: [
+    CommonModule,
+    DatePipe,
+    DecimalPipe,
+    FormsModule,
+    RouterLink,
+    BaixaPagamentoModalComponent,
+  ],
   templateUrl: './contas-pagar-lista.html',
   styleUrl: './contas-pagar-lista.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -35,6 +48,8 @@ export class ContasPagarListaComponent implements OnInit {
   readonly metodos = signal<FinanceiroMetodoPagamento[]>([]);
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
+  readonly modalBaixaVisivel = signal<boolean>(false);
+  readonly contaSelecionadaBaixa = signal<BaixaContaAlvo | null>(null);
 
   readonly statusFilter = signal<ContaPagarStatusFiltro>('TODOS');
   readonly dataInicio = signal<string>('');
@@ -255,6 +270,45 @@ export class ContasPagarListaComponent implements OnInit {
 
   isVencida(conta: FinanceiroContaPagar): boolean {
     return this.getEffectiveStatus(conta) === 'VENCIDO';
+  }
+
+  podeBaixar(conta: FinanceiroContaPagar): boolean {
+    const st = this.getEffectiveStatus(conta);
+    return st === 'PENDENTE' || st === 'VENCIDO';
+  }
+
+  abrirModalBaixa(conta: FinanceiroContaPagar): void {
+    if (!this.podeBaixar(conta)) {
+      return;
+    }
+    this.contaSelecionadaBaixa.set({
+      id: conta.id,
+      tipo: 'PAGAR',
+      descricao: conta.descricao,
+      valor: conta.valor,
+      vencimento: conta.vencimento,
+      metodoId: conta.metodoId,
+      parceiroNome: this.getFornecedorNome(conta.fornecedorId),
+      observacao: conta.observacao,
+    });
+    this.modalBaixaVisivel.set(true);
+  }
+
+  onVisibleBaixaChange(visivel: boolean): void {
+    this.modalBaixaVisivel.set(visivel);
+    if (!visivel) {
+      this.contaSelecionadaBaixa.set(null);
+    }
+  }
+
+  onBaixaRegistrada(resultado: BaixaPagamentoResult): void {
+    const resp = resultado as ContaPagarPagamentoResponse;
+    if (resp?.conta) {
+      this.contas.update((lista) =>
+        lista.map((item) => (item.id === resp.conta.id ? { ...item, ...resp.conta } : item)),
+      );
+    }
+    this.onVisibleBaixaChange(false);
   }
 
   getStatusLabel(conta: FinanceiroContaPagar): string {

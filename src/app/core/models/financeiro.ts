@@ -157,3 +157,52 @@ export interface CreateFinanceiroLancamentoRequest {
   observacao: string | null;
 }
 export type UpdateFinanceiroLancamentoRequest = CreateFinanceiroLancamentoRequest;
+
+// ---- Baixa de Contas (US-024) ----
+
+export type BaixaContaTipo = 'PAGAR' | 'RECEBER';
+
+export interface BaixaContaAlvo {
+  id: number;
+  tipo: BaixaContaTipo;
+  descricao: string;
+  valor: number;
+  vencimento: string;
+  metodoId: number | null;
+  parceiroNome?: string;
+  observacao?: string | null;
+}
+
+export interface CreateContaPagarPagamentoRequest {
+  contaPagarId: number;
+  dataPagamento: string;
+  valorPago: number;
+  metodoId: number;
+  observacao: string | null;
+}
+
+export interface ContaPagarPagamentoResponse {
+  contaPagarId: number;
+  pagamentoId: number;
+  valorPago: number;
+  saldoResidual: number;
+  baixaIntegral: boolean;
+  conta: FinanceiroContaPagar;
+}
+
+export interface CreateContaReceberPagamentoRequest {
+  contaReceberId: number;
+  dataPagamento: string;
+  valorPago: number;
+  metodoId: number;
+  observacao: string | null;
+}
+
+export interface ContaReceberPagamentoResponse {
+  contaReceberId: number;
+  pagamentoId: number;
+  valorPago: number;
+  saldoResidual: number;
+  baixaIntegral: boolean;
+  conta: FinanceiroContaReceber;
+}
