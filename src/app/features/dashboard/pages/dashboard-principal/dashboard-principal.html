@@ -3,117 +3,145 @@
     <div>
       <p class="eyebrow">Visão geral</p>
       <h1>Saúde da oficina</h1>
-      <p class="muted">Alertas e previsibilidade para operação, financeiro e suprimentos.</p>
+      <p class="muted">Indicadores consolidados em tempo real de operação, faturamento e estoque.</p>
     </div>
   </header>
 
-  @if (loading) {
-    <div class="loading-state">
-      <span class="spinner"></span>
-      <p>Carregando dados...</p>
+  <!-- T-033.4: Skeleton loading nos cards de KPI -->
+  @if (loading()) {
+    <div class="kpi-grid" data-testid="kpi-skeleton-grid" aria-busy="true" aria-label="Carregando KPIs">
+      @for (item of skeletonPlaceholders; track item) {
+        <div class="kpi-card skeleton-card" data-testid="kpi-skeleton">
+          <div class="skeleton-line skeleton-title"></div>
+          <div class="skeleton-line skeleton-value"></div>
+          <div class="skeleton-line skeleton-footer"></div>
+        </div>
+      }
     </div>
   } @else {
-
-  <div class="kpi-grid">
-    @for (k of kpis; track k.title) {
-      <div
-        class="kpi-card"
-        [class.success]="k.intent === 'success'"
-        [class.danger]="k.intent === 'danger'"
-        [class.warning]="k.intent === 'warning'"
-      >
-        <p class="kpi-title">{{ k.title }}</p>
-        <p class="kpi-value">{{ k.value }}</p>
-        <p class="kpi-footer">{{ k.footer }}</p>
-      </div>
-    }
-  </div>
-
-  <div class="tri-grid">
-    <!-- Operacional -->
-    <section class="panel">
-      <div class="panel-head">
-        <h2>Operacional</h2>
-        <p class="muted">OS em aberto por etapa</p>
-      </div>
-      <div class="split">
-        <div class="mini-kpi">
-          <p class="kpi-title">OS em aberto</p>
-          <p class="kpi-number">{{ osEmAberto }}</p>
+    <div class="kpi-grid" data-testid="kpi-grid">
+      @for (k of kpis(); track k.title) {
+        <div
+          class="kpi-card"
+          data-testid="kpi-card"
+          [class.success]="k.intent === 'success'"
+          [class.danger]="k.intent === 'danger'"
+          [class.warning]="k.intent === 'warning'"
+        >
+          <p class="kpi-title">{{ k.title }}</p>
+          <p class="kpi-value">{{ k.value }}</p>
+          <p class="kpi-footer">{{ k.footer }}</p>
         </div>
-        <div class="mini-kpi" [class.alert]="pecasAbaixoMinimo > 0">
-          <p class="kpi-title">Peças abaixo do mínimo</p>
-          <p class="kpi-number">{{ pecasAbaixoMinimo }}</p>
-        </div>
-      </div>
-      @if (osEtapas.length) {
-        <h3>OS por etapa</h3>
-        <div class="bars">
-          @for (etapa of osEtapas; track etapa.label) {
-            <div
-              class="bar"
-              [style.background]="etapa.cor"
-              [style.height.%]="(etapa.valor / maxOsEtapa) * 80 + 10"
-            >
-              <span>{{ etapa.label }} ({{ etapa.valor }})</span>
-            </div>
-          }
-        </div>
-      } @else {
-        <p class="kpi-footer">Nenhuma OS em aberto.</p>
       }
-      <a class="link" routerLink="/ordens">Ver ordens de serviço »</a>
-    </section>
+    </div>
 
-    <!-- Financeiro -->
-    <section class="panel">
-      <div class="panel-head">
-        <h2>Financeiro</h2>
-        <p class="muted">Fluxo de caixa e vencimentos</p>
-      </div>
-      <div class="table">
-        <div class="table-row table-head">
-          <span>Tipo</span>
-          <span class="right">Valor</span>
-          <span>Detalhes</span>
+    <div class="tri-grid">
+      <!-- T-033.2: Gráfico de OS por status -->
+      <section class="panel" data-testid="chart-os-status">
+        <div class="panel-head">
+          <h2>OS por Status</h2>
+          <p class="muted">Distribuição atual das Ordens de Serviço</p>
         </div>
-        @for (f of financeiro; track f.rotulo) {
-          <div class="table-row">
-            <span [class.entrada]="f.tipo === 'entrada'" [class.saida]="f.tipo === 'saida'">{{ f.rotulo }}</span>
-            <span class="right" [class.entrada]="f.tipo === 'entrada'" [class.saida]="f.tipo === 'saida'">{{ f.valor }}</span>
-            <span>{{ f.detalhe }}</span>
+
+        <div class="split">
+          <div class="mini-kpi">
+            <p class="kpi-title">OS em aberto</p>
+            <p class="kpi-number">{{ osEmAberto() }}</p>
           </div>
-        }
-      </div>
-      <a class="link" routerLink="/financeiro">Ver financeiro »</a>
-    </section>
-
-    <!-- Suprimentos / Fornecedores -->
-    <section class="panel">
-      <div class="panel-head">
-        <h2>Suprimentos</h2>
-        <p class="muted">Reputação e maiores gastos</p>
-      </div>
-      <div class="mini-kpi">
-        <p class="kpi-title">Score médio (avaliações)</p>
-        <p class="kpi-number gold">{{ fornecedorScore }}</p>
-      </div>
-      @if (fornecedorGastos.length) {
-        <h3>Maiores gastos (contas a pagar)</h3>
-        <div class="table">
-          @for (g of fornecedorGastos; track g.nome) {
-            <div class="table-row">
-              <span>{{ g.nome }}</span>
-              <span class="right">{{ g.valor }}</span>
-            </div>
-          }
+          <div class="mini-kpi">
+            <p class="kpi-title">OS abertas hoje</p>
+            <p class="kpi-number">{{ osDoDia() }}</p>
+          </div>
         </div>
-      } @else {
-        <p class="kpi-footer">Sem contas a pagar por fornecedor.</p>
-      }
-      <a class="link" routerLink="/fornecedores">Gerenciar parceiros »</a>
-    </section>
-  </div>
 
-  } <!-- /loading -->
+        @if (osEtapas().length) {
+          <div class="bars" role="img" aria-label="Gráfico de OS por status">
+            @for (etapa of osEtapas(); track etapa.status) {
+              <div class="bar-column" data-testid="os-status-bar">
+                <span class="bar-value">{{ etapa.valor }}</span>
+                <div class="bar-track">
+                  <div
+                    class="bar-fill"
+                    [style.background]="etapa.cor"
+                    [style.height.%]="etapa.percentual"
+                  ></div>
+                </div>
+                <span class="bar-label">{{ etapa.label }}</span>
+              </div>
+            }
+          </div>
+        } @else {
+          <p class="kpi-footer">Nenhuma OS registrada no período.</p>
+        }
+
+        <a class="link" routerLink="/ordens">Ver ordens de serviço »</a>
+      </section>
+
+      <!-- T-033.3: Gráfico de faturamento mensal (6 meses) -->
+      <section class="panel" data-testid="chart-faturamento-mensal">
+        <div class="panel-head">
+          <h2>Faturamento Mensal (6 meses)</h2>
+          <p class="muted">Evolução do faturamento de OS concluídas nos últimos 6 meses</p>
+        </div>
+
+        @if (faturamentoSeisMeses().length) {
+          <div class="bars revenue-bars" role="img" aria-label="Gráfico de faturamento mensal dos últimos 6 meses">
+            @for (mes of faturamentoSeisMeses(); track mes.mes) {
+              <div class="bar-column" data-testid="faturamento-mes-bar">
+                <span class="bar-value">{{ mes.valorFormatado }}</span>
+                <div class="bar-track">
+                  <div
+                    class="bar-fill revenue-fill"
+                    [style.height.%]="mes.percentual"
+                  ></div>
+                </div>
+                <span class="bar-label">{{ mes.rotulo }}</span>
+              </div>
+            }
+          </div>
+        } @else {
+          <p class="kpi-footer">Sem dados de faturamento nos últimos 6 meses.</p>
+        }
+
+        <a class="link" routerLink="/financeiro">Ver financeiro »</a>
+      </section>
+
+      <!-- T-034.2: Card "Alertas de Estoque" com link para /estoque/:id -->
+      <section class="panel" data-testid="card-alertas-estoque">
+        <div class="panel-head">
+          <h2>Alertas de Estoque</h2>
+          <p class="muted">Peças abaixo do estoque mínimo ({{ pecasAbaixoMinimo() }})</p>
+        </div>
+
+        @if (pecasCriticas().length) {
+          <div class="alert-list">
+            @for (peca of pecasCriticas(); track peca.id) {
+              <div class="alert-item" data-testid="alerta-estoque-item">
+                <div class="alert-info">
+                  <p class="alert-title">{{ peca.descricao }}</p>
+                  <p class="alert-meta">
+                    Cód: {{ peca.codigo }} · Atual: <strong>{{ peca.quantidadeAtual }} {{ peca.unidade }}</strong>
+                    / Mín: {{ peca.estoqueMinimo }} {{ peca.unidade }}
+                  </p>
+                </div>
+                <a
+                  class="alert-link"
+                  data-testid="alerta-estoque-link"
+                  [routerLink]="['/estoque', peca.id]"
+                >
+                  Repor »
+                </a>
+              </div>
+            }
+          </div>
+        } @else {
+          <p class="kpi-footer" data-testid="alerta-estoque-vazio">
+            Nenhuma peça abaixo do estoque mínimo.
+          </p>
+        }
+
+        <a class="link" routerLink="/estoque">Gerenciar estoque »</a>
+      </section>
+    </div>
+  }
 </section>

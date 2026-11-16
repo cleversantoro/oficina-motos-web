@@ -4,6 +4,9 @@ export const apiPaths = {
     refresh: '/api/v1/Auth/refresh',
     logout: '/api/v1/Auth/logout',
   },
+  dashboard: {
+    kpis: '/api/v1/Dashboard/kpis',
+  },
   clientes: {
     base: '/api/v1/Clientes',
     pf: '/api/v1/ClientePfs',
