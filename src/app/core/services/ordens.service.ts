@@ -18,6 +18,9 @@ export class OrdensService {
   list<T = any>(params?: Record<string, any>) {
     return this.api.list<T>(apiPaths.ordens.base, params);
   }
+  getAll<T = OrdemServico>(params?: Record<string, any>) {
+    return this.list<T>(params);
+  }
   get(id: string | number) {
     return this.api.getById(apiPaths.ordens.base, id);
   }
@@ -26,6 +29,16 @@ export class OrdensService {
   }
   update<T = OrdemServico, B = UpdateOrdemServicoRequest>(id: string | number, body: B) {
     return this.api.update<T, B>(apiPaths.ordens.base, id, body);
+  }
+  changeStatus<T = OrdemServico>(
+    id: string | number,
+    status: string,
+    body?: Partial<UpdateOrdemServicoRequest>
+  ) {
+    return this.api.update<T, Partial<UpdateOrdemServicoRequest>>(apiPaths.ordens.base, id, {
+      ...body,
+      status,
+    });
   }
   delete(id: string | number) {
     return this.api.remove(apiPaths.ordens.base, id);
