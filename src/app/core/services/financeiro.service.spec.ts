@@ -3,14 +3,17 @@ import { of } from 'rxjs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   CreateFinanceiroContaPagarRequest,
+  CreateFinanceiroContaReceberRequest,
   FinanceiroContaPagar,
+  FinanceiroContaReceber,
   UpdateFinanceiroContaPagarRequest,
+  UpdateFinanceiroContaReceberRequest,
 } from '../models';
 import { ApiClientService } from './api-client.service';
 import { apiPaths } from './api-paths';
 import { FinanceiroService } from './financeiro.service';
 
-describe('FinanceiroService (US-020 / US-021)', () => {
+describe('FinanceiroService (US-020 / US-021 / US-022 / US-023)', () => {
   let service: FinanceiroService;
 
   const apiMock = {
@@ -31,6 +34,18 @@ describe('FinanceiroService (US-020 / US-021)', () => {
     dataPagamento: null,
     metodoId: 904,
     observacao: 'Prazo 10 dias via PIX',
+  };
+
+  const mockContaReceber: FinanceiroContaReceber = {
+    id: 9301,
+    clienteId: 101,
+    descricao: 'Venda avulsa de capacete e luvas',
+    valor: 450,
+    vencimento: '2026-11-25',
+    status: 'PENDENTE',
+    dataRecebimento: null,
+    metodoId: 904,
+    observacao: 'Pagamento combinado para dia 25',
   };
 
   beforeEach(() => {
@@ -104,5 +119,67 @@ describe('FinanceiroService (US-020 / US-021)', () => {
     });
 
     expect(apiMock.update).toHaveBeenCalledWith('/api/v1/FinanceiroContasPagar', 9201, payload);
+  });
+
+  it('deve listar contas a receber usando apiPaths.financeiro.receber (US-022)', () => {
+    apiMock.list.mockReturnValue(of([mockContaReceber]));
+
+    service.contasReceber().subscribe((res) => {
+      expect(res).toEqual([mockContaReceber]);
+    });
+
+    expect(apiMock.list).toHaveBeenCalledWith(apiPaths.financeiro.receber, undefined);
+  });
+
+  it('deve buscar uma conta a receber por ID usando getById (T-023.1)', () => {
+    apiMock.getById.mockReturnValue(of(mockContaReceber));
+
+    service.getContaReceberById(9301).subscribe((res) => {
+      expect(res).toEqual(mockContaReceber);
+    });
+
+    expect(apiMock.getById).toHaveBeenCalledWith('/api/v1/FinanceiroContasReceber', 9301);
+  });
+
+  it('deve criar uma nova conta a receber manual usando create (T-023.1)', () => {
+    const payload: CreateFinanceiroContaReceberRequest = {
+      clienteId: 101,
+      descricao: 'Venda avulsa de capacete e luvas',
+      valor: 450,
+      vencimento: '2026-11-25',
+      status: 'PENDENTE',
+      dataRecebimento: null,
+      metodoId: 904,
+      observacao: 'Pagamento combinado para dia 25',
+    };
+    apiMock.create.mockReturnValue(of({ id: 9305, ...payload }));
+
+    service.createContaReceber(payload).subscribe((res) => {
+      expect(res.id).toBe(9305);
+      expect(res.descricao).toBe('Venda avulsa de capacete e luvas');
+    });
+
+    expect(apiMock.create).toHaveBeenCalledWith('/api/v1/FinanceiroContasReceber', payload);
+  });
+
+  it('deve atualizar uma conta a receber existente usando update (T-023.1)', () => {
+    const payload: UpdateFinanceiroContaReceberRequest = {
+      clienteId: 101,
+      descricao: 'Venda avulsa de capacete e luvas (Recebido)',
+      valor: 450,
+      vencimento: '2026-11-25',
+      status: 'RECEBIDO',
+      dataRecebimento: '2026-11-16',
+      metodoId: 904,
+      observacao: 'Recebido via PIX',
+    };
+    apiMock.update.mockReturnValue(of({ id: 9301, ...payload }));
+
+    service.updateContaReceber(9301, payload).subscribe((res) => {
+      expect(res.id).toBe(9301);
+      expect(res.status).toBe('RECEBIDO');
+    });
+
+    expect(apiMock.update).toHaveBeenCalledWith('/api/v1/FinanceiroContasReceber', 9301, payload);
   });
 });

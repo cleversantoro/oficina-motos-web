@@ -50,6 +50,7 @@ export interface FinanceiroContaPagar {
 export interface FinanceiroContaReceber {
   id: number;
   clienteId: number | null;
+  ordemServicoId?: number | null;
   descricao: string;
   valor: number;
   vencimento: string;

@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import {
   CreateFinanceiroContaPagarRequest,
+  CreateFinanceiroContaReceberRequest,
   FinanceiroAnexo,
   FinanceiroContaPagar,
   FinanceiroContaReceber,
@@ -9,6 +10,7 @@ import {
   FinanceiroMetodoPagamento,
   FinanceiroPagamento,
   UpdateFinanceiroContaPagarRequest,
+  UpdateFinanceiroContaReceberRequest,
 } from '../models';
 import { ApiClientService } from './api-client.service';
 import { apiPaths } from './api-paths';
@@ -48,6 +50,22 @@ export class FinanceiroService {
   }
   contasReceber(params?: Record<string, any>) {
     return this.api.list<FinanceiroContaReceber[]>(apiPaths.financeiro.receber, params);
+  }
+  getContaReceberById(id: number | string) {
+    return this.api.getById<FinanceiroContaReceber>(apiPaths.financeiro.receber, id);
+  }
+  createContaReceber(payload: CreateFinanceiroContaReceberRequest) {
+    return this.api.create<FinanceiroContaReceber, CreateFinanceiroContaReceberRequest>(
+      apiPaths.financeiro.receber,
+      payload,
+    );
+  }
+  updateContaReceber(id: number | string, payload: UpdateFinanceiroContaReceberRequest) {
+    return this.api.update<FinanceiroContaReceber, UpdateFinanceiroContaReceberRequest>(
+      apiPaths.financeiro.receber,
+      id,
+      payload,
+    );
   }
   historicos(params?: Record<string, any>) {
     return this.api.list<FinanceiroHistorico[]>(apiPaths.financeiro.historicos, params);

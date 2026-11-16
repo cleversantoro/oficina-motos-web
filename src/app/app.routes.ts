@@ -15,6 +15,8 @@ import { VeiculoCadastroComponent } from './features/motos/pages/veiculo-cadastr
 import { FinanceiroDashboard } from './features/financeiro/pages/financeiro-dashboard/financeiro-dashboard';
 import { ContasPagarListaComponent } from './features/financeiro/pages/contas-pagar-lista/contas-pagar-lista';
 import { ContasPagarFormComponent } from './features/financeiro/pages/contas-pagar-form/contas-pagar-form';
+import { ContasReceberListaComponent } from './features/financeiro/pages/contas-receber-lista/contas-receber-lista';
+import { ContasReceberFormComponent } from './features/financeiro/pages/contas-receber-form/contas-receber-form';
 import { FornecedorDetalhe } from './features/fornecedores/pages/fornecedor-detalhe/fornecedor-detalhe';
 import { FornecedorLista } from './features/fornecedores/pages/fornecedor-lista/fornecedor-lista';
 import { FornecedorCadastroComponent } from './features/fornecedores/pages/fornecedor-cadastro/fornecedor-cadastro';
@@ -106,6 +108,18 @@ export const routes: Routes = [
       {
         path: 'financeiro/contas-pagar/:id/editar',
         component: ContasPagarFormComponent,
+      },
+      {
+        path: 'financeiro/contas-receber',
+        component: ContasReceberListaComponent,
+      },
+      {
+        path: 'financeiro/contas-receber/novo',
+        component: ContasReceberFormComponent,
+      },
+      {
+        path: 'financeiro/contas-receber/:id/editar',
+        component: ContasReceberFormComponent,
       },
     ],
   },

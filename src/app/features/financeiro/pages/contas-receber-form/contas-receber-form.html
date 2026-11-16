@@ -1,0 +1,179 @@
+<section class="conta-form-shell">
+  <header class="page-header">
+    <div class="header-left">
+      <a class="back-link" routerLink="/financeiro/contas-receber">← Voltar para Contas a Receber</a>
+      <h1>
+        @if (isEditMode()) {
+          Editar Conta a Receber #{{ contaId() }}
+        } @else {
+          Nova Conta a Receber
+        }
+      </h1>
+      <p class="subtitle">
+        @if (isEditMode()) {
+          Atualize os dados do recebível, vencimento, cliente ou status de recebimento.
+        } @else {
+          Cadastre uma nova conta a receber manual para controle de entradas e recebíveis avulsos.
+        }
+      </p>
+    </div>
+  </header>
+
+  @if (loading()) {
+    <div class="state-box loading-state" role="status">
+      <p>Carregando dados da conta a receber...</p>
+    </div>
+  } @else if (error()) {
+    <div class="state-box error-state" role="alert">
+      <p>{{ error() }}</p>
+      <div class="error-actions">
+        @if (contaId() !== null) {
+          <button type="button" class="btn-retry" (click)="carregarDados()">Tentar novamente</button>
+        }
+        <a class="btn-secondary-link" routerLink="/financeiro/contas-receber">Voltar para a listagem</a>
+      </div>
+    </div>
+  } @else {
+    <form class="form-card" [formGroup]="form" (ngSubmit)="salvar()" novalidate>
+      <div class="form-grid">
+        <div class="form-group span-2">
+          <label class="form-label" for="campo-descricao">
+            Descrição <span class="required">*</span>
+          </label>
+          <input
+            id="campo-descricao"
+            class="form-control"
+            [class.invalid]="hasError('descricao')"
+            type="text"
+            maxlength="240"
+            placeholder="Ex.: Venda avulsa de capacete, Acordo de parcelamento..."
+            formControlName="descricao"
+          />
+          @if (hasError('descricao', 'required')) {
+            <span class="field-error">A descrição da conta a receber é obrigatória.</span>
+          } @else if (hasError('descricao', 'maxlength')) {
+            <span class="field-error">A descrição deve ter no máximo 240 caracteres.</span>
+          }
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="campo-cliente">Cliente</label>
+          <select id="campo-cliente" class="form-control" formControlName="clienteId">
+            <option [ngValue]="null">Sem cliente vinculado</option>
+            @for (cli of clientes(); track cli.id) {
+              <option [ngValue]="cli.id">{{ getClienteLabel(cli) }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="campo-metodo">Método de Pagamento</label>
+          <select id="campo-metodo" class="form-control" formControlName="metodoId">
+            <option [ngValue]="null">Selecione um método (opcional)</option>
+            @for (metodo of metodos(); track metodo.id) {
+              <option [ngValue]="metodo.id">{{ metodo.nome }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="campo-valor">
+            Valor (R$) <span class="required">*</span>
+          </label>
+          <input
+            id="campo-valor"
+            class="form-control"
+            [class.invalid]="hasError('valor')"
+            type="number"
+            step="0.01"
+            min="0.01"
+            placeholder="0,00"
+            formControlName="valor"
+          />
+          @if (hasError('valor', 'required')) {
+            <span class="field-error">Informe o valor da conta a receber.</span>
+          } @else if (hasError('valor', 'min')) {
+            <span class="field-error">O valor deve ser maior que zero.</span>
+          }
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="campo-vencimento">
+            Data de Vencimento <span class="required">*</span>
+          </label>
+          <input
+            id="campo-vencimento"
+            class="form-control"
+            [class.invalid]="hasError('vencimento')"
+            type="date"
+            formControlName="vencimento"
+          />
+          @if (hasError('vencimento', 'required')) {
+            <span class="field-error">A data de vencimento é obrigatória.</span>
+          }
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="campo-status">
+            Status <span class="required">*</span>
+          </label>
+          <select
+            id="campo-status"
+            class="form-control"
+            [class.invalid]="hasError('status')"
+            formControlName="status"
+            (change)="onStatusChange()"
+          >
+            @for (opt of statusOptions; track opt.value) {
+              <option [value]="opt.value">{{ opt.label }}</option>
+            }
+          </select>
+          @if (hasError('status', 'required')) {
+            <span class="field-error">Selecione o status da conta.</span>
+          }
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="campo-data-recebimento">Data de Recebimento</label>
+          <input
+            id="campo-data-recebimento"
+            class="form-control"
+            type="date"
+            formControlName="dataRecebimento"
+          />
+        </div>
+
+        <div class="form-group span-2">
+          <label class="form-label" for="campo-observacao">Observação</label>
+          <textarea
+            id="campo-observacao"
+            class="form-control textarea-control"
+            [class.invalid]="hasError('observacao')"
+            rows="3"
+            maxlength="240"
+            placeholder="Referência de OS, número do comprovante ou observações internas..."
+            formControlName="observacao"
+          ></textarea>
+          @if (hasError('observacao', 'maxlength')) {
+            <span class="field-error">A observação deve ter no máximo 240 caracteres.</span>
+          }
+        </div>
+      </div>
+
+      <footer class="form-actions">
+        <button type="button" class="btn-cancel" (click)="cancelar()" [disabled]="submitting()">
+          Cancelar
+        </button>
+        <button type="submit" class="btn-submit" [disabled]="submitting()">
+          @if (submitting()) {
+            Salvando...
+          } @else if (isEditMode()) {
+            Salvar Alterações
+          } @else {
+            Salvar Conta
+          }
+        </button>
+      </footer>
+    </form>
+  }
+</section>
