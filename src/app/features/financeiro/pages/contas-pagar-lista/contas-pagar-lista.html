@@ -5,6 +5,9 @@
       <h1>Contas a Pagar</h1>
       <p class="subtitle">Acompanhe obrigações financeiras, vencimentos e compromissos com fornecedores.</p>
     </div>
+    <div class="header-actions">
+      <a class="btn-new-conta" routerLink="/financeiro/contas-pagar/novo">+ Nova Conta</a>
+    </div>
   </header>
 
   <div class="kpi-grid">
@@ -105,12 +108,13 @@
             <th>Status</th>
             <th class="hide-sm w-date">Pagamento</th>
             <th class="right">Valor</th>
+            <th class="right">Ações</th>
           </tr>
         </thead>
         <tbody>
           @if (filteredContas().length === 0) {
             <tr>
-              <td colspan="7" class="empty-cell">
+              <td colspan="8" class="empty-cell">
                 @if (periodoInvalido()) {
                   A data inicial não pode ser posterior à data final.
                 } @else if (hasActiveFilters()) {
@@ -155,6 +159,11 @@
               </td>
               <td class="right valor saida" [class.valor-vencido]="vencida">
                 R$ {{ conta.valor | number:'1.2-2' }}
+              </td>
+              <td class="right actions-cell">
+                <a class="btn-edit-conta" [routerLink]="['/financeiro/contas-pagar', conta.id, 'editar']">
+                  Editar
+                </a>
               </td>
             </tr>
           }

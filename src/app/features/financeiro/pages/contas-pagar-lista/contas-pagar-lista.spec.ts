@@ -194,4 +194,15 @@ describe('ContasPagarListaComponent (US-020)', () => {
     const alertEl = fixture.nativeElement.querySelector('.error-state');
     expect(alertEl).toBeTruthy();
   });
+
+  it('deve exibir botão "+ Nova Conta" e links "Editar" nas linhas da tabela apontando para as rotas da US-021 (T-021.2)', () => {
+    const newBtn = fixture.nativeElement.querySelector('a.btn-new-conta');
+    expect(newBtn).toBeTruthy();
+    expect(newBtn.getAttribute('href')).toBe('/financeiro/contas-pagar/novo');
+
+    const editLinks = fixture.nativeElement.querySelectorAll('a.btn-edit-conta');
+    expect(editLinks.length).toBe(4);
+    expect(editLinks[0].getAttribute('href')).toBe('/financeiro/contas-pagar/9204/editar');
+    expect(editLinks[1].getAttribute('href')).toBe('/financeiro/contas-pagar/9202/editar');
+  });
 });
