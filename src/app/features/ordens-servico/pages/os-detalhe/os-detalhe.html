@@ -22,6 +22,17 @@
         <div class="title-group">
           <h1>Ordem de Serviço #{{ item.id }}</h1>
           <p-tag [value]="statusLabel()" [severity]="statusSeverity()"></p-tag>
+          <button
+            pButton
+            type="button"
+            label="Imprimir OS"
+            icon="pi pi-print"
+            class="p-button-outlined p-button-sm"
+            data-testid="btn-imprimir-os"
+            [disabled]="printingPdf()"
+            [loading]="printingPdf()"
+            (click)="imprimirOs()"
+          ></button>
         </div>
       </div>
 

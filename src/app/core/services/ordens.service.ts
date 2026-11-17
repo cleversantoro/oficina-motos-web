@@ -24,6 +24,9 @@ export class OrdensService {
   get(id: string | number) {
     return this.api.getById(apiPaths.ordens.base, id);
   }
+  downloadPdf(id: string | number) {
+    return this.api.downloadBlob(apiPaths.ordens.pdf(id));
+  }
   create<T = OrdemServico, B = CreateOrdemServicoRequest>(body: B) {
     return this.api.create<T, B>(apiPaths.ordens.base, body);
   }

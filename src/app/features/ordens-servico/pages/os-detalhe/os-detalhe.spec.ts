@@ -21,6 +21,7 @@ describe('OsDetalheComponent', () => {
   let veiculosGetSubject: Subject<any>;
   let mecanicosGetSubject: Subject<any>;
   let deleteItemMock: any;
+  let downloadPdfMock: any;
   let confirmDeleteMock: any;
   let toastSuccesses: string[];
   let toastErrors: string[];
@@ -53,6 +54,7 @@ describe('OsDetalheComponent', () => {
     veiculosGetSubject = new Subject<any>();
     mecanicosGetSubject = new Subject<any>();
     deleteItemMock = vi.fn().mockReturnValue(of(null));
+    downloadPdfMock = vi.fn().mockReturnValue(of(new Blob(['%PDF-1.4'], { type: 'application/pdf' })));
     confirmDeleteMock = vi.fn().mockResolvedValue(true);
     toastSuccesses = [];
     toastErrors = [];
@@ -75,6 +77,7 @@ describe('OsDetalheComponent', () => {
             get: () => ordensGetSubject.asObservable(),
             update: () => ordensUpdateSubject.asObservable(),
             deleteItem: deleteItemMock,
+            downloadPdf: downloadPdfMock,
             addItem: vi.fn(),
           },
         },
@@ -427,6 +430,50 @@ describe('OsDetalheComponent', () => {
       expect(component.saldoPendente()).toBe(0);
       expect(component.ordem()?.status).toBe('Concluida');
       expect(component.ordem()?.dataConclusao).toBeTruthy();
+    });
+  });
+
+  describe('Imprimir OS (PDF)', () => {
+    beforeEach(async () => {
+      await setupTestBed('1');
+    });
+
+    it('deve exibir botão "Imprimir OS" e acionar downloadPdf ao clicar', () => {
+      const createObjectUrlSpy = vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:mock-os-pdf');
+      const revokeObjectUrlSpy = vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {});
+      const clickSpy = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
+
+      fixture.detectChanges();
+      ordensGetSubject.next(mockOrdemAberta);
+      fixture.detectChanges();
+
+      const btn = fixture.nativeElement.querySelector('[data-testid="btn-imprimir-os"]') as HTMLButtonElement;
+      expect(btn).toBeTruthy();
+      expect(btn.textContent).toContain('Imprimir OS');
+
+      btn.click();
+
+      expect(downloadPdfMock).toHaveBeenCalledWith(1);
+      expect(createObjectUrlSpy).toHaveBeenCalled();
+      expect(clickSpy).toHaveBeenCalled();
+      expect(revokeObjectUrlSpy).toHaveBeenCalledWith('blob:mock-os-pdf');
+      expect(component.printingPdf()).toBe(false);
+
+      createObjectUrlSpy.mockRestore();
+      revokeObjectUrlSpy.mockRestore();
+      clickSpy.mockRestore();
+    });
+
+    it('deve exibir toast de erro quando o download do PDF falhar', () => {
+      downloadPdfMock.mockReturnValue(throwError(() => new Error('Erro 500')));
+      fixture.detectChanges();
+      ordensGetSubject.next(mockOrdemAberta);
+      fixture.detectChanges();
+
+      component.imprimirOs();
+
+      expect(toastErrors).toContain('Não foi possível gerar o relatório PDF da ordem de serviço.');
+      expect(component.printingPdf()).toBe(false);
     });
   });
 });

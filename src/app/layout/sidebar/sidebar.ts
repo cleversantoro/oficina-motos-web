@@ -26,5 +26,6 @@ export class AppSidebar {
     { label: 'Mecanicos', icon: 'pi-cog', route: '/mecanicos', hint: 'Equipe e produtividade' },
     { label: 'Ordens de Servico', icon: 'pi-briefcase', route: '/ordens', hint: 'Fila da oficina' },
     { label: 'Financeiro', icon: 'pi-wallet', route: '/financeiro', hint: 'Fluxo e recebiveis' },
+    { label: 'Seguranca', icon: 'pi-shield', route: '/seguranca/usuarios', hint: 'Usuarios e perfis' },
   ];
 }

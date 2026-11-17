@@ -25,6 +25,7 @@ import { MainLayout } from './layout/main-layout/main-layout';
 import { LoginPage } from './features/auth/login/login';
 import { authGuard } from './core/auth/auth.guard';
 import { ordensPermissionGuard } from './core/auth/ordens-permission.guard';
+import { roleGuard } from './core/auth/role.guard';
 
 export const routes: Routes = [
   // Rota pública — login
@@ -120,6 +121,30 @@ export const routes: Routes = [
       {
         path: 'financeiro/contas-receber/:id/editar',
         component: ContasReceberFormComponent,
+      },
+      {
+        path: 'seguranca/usuarios',
+        canActivate: [roleGuard],
+        data: { roles: ['Admin', 'Administrador'] },
+        loadComponent: () => import('./features/seguranca/pages/usuario-lista/usuario-lista').then(m => m.UsuarioListaComponent),
+      },
+      {
+        path: 'seguranca/usuarios/novo',
+        canActivate: [roleGuard],
+        data: { roles: ['Admin', 'Administrador'] },
+        loadComponent: () => import('./features/seguranca/pages/usuario-form/usuario-form').then(m => m.UsuarioFormComponent),
+      },
+      {
+        path: 'seguranca/usuarios/:id/editar',
+        canActivate: [roleGuard],
+        data: { roles: ['Admin', 'Administrador'] },
+        loadComponent: () => import('./features/seguranca/pages/usuario-form/usuario-form').then(m => m.UsuarioFormComponent),
+      },
+      {
+        path: 'seguranca/perfis',
+        canActivate: [roleGuard],
+        data: { roles: ['Admin', 'Administrador'] },
+        loadComponent: () => import('./features/seguranca/pages/perfil-lista/perfil-lista').then(m => m.PerfilListaComponent),
       },
     ],
   },

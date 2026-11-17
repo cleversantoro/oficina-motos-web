@@ -8,3 +8,4 @@ export * from './estoque';
 export * from './financeiro';
 export * from './ordem-servico';
 export * from './dashboard';
+export * from './seguranca';

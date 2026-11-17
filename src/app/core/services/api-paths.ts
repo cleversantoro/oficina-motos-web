@@ -51,6 +51,7 @@ export const apiPaths = {
   },
   ordens: {
     base: '/api/v1/OrdemServicos',
+    pdf: (id: string | number) => `/api/v1/OrdemServicos/${id}/pdf`,
     pagamentos: '/api/v1/OrdemServicoPagamentos',
     observacoes: '/api/v1/OrdemServicoObservacoes',
     itens: '/api/v1/OrdemServicoItens',
@@ -79,5 +80,11 @@ export const apiPaths = {
     receberPagamentos: '/api/v1/ContasReceberPagamentos',
     historicos: '/api/v1/FinanceiroHistoricos',
     lancamentos: '/api/v1/FinanceiroLancamentos',
+  },
+  seguranca: {
+    usuarios: '/api/v1/Usuarios',
+    perfis: '/api/v1/Perfis',
+    permissoes: '/api/v1/Permissoes',
+    modulos: '/api/v1/Modulos',
   },
 };

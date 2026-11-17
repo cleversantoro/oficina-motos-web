@@ -1,0 +1,80 @@
+<section class="form-shell">
+  <header class="page-header">
+    <div>
+      <a routerLink="/seguranca/usuarios" class="back-link">
+        <i class="pi pi-arrow-left"></i> Voltar para usuários
+      </a>
+      <h1>{{ isEditMode() ? 'Editar Usuário' : 'Novo Usuário' }}</h1>
+    </div>
+  </header>
+
+  @if (loading()) {
+    <div class="state-box">
+      <i class="pi pi-spin pi-spinner"></i>
+      <p>Carregando dados do usuário...</p>
+    </div>
+  } @else {
+    <form class="form-card" [formGroup]="form" (ngSubmit)="salvar()">
+      <div class="form-grid">
+        <div class="field">
+          <label for="nome">Nome *</label>
+          <input id="nome" type="text" formControlName="nome" placeholder="Nome completo" />
+        </div>
+
+        <div class="field">
+          <label for="login">Login *</label>
+          <input id="login" type="text" formControlName="login" placeholder="ex: joao.silva" />
+        </div>
+
+        <div class="field">
+          <label for="email">E-mail *</label>
+          <input id="email" type="email" formControlName="email" placeholder="usuario@oficina.com" />
+        </div>
+
+        <div class="field">
+          <label for="telefone">Telefone</label>
+          <input id="telefone" type="text" formControlName="telefone" placeholder="(11) 99999-9999" />
+        </div>
+
+        <div class="field">
+          <label for="perfilId">Perfil de Acesso *</label>
+          <select id="perfilId" formControlName="perfilId">
+            <option [ngValue]="0" disabled>Selecione um perfil...</option>
+            @for (perfil of perfis(); track perfil.id) {
+              <option [ngValue]="perfil.id">{{ perfil.nome }}</option>
+            }
+          </select>
+        </div>
+
+        @if (!isEditMode()) {
+          <div class="field">
+            <label for="senha">Senha *</label>
+            <input id="senha" type="password" formControlName="senha" placeholder="Mínimo 6 caracteres" />
+          </div>
+        } @else {
+          <div class="field">
+            <label for="status">Status</label>
+            <select id="status" formControlName="status">
+              <option [ngValue]="1">Ativo</option>
+              <option [ngValue]="0">Inativo</option>
+              <option [ngValue]="2">Bloqueado</option>
+            </select>
+          </div>
+        }
+      </div>
+
+      <div class="form-actions">
+        <a routerLink="/seguranca/usuarios" class="p-button p-button-outlined p-button-sm">Cancelar</a>
+        <button
+          pButton
+          type="submit"
+          [label]="isEditMode() ? 'Salvar Alterações' : 'Criar Usuário'"
+          icon="pi pi-check"
+          class="p-button-primary p-button-sm"
+          [disabled]="form.invalid || saving()"
+          [loading]="saving()"
+        ></button>
+      </div>
+    </form>
+  }
+</section>

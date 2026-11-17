@@ -1,0 +1,102 @@
+<section class="perfis-shell">
+  <header class="page-header">
+    <div>
+      <h1>Perfis de Acesso e Permissões</h1>
+      <p class="subtitle">Consulte os níveis de acesso RBAC e configure permissões por módulo.</p>
+    </div>
+
+    <div class="header-actions">
+      <a routerLink="/seguranca/usuarios" class="p-button p-button-outlined p-button-sm nav-btn">
+        <i class="pi pi-users"></i>
+        <span>Usuários</span>
+      </a>
+    </div>
+  </header>
+
+  @if (loading()) {
+    <div class="state-box">
+      <i class="pi pi-spin pi-spinner"></i>
+      <p>Carregando perfis...</p>
+    </div>
+  } @else if (error(); as message) {
+    <div class="state-box error" role="alert">
+      <i class="pi pi-exclamation-triangle"></i>
+      <p>{{ message }}</p>
+      <button pButton type="button" label="Tentar novamente" class="p-button-outlined p-button-sm" (click)="carregarDados()"></button>
+    </div>
+  } @else {
+    <div class="perfis-grid">
+      <div class="perfis-list-card">
+        <h2>Perfis Cadastrados ({{ perfis().length }})</h2>
+        <ul class="perfil-items">
+          @for (perfil of perfis(); track perfil.id) {
+            <li
+              class="perfil-item"
+              [class.active]="perfilSelecionado()?.id === perfil.id"
+              (click)="selecionarPerfil(perfil)"
+            >
+              <div class="perfil-main">
+                <span class="perfil-nome">{{ perfil.nome }}</span>
+                <span class="perfil-desc">{{ perfil.descricao || 'Sem descrição' }}</span>
+              </div>
+              <div class="perfil-meta">
+                <p-tag [value]="'Nível ' + perfil.nivel" severity="info"></p-tag>
+                <span class="perm-count">{{ perfil.permissoes.length || 0 }} perm.</span>
+              </div>
+            </li>
+          }
+        </ul>
+      </div>
+
+      <div class="permissoes-card">
+        @if (perfilSelecionado(); as selecionado) {
+          <div class="perm-header">
+            <div>
+              <h2>Permissões: {{ selecionado.nome }}</h2>
+              <p class="subtitle">{{ permissoesSelecionadasIds().length }} permissão(ões) selecionada(s)</p>
+            </div>
+            <button
+              pButton
+              type="button"
+              label="Salvar Permissões"
+              icon="pi pi-save"
+              class="p-button-primary p-button-sm"
+              [disabled]="savingPermissoes()"
+              [loading]="savingPermissoes()"
+              (click)="salvarPermissoes()"
+            ></button>
+          </div>
+
+          @if (permissoesAgrupadas().length > 0) {
+            <div class="modulos-grid">
+              @for (grupo of permissoesAgrupadas(); track grupo.modulo) {
+                <div class="modulo-box">
+                  <h3>{{ grupo.modulo }}</h3>
+                  <div class="perm-checks">
+                    @for (perm of grupo.items; track perm.id) {
+                      <label class="perm-check">
+                        <input
+                          type="checkbox"
+                          [checked]="possuiPermissao(perm.id)"
+                          (change)="alternarPermissao(perm.id)"
+                        />
+                        <span>{{ perm.acao }}</span>
+                      </label>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          } @else {
+            <p class="empty-info">Nenhuma permissão cadastrada para exibição.</p>
+          }
+        } @else {
+          <div class="empty-selection">
+            <i class="pi pi-shield"></i>
+            <p>Selecione um perfil à esquerda para visualizar ou editar suas permissões.</p>
+          </div>
+        }
+      </div>
+    </div>
+  }
+</section>

@@ -1,0 +1,128 @@
+.seguranca-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1.5rem;
+  color: #e2e8f0;
+}
+
+.page-header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.25rem 1.5rem;
+  border-radius: 0.75rem;
+  background: rgba(30, 41, 59, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+
+  h1 {
+    margin: 0;
+    font-size: 1.4rem;
+    font-weight: 700;
+  }
+
+  .subtitle {
+    margin: 0.25rem 0 0;
+    color: #94a3b8;
+    font-size: 0.875rem;
+  }
+}
+
+.header-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.nav-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+}
+
+.toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.search-box {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+  min-width: 260px;
+  max-width: 440px;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+
+  input {
+    width: 100%;
+    background: transparent;
+    border: none;
+    color: #f8fafc;
+    outline: none;
+  }
+}
+
+.counter-badge {
+  font-size: 0.85rem;
+  color: #94a3b8;
+}
+
+.state-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 3rem 1.5rem;
+  border-radius: 0.75rem;
+  background: rgba(30, 41, 59, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+
+  &.error {
+    color: #fca5a5;
+    border-color: rgba(239, 68, 68, 0.35);
+  }
+}
+
+.table-card {
+  overflow-x: auto;
+  border-radius: 0.75rem;
+  background: rgba(30, 41, 59, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+
+  th,
+  td {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  th {
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #94a3b8;
+    background: rgba(15, 23, 42, 0.45);
+  }
+
+  .actions-col {
+    text-align: right;
+    white-space: nowrap;
+  }
+}

@@ -65,6 +65,7 @@ export class OsDetalheComponent implements OnInit {
   readonly modalServicoAberto = signal(false);
   readonly modalPagamentoAberto = signal(false);
   readonly deletingItemId = signal<number | null>(null);
+  readonly printingPdf = signal(false);
 
   readonly transicoesValidas = computed(() => {
     const status = this.ordem()?.status;
@@ -302,6 +303,31 @@ export class OsDetalheComponent implements OnInit {
       error: () => {
         this.deletingItemId.set(null);
         this.toast.error('Erro ao excluir', 'Não foi possível remover o item da ordem de serviço.');
+      },
+    });
+  }
+
+  imprimirOs(): void {
+    const ordemAtual = this.ordem();
+    if (!ordemAtual || this.printingPdf()) return;
+
+    this.printingPdf.set(true);
+    this.ordensService.downloadPdf(ordemAtual.id).subscribe({
+      next: blob => {
+        const objectUrl = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = objectUrl;
+        link.download = `os-${ordemAtual.id}.pdf`;
+        link.target = '_blank';
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        URL.revokeObjectURL(objectUrl);
+        this.printingPdf.set(false);
+      },
+      error: () => {
+        this.printingPdf.set(false);
+        this.toast.error('Erro ao gerar PDF', 'Não foi possível gerar o relatório PDF da ordem de serviço.');
       },
     });
   }

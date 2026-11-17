@@ -36,6 +36,10 @@ export class ApiClientService {
     return this.http.post<T>(this.url(path), formData);
   }
 
+  downloadBlob(path: string) {
+    return this.http.get(this.url(path), { responseType: 'blob' });
+  }
+
   private url(path: string) {
     return `${this.baseUrl}${path}`;
   }

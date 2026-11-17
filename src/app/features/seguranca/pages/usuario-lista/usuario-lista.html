@@ -1,0 +1,100 @@
+<section class="seguranca-shell">
+  <header class="page-header">
+    <div>
+      <h1>Gerenciamento de Usuários</h1>
+      <p class="subtitle">Administre contas de acesso, perfis vinculados e status dos usuários.</p>
+    </div>
+
+    <div class="header-actions">
+      <a routerLink="/seguranca/perfis" class="p-button p-button-outlined p-button-sm nav-btn">
+        <i class="pi pi-shield"></i>
+        <span>Perfis de Acesso</span>
+      </a>
+      <a routerLink="/seguranca/usuarios/novo" class="p-button p-button-primary p-button-sm nav-btn" data-testid="btn-novo-usuario">
+        <i class="pi pi-plus"></i>
+        <span>Novo Usuário</span>
+      </a>
+    </div>
+  </header>
+
+  <div class="toolbar">
+    <div class="search-box">
+      <i class="pi pi-search"></i>
+      <input
+        type="search"
+        placeholder="Buscar por nome, login, e-mail ou perfil..."
+        [ngModel]="busca()"
+        (ngModelChange)="busca.set($event)"
+        aria-label="Buscar usuários"
+      />
+    </div>
+    <span class="counter-badge">{{ usuariosFiltrados().length }} usuário(s)</span>
+  </div>
+
+  @if (loading()) {
+    <div class="state-box">
+      <i class="pi pi-spin pi-spinner"></i>
+      <p>Carregando usuários...</p>
+    </div>
+  } @else if (error(); as message) {
+    <div class="state-box error" role="alert">
+      <i class="pi pi-exclamation-triangle"></i>
+      <p>{{ message }}</p>
+      <button pButton type="button" label="Tentar novamente" class="p-button-outlined p-button-sm" (click)="carregarUsuarios()"></button>
+    </div>
+  } @else if (usuariosFiltrados().length === 0) {
+    <div class="state-box">
+      <i class="pi pi-users"></i>
+      <p>Nenhum usuário encontrado.</p>
+    </div>
+  } @else {
+    <div class="table-card">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Nome</th>
+            <th>Login</th>
+            <th>E-mail</th>
+            <th>Perfis</th>
+            <th>Status</th>
+            <th>Último Login</th>
+            <th class="actions-col">Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (usuario of usuariosFiltrados(); track usuario.id) {
+            <tr>
+              <td class="font-semibold">{{ usuario.nome }}</td>
+              <td><code>{{ usuario.login }}</code></td>
+              <td>{{ usuario.email }}</td>
+              <td>{{ usuario.perfis || '-' }}</td>
+              <td>
+                <p-tag [value]="usuario.statusDescricao || 'Ativo'" [severity]="getStatusSeverity(usuario.status)"></p-tag>
+              </td>
+              <td>{{ usuario.ultimoLogin ? (usuario.ultimoLogin | date: 'dd/MM/yyyy HH:mm') : 'Nunca' }}</td>
+              <td class="actions-col">
+                <a
+                  [routerLink]="['/seguranca/usuarios', usuario.id, 'editar']"
+                  class="p-button p-button-text p-button-sm"
+                  title="Editar usuário"
+                >
+                  <i class="pi pi-pencil"></i>
+                </a>
+                <button
+                  pButton
+                  type="button"
+                  icon="pi pi-trash"
+                  class="p-button-text p-button-danger p-button-sm"
+                  title="Excluir usuário"
+                  [disabled]="deletingId() === usuario.id"
+                  [loading]="deletingId() === usuario.id"
+                  (click)="confirmarExclusao(usuario)"
+                ></button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</section>
