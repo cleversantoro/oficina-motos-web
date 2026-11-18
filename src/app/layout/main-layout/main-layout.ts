@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, signal, viewChild } from '@angular/core';
+import { Component, signal, viewChild } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { LoadingSpinner } from '../../shared/ui/loading-spinner/loading-spinner';
@@ -19,7 +19,6 @@ import { AppSidebar } from '../sidebar/sidebar';
   ],
   templateUrl: './main-layout.html',
   styleUrl: './main-layout.scss',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     '(document:keydown.escape)': 'closeMenu()',
   },

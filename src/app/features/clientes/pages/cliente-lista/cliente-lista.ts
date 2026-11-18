@@ -1,5 +1,5 @@
-import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
@@ -16,62 +16,68 @@ import { Toast } from '../../../../shared/services/toast';
 @Component({
   selector: 'app-cliente-lista',
   standalone: true,
-  imports: [CommonModule, FormsModule, ButtonModule, RouterLink, TableModule, TagModule, TooltipModule, InputTextModule],
+  imports: [FormsModule, ButtonModule, RouterLink, TableModule, TagModule, TooltipModule, InputTextModule],
   templateUrl: './cliente-lista.html',
   styleUrl: './cliente-lista.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ClienteLista implements OnInit {
-  private toast = inject(Toast);
-  private confirmation = inject(Confirmation);
-  private router = inject(Router);
-  private authService = inject(AuthService);
+  private readonly clientesService = inject(ClientesService);
+  private readonly toast = inject(Toast);
+  private readonly confirmation = inject(Confirmation);
+  private readonly router = inject(Router);
+  private readonly authService = inject(AuthService);
+  private readonly destroyRef = inject(DestroyRef);
 
-  clientes: any[] = [];
-  loading = false;
-  searchTerm = '';
-
-  constructor(private clientesService: ClientesService) {}
+  readonly clientes = signal<any[]>([]);
+  readonly loading = signal(false);
+  readonly searchTerm = signal('');
 
   ngOnInit(): void {
     this.fetchClientes();
   }
 
-  get totalAtivos(): number {
-    return this.clientes.filter(c => (c.status === 1 || c.statusDescricao === 'Ativo')).length;
-  }
+  readonly totalAtivos = computed(() =>
+    this.clientes().filter(c => c.status === 1 || c.statusDescricao === 'Ativo').length,
+  );
 
-  get totalVip(): number {
-    return this.clientes.filter(c => c.vip).length;
-  }
+  readonly totalVip = computed(() =>
+    this.clientes().filter(c => c.vip).length,
+  );
 
-  get totalPJ(): number {
-    return this.clientes.filter(c =>
-      (c.tipoDescricao ?? '').toLowerCase().includes('jur')
-    ).length;
-  }
+  readonly totalPJ = computed(() =>
+    this.clientes().filter(c =>
+      (c.tipoDescricao ?? '').toLowerCase().includes('jur'),
+    ).length,
+  );
 
-  get filteredClientes(): any[] {
-    const q = this.searchTerm.trim().toLowerCase();
-    if (!q) return this.clientes;
-    return this.clientes.filter(c =>
+  readonly filteredClientes = computed(() => {
+    const q = this.searchTerm().trim().toLowerCase();
+    const list = this.clientes();
+    if (!q) return list;
+    return list.filter(c =>
       (c.nome ?? '').toLowerCase().includes(q) ||
       (c.documento ?? '').toLowerCase().includes(q) ||
       (c.email ?? '').toLowerCase().includes(q) ||
-      (c.telefone ?? '').toLowerCase().includes(q)
+      (c.telefone ?? '').toLowerCase().includes(q),
     );
-  }
+  });
 
   fetchClientes(): void {
-    this.loading = true;
-    this.clientesService.listTable().subscribe({
-      next: (resp: any) => {
-        this.clientes = Array.isArray(resp) ? resp : (resp?.items ?? resp?.data ?? []);
-        this.loading = false;
-      },
-      error: () => {
-        this.loading = false;
-      },
-    });
+    this.loading.set(true);
+    this.clientesService
+      .listTable()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (resp: any) => {
+          const items = Array.isArray(resp) ? resp : (resp?.items ?? resp?.data ?? []);
+          this.clientes.set(items);
+          this.loading.set(false);
+        },
+        error: () => {
+          this.loading.set(false);
+        },
+      });
   }
 
   getInitials(name: string): string {
@@ -124,12 +130,12 @@ export class ClienteLista implements OnInit {
 
   async confirmDelete(event: MouseEvent, id: number): Promise<void> {
     event.stopPropagation();
-    const cliente = this.clientes.find(c => c.id === id);
+    const cliente = this.clientes().find(c => c.id === id);
     const confirmado = await this.confirmation.confirmDelete(cliente?.nome || 'este cliente');
     if (confirmado) {
       this.clientesService.delete(id).subscribe({
         next: () => {
-          this.clientes = this.clientes.filter(c => c.id !== id);
+          this.clientes.update(list => list.filter(c => c.id !== id));
           this.toast.success('Sucesso', 'Cliente excluído com sucesso');
         },
         error: () => this.toast.error('Erro', 'Erro ao excluir cliente'),

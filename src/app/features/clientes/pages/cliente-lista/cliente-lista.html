@@ -21,28 +21,28 @@
     <div class="metric-card">
       <div class="metric-icon icon-green"><i class="pi pi-users"></i></div>
       <div>
-        <p class="metric-value">{{ totalAtivos }}</p>
+        <p class="metric-value">{{ totalAtivos() }}</p>
         <p class="metric-label">Ativos</p>
       </div>
     </div>
     <div class="metric-card">
       <div class="metric-icon icon-orange"><i class="pi pi-star-fill"></i></div>
       <div>
-        <p class="metric-value">{{ totalVip }}</p>
+        <p class="metric-value">{{ totalVip() }}</p>
         <p class="metric-label">Clientes VIP</p>
       </div>
     </div>
     <div class="metric-card">
       <div class="metric-icon icon-blue"><i class="pi pi-building"></i></div>
       <div>
-        <p class="metric-value">{{ totalPJ }}</p>
+        <p class="metric-value">{{ totalPJ() }}</p>
         <p class="metric-label">Pessoa Jurídica</p>
       </div>
     </div>
     <div class="metric-card">
       <div class="metric-icon icon-purple"><i class="pi pi-list"></i></div>
       <div>
-        <p class="metric-value">{{ clientes.length }}</p>
+        <p class="metric-value">{{ clientes().length }}</p>
         <p class="metric-label">Total cadastrado</p>
       </div>
     </div>
@@ -59,25 +59,26 @@
           type="text"
           class="search-input"
           placeholder="Buscar por nome, CPF/CNPJ, e-mail..."
-          [(ngModel)]="searchTerm"
+          [ngModel]="searchTerm()"
+          (ngModelChange)="searchTerm.set($event)"
           (input)="dt.filterGlobal(searchInput.value, 'contains')"
         />
-        @if (searchTerm) {
-          <button class="search-clear" (click)="searchTerm=''; dt.filterGlobal('', 'contains')">
+        @if (searchTerm()) {
+          <button class="search-clear" (click)="searchTerm.set(''); dt.filterGlobal('', 'contains')">
             <i class="pi pi-times"></i>
           </button>
         }
       </div>
       <div class="toolbar-right">
-        <span class="count-badge">{{ clientes.length }} registros</span>
+        <span class="count-badge">{{ clientes().length }} registros</span>
       </div>
     </div>
 
     <div class="desktop-table-wrap">
     <p-table
       #dt
-      [value]="clientes"
-      [loading]="loading"
+      [value]="clientes()"
+      [loading]="loading()"
       [paginator]="true"
       [rows]="5"
       [rowsPerPageOptions]="[10, 25, 50]"
@@ -192,8 +193,8 @@
             <div class="empty-state">
               <i class="pi pi-users empty-icon"></i>
               <p>Nenhum cliente encontrado.</p>
-              @if (searchTerm) {
-                <button class="ghost-btn" (click)="searchTerm=''; dt.filterGlobal('', 'contains')">
+              @if (searchTerm()) {
+                <button class="ghost-btn" (click)="searchTerm.set(''); dt.filterGlobal('', 'contains')">
                   Limpar busca
                 </button>
               }
@@ -214,12 +215,12 @@
 
     <!-- Visão Mobile -->
     <div class="mobile-cards" aria-label="Lista de clientes">
-      @if (loading) {
+      @if (loading()) {
         <div class="mobile-empty">Carregando clientes...</div>
-      } @else if (filteredClientes.length === 0) {
+      } @else if (filteredClientes().length === 0) {
         <div class="mobile-empty">Nenhum cliente encontrado.</div>
       } @else {
-        @for (c of filteredClientes; track c.id) {
+        @for (c of filteredClientes(); track c.id) {
           <article class="mobile-card" tabindex="0" (click)="navigateTo(c.id)" (keydown.enter)="navigateTo(c.id)">
             <div class="mobile-card-head">
               <div class="cell-name">
