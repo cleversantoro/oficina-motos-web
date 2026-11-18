@@ -1,110 +1,301 @@
 <section class="fornecedores-page">
-
   <header class="page-header">
-    <div>
+    <div class="header-copy">
       <p class="eyebrow">Hub de Parceiros</p>
       <h1>Fornecedores</h1>
+      <p class="subtitle">Gerencie parceiros de peças, insumos, avaliações e canais de contato.</p>
     </div>
+
     <div class="header-actions">
-      <div class="search-wrap">
-        <span class="pi pi-search search-icon"></span>
-        <input
-          class="search-input"
-          type="text"
-          placeholder="Buscar por nome, CNPJ ou email..."
-          [(ngModel)]="filterText"
-          (ngModelChange)="reset()"
-        />
-      </div>
-      <button class="cta primary" routerLink="/fornecedores/novo">+ Novo fornecedor</button>
+      <a class="cta primary" routerLink="/fornecedores/novo">
+        <span class="pi pi-plus" aria-hidden="true"></span>
+        <span>Novo fornecedor</span>
+      </a>
     </div>
   </header>
 
+  <!-- KPIs rápidos -->
+  <section class="kpi-strip" aria-label="Resumo de fornecedores">
+    <article class="kpi-card">
+      <span class="kpi-label">Total de parceiros</span>
+      <strong class="kpi-value">{{ totalFornecedores() }}</strong>
+    </article>
+    <article class="kpi-card kpi-success">
+      <span class="kpi-label">Ativos</span>
+      <strong class="kpi-value">{{ totalAtivos() }}</strong>
+    </article>
+    <article class="kpi-card kpi-warn">
+      <span class="kpi-label">Inativos / Suspensos</span>
+      <strong class="kpi-value">{{ totalInativosOuSuspensos() }}</strong>
+    </article>
+    <article class="kpi-card kpi-accent">
+      <span class="kpi-label">Score médio</span>
+      <strong class="kpi-value">
+        @if (notaMediaGeral(); as media) {
+          {{ media | number: '1.1-1' }} ★
+        } @else {
+          —
+        }
+      </strong>
+    </article>
+  </section>
+
+  <!-- Barra de busca e filtros -->
+  <section class="toolbar" aria-label="Filtros de fornecedores">
+    <div class="search-wrap">
+      <span class="pi pi-search search-icon" aria-hidden="true"></span>
+      <input
+        class="search-input"
+        type="search"
+        placeholder="Buscar por nome, CNPJ, e-mail ou telefone..."
+        aria-label="Buscar fornecedores por nome, CNPJ, e-mail ou telefone"
+        [ngModel]="filterText()"
+        (ngModelChange)="onSearchChange($event)"
+      />
+      @if (filterText()) {
+        <button
+          type="button"
+          class="clear-search-btn"
+          aria-label="Limpar busca"
+          (click)="onSearchChange('')"
+        >
+          <span class="pi pi-times" aria-hidden="true"></span>
+        </button>
+      }
+    </div>
+
+    <div class="status-filters" role="group" aria-label="Filtrar por status">
+      @for (opt of statusOptions; track opt.value) {
+        <button
+          type="button"
+          class="filter-chip"
+          [class.active]="statusFilter() === opt.value"
+          [attr.aria-pressed]="statusFilter() === opt.value"
+          (click)="setStatusFilter(opt.value)"
+        >
+          {{ opt.label }}
+        </button>
+      }
+    </div>
+  </section>
+
+  <!-- Conteúdo principal -->
   <div class="table-card">
-    @if (loading) {
-      <div class="empty-state">
-        <span class="pi pi-spin pi-spinner" style="font-size:1.5rem;color:#94a3b8"></span>
+    @if (loading()) {
+      <div class="empty-state" role="status" aria-live="polite">
+        <span class="pi pi-spin pi-spinner state-spinner" aria-hidden="true"></span>
         <p>Carregando fornecedores...</p>
       </div>
-    } @else if (filtered.length === 0) {
+    } @else if (error(); as errorMsg) {
+      <div class="empty-state error-state" role="alert">
+        <span class="pi pi-exclamation-triangle state-error-icon" aria-hidden="true"></span>
+        <p>{{ errorMsg }}</p>
+        <button type="button" class="ghost small" (click)="load()">Tentar novamente</button>
+      </div>
+    } @else if (filtered().length === 0) {
       <div class="empty-state">
-        <span class="pi pi-box" style="font-size:2rem;color:#475569"></span>
-        <p>Nenhum fornecedor encontrado.</p>
+        <span class="pi pi-box state-empty-icon" aria-hidden="true"></span>
+        @if (hasActiveFilters()) {
+          <p>Nenhum fornecedor encontrado com os filtros aplicados.</p>
+          <button type="button" class="ghost small" (click)="clearFilters()">Limpar filtros</button>
+        } @else {
+          <p>Nenhum fornecedor cadastrado até o momento.</p>
+          <a class="cta primary small-cta" routerLink="/fornecedores/novo">+ Cadastrar fornecedor</a>
+        }
       </div>
     } @else {
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th>Fornecedor</th>
-            <th>CNPJ</th>
-            <th>Contato</th>
-            <th>Score</th>
-            <th>Status</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (f of filtered.slice(first, first + rows); track f.id) {
-            <tr class="data-row" (click)="openDetalhe(f.id)">
-              <td>
-                <div class="nome-cell">
-                  <div class="avatar" [style.background]="'#0ea5e920'" [style.border-color]="'rgba(14,165,233,.3)'">
-                    {{ displayName(f).slice(0, 2).toUpperCase() }}
-                  </div>
-                  <div>
-                    <p class="nome">{{ displayName(f) }}</p>
-                    @if (f.nomeFantasia && f.nomeFantasia !== f.razaoSocial) {
-                      <p class="sub">{{ f.razaoSocial }}</p>
-                    }
-                  </div>
-                </div>
-              </td>
-              <td class="mono">{{ f.documento || '—' }}</td>
-              <td>
-                <p class="contact-line">{{ f.email || '—' }}</p>
-                <p class="contact-line muted">{{ f.telefonePrincipal || '' }}</p>
-              </td>
-              <td>
-                @if (f.notaMedia !== null && f.notaMedia !== undefined) {
-                  <span class="stars">{{ starsOf(f.notaMedia) }}</span>
-                  <span class="nota-val">{{ f.notaMedia | number:'1.1-1' }}</span>
-                } @else {
-                  <span class="muted">—</span>
-                }
-              </td>
-              <td>
-                <span class="pill" [ngClass]="statusClass(f.status)">{{ f.status }}</span>
-              </td>
-              <td>
-                <button class="ghost icon-btn view-btn" (click)="openDetalhe(f.id); $event.stopPropagation()" title="Visualizar">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:.9rem;height:.9rem">
-                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                    <circle cx="12" cy="12" r="3"/>
-                  </svg>
-                </button>
-                @if (canDeleteFornecedor()) {
-                  <button class="ghost icon-btn delete-btn" (click)="confirmDelete(f.id); $event.stopPropagation()" title="Excluir">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:.9rem;height:.9rem">
-                      <polyline points="3 6 5 6 21 6"/>
-                      <path d="m19 6-.867 14.142A2 2 0 0 1 16.138 22H7.862a2 2 0 0 1-1.995-1.858L5 6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
-                    </svg>
-                  </button>
-                }
-              </td>
+      <!-- Visão Desktop / Tablet -->
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Fornecedor</th>
+              <th>CNPJ</th>
+              <th>Contato</th>
+              <th>Score</th>
+              <th>Status</th>
+              <th class="actions-header">Ações</th>
             </tr>
-          }
-        </tbody>
-      </table>
-
-      <div class="paginator">
-        <span class="page-info">
-          {{ first + 1 }}–{{ first + rows > filtered.length ? filtered.length : first + rows }} de {{ filtered.length }}
-        </span>
-        <div class="page-buttons">
-          <button class="ghost small" [disabled]="isFirstPage()" (click)="prev()">← Anterior</button>
-          <button class="ghost small" [disabled]="isLastPage()" (click)="next()">Próxima →</button>
-        </div>
+          </thead>
+          <tbody>
+            @for (f of paginated(); track f.id) {
+              <tr
+                class="data-row"
+                tabindex="0"
+                (click)="openDetalhe(f.id)"
+                (keydown.enter)="openDetalhe(f.id)"
+              >
+                <td>
+                  <div class="nome-cell">
+                    <div class="avatar" aria-hidden="true">
+                      {{ displayName(f).slice(0, 2).toUpperCase() }}
+                    </div>
+                    <div class="nome-meta">
+                      <p class="nome">{{ displayName(f) }}</p>
+                      @if (f.nomeFantasia && f.nomeFantasia !== f.razaoSocial) {
+                        <p class="sub">{{ f.razaoSocial }}</p>
+                      }
+                    </div>
+                  </div>
+                </td>
+                <td class="mono">{{ f.documento || '—' }}</td>
+                <td>
+                  <p class="contact-line">{{ f.email || '—' }}</p>
+                  @if (f.telefonePrincipal) {
+                    <p class="contact-line muted">{{ f.telefonePrincipal }}</p>
+                  }
+                </td>
+                <td>
+                  @if (f.notaMedia !== null && f.notaMedia !== undefined) {
+                    <span class="stars" [attr.aria-label]="'Nota ' + (f.notaMedia | number: '1.1-1') + ' de 5'">
+                      {{ starsOf(f.notaMedia) }}
+                    </span>
+                    <span class="nota-val">{{ f.notaMedia | number: '1.1-1' }}</span>
+                  } @else {
+                    <span class="muted">—</span>
+                  }
+                </td>
+                <td>
+                  <span class="pill" [class]="statusClass(f.status)">
+                    <span class="pill-dot" aria-hidden="true"></span>
+                    {{ f.status }}
+                  </span>
+                </td>
+                <td class="actions-cell">
+                  <button
+                    type="button"
+                    class="ghost icon-btn view-btn"
+                    [attr.aria-label]="'Visualizar ' + displayName(f)"
+                    title="Visualizar"
+                    (click)="openDetalhe(f.id); $event.stopPropagation()"
+                  >
+                    <span class="pi pi-eye" aria-hidden="true"></span>
+                  </button>
+                  @if (canDeleteFornecedor()) {
+                    <button
+                      type="button"
+                      class="ghost icon-btn delete-btn"
+                      [attr.aria-label]="'Excluir ' + displayName(f)"
+                      title="Excluir"
+                      [disabled]="deletingId() === f.id"
+                      (click)="confirmDelete(f); $event.stopPropagation()"
+                    >
+                      <span
+                        class="pi"
+                        [class.pi-spin]="deletingId() === f.id"
+                        [class.pi-spinner]="deletingId() === f.id"
+                        [class.pi-trash]="deletingId() !== f.id"
+                        aria-hidden="true"
+                      ></span>
+                    </button>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
       </div>
+
+      <!-- Visão Mobile (cards empilhados sem ocultar contato) -->
+      <div class="mobile-cards" aria-label="Lista de fornecedores">
+        @for (f of paginated(); track f.id) {
+          <article class="mobile-card" (click)="openDetalhe(f.id)">
+            <div class="mobile-card-top">
+              <div class="nome-cell">
+                <div class="avatar" aria-hidden="true">
+                  {{ displayName(f).slice(0, 2).toUpperCase() }}
+                </div>
+                <div class="nome-meta">
+                  <p class="nome">{{ displayName(f) }}</p>
+                  @if (f.nomeFantasia && f.nomeFantasia !== f.razaoSocial) {
+                    <p class="sub">{{ f.razaoSocial }}</p>
+                  }
+                </div>
+              </div>
+              <span class="pill" [class]="statusClass(f.status)">
+                <span class="pill-dot" aria-hidden="true"></span>
+                {{ f.status }}
+              </span>
+            </div>
+
+            <div class="mobile-card-grid">
+              <div>
+                <span class="mobile-label">CNPJ</span>
+                <p class="mono">{{ f.documento || '—' }}</p>
+              </div>
+              <div>
+                <span class="mobile-label">Score</span>
+                <p>
+                  @if (f.notaMedia !== null && f.notaMedia !== undefined) {
+                    <span class="stars">{{ starsOf(f.notaMedia) }}</span>
+                    <span class="nota-val">{{ f.notaMedia | number: '1.1-1' }}</span>
+                  } @else {
+                    <span class="muted">—</span>
+                  }
+                </p>
+              </div>
+              <div class="mobile-contact-full">
+                <span class="mobile-label">Contato</span>
+                <p class="contact-line">{{ f.email || '—' }}</p>
+                @if (f.telefonePrincipal) {
+                  <p class="contact-line muted">{{ f.telefonePrincipal }}</p>
+                }
+              </div>
+            </div>
+
+            <div class="mobile-card-actions">
+              <button
+                type="button"
+                class="ghost small mobile-action-btn"
+                (click)="openDetalhe(f.id); $event.stopPropagation()"
+              >
+                <span class="pi pi-eye" aria-hidden="true"></span>
+                <span>Visualizar</span>
+              </button>
+              @if (canDeleteFornecedor()) {
+                <button
+                  type="button"
+                  class="ghost small delete-btn mobile-action-btn"
+                  [disabled]="deletingId() === f.id"
+                  (click)="confirmDelete(f); $event.stopPropagation()"
+                >
+                  <span class="pi pi-trash" aria-hidden="true"></span>
+                  <span>Excluir</span>
+                </button>
+              }
+            </div>
+          </article>
+        }
+      </div>
+
+      <footer class="paginator">
+        <div class="paginator-left">
+          <span class="page-info">
+            Exibindo {{ rangeStart() }}–{{ rangeEnd() }} de {{ filtered().length }}
+          </span>
+          <label class="page-size-label">
+            <span>Por página:</span>
+            <select
+              aria-label="Itens por página"
+              [ngModel]="rows()"
+              (ngModelChange)="onRowsChange($event)"
+            >
+              @for (size of pageSizeOptions; track size) {
+                <option [ngValue]="size">{{ size }}</option>
+              }
+            </select>
+          </label>
+        </div>
+
+        <div class="page-buttons">
+          <button type="button" class="ghost small" [disabled]="isFirstPage()" (click)="prev()">
+            ← Anterior
+          </button>
+          <button type="button" class="ghost small" [disabled]="isLastPage()" (click)="next()">
+            Próxima →
+          </button>
+        </div>
+      </footer>
     }
   </div>
 </section>
