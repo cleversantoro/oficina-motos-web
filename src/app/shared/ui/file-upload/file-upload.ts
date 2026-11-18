@@ -1,8 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input, OnChanges, OnInit, SimpleChanges, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ButtonModule } from 'primeng/button';
-import { FileUploadModule, FileSelectEvent } from 'primeng/fileupload';
 import { ClientesService } from '../../../core/services/clientes.service';
 import { Toast } from '../../services/toast';
 import { Confirmation } from '../../services/confirmation';
@@ -19,7 +17,7 @@ interface Anexo {
 @Component({
   selector: 'app-file-upload',
   standalone: true,
-  imports: [CommonModule, FormsModule, ButtonModule, FileUploadModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './file-upload.html',
   styleUrl: './file-upload.scss',
 })
@@ -60,8 +58,9 @@ export class FileUpload implements OnInit, OnChanges {
     });
   }
 
-  onFileSelect(event: FileSelectEvent): void {
-    this.pendingFile = event.files[0] ?? null;
+  onFileSelect(event: Event): void {
+    const input = event.target as HTMLInputElement | null;
+    this.pendingFile = input?.files?.[0] ?? null;
   }
 
   onClearPending(): void {
@@ -115,12 +114,12 @@ export class FileUpload implements OnInit, OnChanges {
 
   getFileIcon(tipo: string): string {
     const t = (tipo ?? '').toLowerCase();
-    if (t.includes('pdf')) return 'pi-file-pdf';
-    if (t.includes('word') || t.includes('doc')) return 'pi-file-word';
-    if (t.includes('excel') || t.includes('xls') || t.includes('sheet')) return 'pi-file-excel';
+    if (t.includes('pdf')) return 'fa-file-pdf';
+    if (t.includes('word') || t.includes('doc')) return 'fa-file-word';
+    if (t.includes('excel') || t.includes('xls') || t.includes('sheet')) return 'fa-file-excel';
     if (t.includes('image') || t.includes('jpg') || t.includes('jpeg') || t.includes('png'))
-      return 'pi-image';
-    return 'pi-file';
+      return 'fa-image';
+    return 'fa-file';
   }
 
   formatBytes(bytes: number): string {

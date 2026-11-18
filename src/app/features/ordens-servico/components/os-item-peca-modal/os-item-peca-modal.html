@@ -15,7 +15,7 @@
         Buscar Peça no Estoque <span class="required">*</span>
       </label>
       <div class="search-box">
-        <i class="pi pi-search search-icon"></i>
+        <i class="fa-solid fa-magnifying-glass search-icon"></i>
         <input
           id="pecaBusca"
           type="text"
@@ -26,10 +26,10 @@
           autocomplete="off"
         />
         @if (buscandoPecas()) {
-          <i class="pi pi-spin pi-spinner spinner-icon"></i>
+          <i class="fa-solid fa-spin fa-spinner spinner-icon"></i>
         } @else if (pecaSelecionada()) {
           <button type="button" class="btn-clear" (click)="limparPeca()" title="Limpar seleção">
-            <i class="pi pi-times"></i>
+            <i class="fa-solid fa-xmark"></i>
           </button>
         }
       </div>
@@ -145,7 +145,7 @@
         pButton
         type="button"
         label="Adicionar Peça"
-        icon="pi pi-check"
+        icon="fa-solid fa-check"
         class="p-button-primary"
         (click)="salvar()"
         [disabled]="!isValido() || submitting()"

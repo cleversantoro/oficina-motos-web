@@ -1,19 +1,28 @@
 import { CommonModule, DatePipe } from '@angular/common';
 import { Component, OnInit, inject } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { ButtonModule } from 'primeng/button';
-import { TabsModule } from 'primeng/tabs';
-import { TagModule } from 'primeng/tag';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { canPerformBusinessAction } from '../../../../core/auth/rbac-access.helper';
 import { ClientesService } from '../../../../core/services/clientes.service';
 import { Toast } from '../../../../shared/services/toast';
 import { Confirmation } from '../../../../shared/services/confirmation';
+import {
+  SIMPLE_BUTTON_IMPORTS,
+  SIMPLE_TABS_IMPORTS,
+  SimpleTagComponent,
+} from '../../../../shared/ui/simple-primitives';
 
 @Component({
   selector: 'app-cliente-detalhe',
   standalone: true,
-  imports: [CommonModule, DatePipe, ButtonModule, TabsModule, TagModule, RouterLink],
+  imports: [
+    CommonModule,
+    DatePipe,
+    RouterLink,
+    ...SIMPLE_BUTTON_IMPORTS,
+    ...SIMPLE_TABS_IMPORTS,
+    SimpleTagComponent,
+  ],
   templateUrl: './cliente-detalhe.html',
   styleUrl: './cliente-detalhe.scss',
 })

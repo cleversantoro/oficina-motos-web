@@ -2,7 +2,7 @@
   <header class="page-header">
     <div>
       <a routerLink="/seguranca/usuarios" class="back-link">
-        <i class="pi pi-arrow-left"></i> Voltar para usuários
+        <i class="fa-solid fa-arrow-left"></i> Voltar para usuários
       </a>
       <h1>{{ isEditMode() ? 'Editar Usuário' : 'Novo Usuário' }}</h1>
     </div>
@@ -10,7 +10,7 @@
 
   @if (loading()) {
     <div class="state-box">
-      <i class="pi pi-spin pi-spinner"></i>
+      <i class="fa-solid fa-spin fa-spinner"></i>
       <p>Carregando dados do usuário...</p>
     </div>
   } @else {
@@ -69,7 +69,7 @@
           pButton
           type="submit"
           [label]="isEditMode() ? 'Salvar Alterações' : 'Criar Usuário'"
-          icon="pi pi-check"
+          icon="fa-solid fa-check"
           class="p-button-primary p-button-sm"
           [disabled]="form.invalid || saving()"
           [loading]="saving()"

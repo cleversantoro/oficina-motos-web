@@ -8,7 +8,7 @@
       aria-label="Fechar menu"
       (click)="onNavigate()"
     >
-      <span class="pi pi-times" aria-hidden="true"></span>
+      <span class="fa-solid fa-xmark" aria-hidden="true"></span>
     </button>
   </div>
 
@@ -20,12 +20,12 @@
         class="nav-link"
         (click)="onNavigate()"
       >
-        <span class="pi" [class]="item.icon" aria-hidden="true"></span>
+        <span class="fa-solid" [class]="item.icon" aria-hidden="true"></span>
         <div class="nav-copy">
           <span class="label">{{ item.label }}</span>
           <small class="hint">{{ item.hint }}</small>
         </div>
-        <span class="caret pi pi-chevron-right" aria-hidden="true"></span>
+        <span class="caret fa-solid fa-chevron-right" aria-hidden="true"></span>
       </a>
     }
   </nav>

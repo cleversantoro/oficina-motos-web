@@ -8,7 +8,7 @@
       aria-label="Alternar menu de navegação"
       (click)="menuToggle.emit()"
     >
-      <span class="pi" [class.pi-bars]="!menuOpen()" [class.pi-times]="menuOpen()" aria-hidden="true"></span>
+      <span class="fa-solid" [class.fa-bars]="!menuOpen()" [class.fa-xmark]="menuOpen()" aria-hidden="true"></span>
     </button>
     <div class="brand-mark" aria-hidden="true">OM</div>
     <div>
@@ -19,7 +19,7 @@
 
   <div class="header-actions">
     <form class="search" (ngSubmit)="onSearch()" role="search">
-      <span class="pi pi-search" aria-hidden="true"></span>
+      <span class="fa-solid fa-magnifying-glass" aria-hidden="true"></span>
       <input
         type="search"
         name="globalSearch"
@@ -32,7 +32,7 @@
 
     @if (canCreateOrdem()) {
       <button type="button" class="cta strong" (click)="novaOrdem()">
-        <span class="pi pi-bolt" aria-hidden="true"></span>
+        <span class="fa-solid fa-bolt" aria-hidden="true"></span>
         Nova OS
       </button>
     }
@@ -45,7 +45,7 @@
       aria-label="Sincronizar"
       title="Sincronizar"
     >
-      <span class="pi pi-refresh" aria-hidden="true"></span>
+      <span class="fa-solid fa-rotate" aria-hidden="true"></span>
     </button>
 
     @if (currentUser(); as user) {
@@ -60,7 +60,7 @@
     </div>
 
     <button type="button" class="cta ghost logout-btn" (click)="logout()" aria-label="Sair" title="Sair">
-      <span class="pi pi-sign-out" aria-hidden="true"></span>
+      <span class="fa-solid fa-right-from-bracket" aria-hidden="true"></span>
     </button>
   </div>
 </header>

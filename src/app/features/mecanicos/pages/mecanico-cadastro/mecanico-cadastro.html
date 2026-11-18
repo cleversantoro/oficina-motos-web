@@ -5,7 +5,7 @@
     <header class="content-head">
       <div>
         <a class="back-link" routerLink="/mecanicos">
-          <i class="pi pi-arrow-left"></i> Voltar para a lista
+          <i class="fa-solid fa-arrow-left"></i> Voltar para a lista
         </a>
         <h1 class="page-title">Cadastrar Mecânico</h1>
         <p class="muted">Informe os dados cadastrais, profissionais e especialidades do colaborador.</p>
@@ -19,7 +19,7 @@
             <span class="btn-spinner"></span>
             Salvando...
           } @else {
-            <i class="pi pi-check"></i>
+            <i class="fa-solid fa-check"></i>
             Salvar Mecânico
           }
         </button>
@@ -30,7 +30,7 @@
     <section class="card">
       <div class="card-head">
         <div class="card-title">
-          <i class="pi pi-user card-icon"></i>
+          <i class="fa-solid fa-user card-icon"></i>
           <div>
             <h2>Identificação Pessoal</h2>
             <p class="card-subtitle">Identificação civil e funcional do profissional</p>
@@ -135,7 +135,7 @@
     <section class="card">
       <div class="card-head">
         <div class="card-title">
-          <i class="pi pi-briefcase card-icon"></i>
+          <i class="fa-solid fa-briefcase card-icon"></i>
           <div>
             <h2>Dados Profissionais</h2>
             <p class="card-subtitle">Informações de contratação, remuneração e carga horária</p>
@@ -220,7 +220,7 @@
     <section class="card">
       <div class="card-head">
         <div class="card-title">
-          <i class="pi pi-cog card-icon"></i>
+          <i class="fa-solid fa-gear card-icon"></i>
           <div>
             <h2>Especialidades Técnicas</h2>
             <p class="card-subtitle">Selecione as especialidades do mecânico e defina uma como principal</p>
@@ -255,7 +255,7 @@
                 <div class="chip-actions">
                   @if (isEspecialidadePrincipal(esp.id)) {
                     <span class="badge-principal" title="Especialidade Principal">
-                      <i class="pi pi-star-fill"></i> Principal
+                      <i class="fa-solid fa-star"></i> Principal
                     </span>
                   } @else {
                     <button
@@ -264,7 +264,7 @@
                       (click)="setPrincipal(esp.id, $event)"
                       title="Definir como especialidade principal"
                     >
-                      <i class="pi pi-star"></i> Tornar Principal
+                      <i class="fa-solid fa-star"></i> Tornar Principal
                     </button>
                   }
                 </div>
@@ -279,7 +279,7 @@
     <section class="card">
       <div class="card-head">
         <div class="card-title">
-          <i class="pi pi-file-edit card-icon"></i>
+          <i class="fa-solid fa-file-pen card-icon"></i>
           <div>
             <h2>Observações Gerais</h2>
             <p class="card-subtitle">Notas complementares, certificações ou históricos</p>
@@ -312,7 +312,7 @@
           <span class="btn-spinner"></span>
           Salvando...
         } @else {
-          <i class="pi pi-check"></i>
+          <i class="fa-solid fa-check"></i>
           Salvar Mecânico
         }
       </button>

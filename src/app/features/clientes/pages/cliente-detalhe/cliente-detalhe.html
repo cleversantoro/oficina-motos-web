@@ -3,7 +3,7 @@
   <!-- Breadcrumb / navegação -->
   <nav class="breadcrumb">
     <a routerLink="/clientes" class="back-link">
-      <i class="pi pi-arrow-left"></i>
+      <i class="fa-solid fa-arrow-left"></i>
       Clientes
     </a>
     @if (cliente) {
@@ -15,7 +15,7 @@
   <!-- Estado: carregando -->
   @if (loading) {
     <div class="state-container">
-      <i class="pi pi-spin pi-spinner state-icon"></i>
+      <i class="fa-solid fa-spin fa-spinner state-icon"></i>
       <p>Carregando dados do cliente…</p>
     </div>
   }
@@ -23,10 +23,10 @@
   <!-- Estado: erro -->
   @else if (error) {
     <div class="state-container state-error">
-      <i class="pi pi-exclamation-triangle state-icon"></i>
+      <i class="fa-solid fa-triangle-exclamation state-icon"></i>
       <p>{{ error }}</p>
       <button class="btn-retry" (click)="load()">
-        <i class="pi pi-refresh"></i> Tentar novamente
+        <i class="fa-solid fa-rotate"></i> Tentar novamente
       </button>
     </div>
   }
@@ -44,7 +44,7 @@
         <div class="hero-name-row">
           <h1 class="hero-name">{{ cliente.nome }}</h1>
           @if (cliente.vip) {
-            <span class="vip-badge"><i class="pi pi-star-fill"></i> VIP</span>
+            <span class="vip-badge"><i class="fa-solid fa-star"></i> VIP</span>
           }
         </div>
 
@@ -54,13 +54,13 @@
 
         <div class="hero-meta">
           @if (cliente.documento) {
-            <span class="meta-item"><i class="pi pi-id-card"></i>{{ cliente.documento }}</span>
+            <span class="meta-item"><i class="fa-solid fa-id-card"></i>{{ cliente.documento }}</span>
           }
           @if (cliente.email) {
-            <span class="meta-item"><i class="pi pi-envelope"></i>{{ cliente.email }}</span>
+            <span class="meta-item"><i class="fa-solid fa-envelope"></i>{{ cliente.email }}</span>
           }
           @if (cliente.telefone) {
-            <span class="meta-item"><i class="pi pi-phone"></i>{{ cliente.telefone }}</span>
+            <span class="meta-item"><i class="fa-solid fa-phone"></i>{{ cliente.telefone }}</span>
           }
         </div>
 
@@ -82,7 +82,7 @@
         @if (canEditCliente()) {
           <p-button
             label="Editar"
-            icon="pi pi-pencil"
+            icon="fa-solid fa-pencil"
             size="small"
             (onClick)="editarCliente()">
           </p-button>
@@ -90,7 +90,7 @@
         @if (canDeleteCliente()) {
           <p-button
             label="Excluir"
-            icon="pi pi-trash"
+            icon="fa-solid fa-trash"
             size="small"
             severity="danger"
             [outlined]="true"
@@ -104,15 +104,15 @@
     <div class="tabs-card">
       <p-tabs value="0">
         <p-tablist>
-          <p-tab value="0"><i class="pi pi-user tab-icon"></i>Geral</p-tab>
-          <p-tab value="1"><i class="pi pi-map-marker tab-icon"></i>Endereços</p-tab>
-          <p-tab value="2"><i class="pi pi-phone tab-icon"></i>Contatos</p-tab>
-          <p-tab value="3"><i class="pi pi-wallet tab-icon"></i>Financeiro</p-tab>
-          <p-tab value="4"><i class="pi pi-file tab-icon"></i>Documentos</p-tab>
-          <p-tab value="5"><i class="pi pi-paperclip tab-icon"></i>Anexos</p-tab>
-          <p-tab value="6"><i class="pi pi-users tab-icon"></i>Indicações</p-tab>
-          <p-tab value="7"><i class="pi pi-shield tab-icon"></i>LGPD</p-tab>
-          <p-tab value="8"><i class="pi pi-info-circle tab-icon"></i>Cadastro</p-tab>
+          <p-tab value="0"><i class="fa-solid fa-user tab-icon"></i>Geral</p-tab>
+          <p-tab value="1"><i class="fa-solid fa-location-dot tab-icon"></i>Endereços</p-tab>
+          <p-tab value="2"><i class="fa-solid fa-phone tab-icon"></i>Contatos</p-tab>
+          <p-tab value="3"><i class="fa-solid fa-wallet tab-icon"></i>Financeiro</p-tab>
+          <p-tab value="4"><i class="fa-solid fa-file tab-icon"></i>Documentos</p-tab>
+          <p-tab value="5"><i class="fa-solid fa-paperclip tab-icon"></i>Anexos</p-tab>
+          <p-tab value="6"><i class="fa-solid fa-users tab-icon"></i>Indicações</p-tab>
+          <p-tab value="7"><i class="fa-solid fa-shield-halved tab-icon"></i>LGPD</p-tab>
+          <p-tab value="8"><i class="fa-solid fa-circle-info tab-icon"></i>Cadastro</p-tab>
         </p-tablist>
 
         <p-tabpanels>
@@ -249,7 +249,7 @@
             <div class="tab-content">
               @if (!cliente.enderecos?.length) {
                 <div class="empty-state">
-                  <i class="pi pi-map-marker"></i>
+                  <i class="fa-solid fa-location-dot"></i>
                   <p>Nenhum endereço cadastrado</p>
                 </div>
               }
@@ -281,7 +281,7 @@
             <div class="tab-content">
               @if (!cliente.contatos?.length) {
                 <div class="empty-state">
-                  <i class="pi pi-phone"></i>
+                  <i class="fa-solid fa-phone"></i>
                   <p>Nenhum contato cadastrado</p>
                 </div>
               }
@@ -315,7 +315,7 @@
             <div class="tab-content">
               @if (!cliente.financeiro) {
                 <div class="empty-state">
-                  <i class="pi pi-wallet"></i>
+                  <i class="fa-solid fa-wallet"></i>
                   <p>Nenhuma informação financeira cadastrada</p>
                 </div>
               } @else {
@@ -353,7 +353,7 @@
             <div class="tab-content">
               @if (!cliente.documentos?.length) {
                 <div class="empty-state">
-                  <i class="pi pi-file"></i>
+                  <i class="fa-solid fa-file"></i>
                   <p>Nenhum documento cadastrado</p>
                 </div>
               }
@@ -398,7 +398,7 @@
             <div class="tab-content">
               @if (!cliente.anexos?.length) {
                 <div class="empty-state">
-                  <i class="pi pi-paperclip"></i>
+                  <i class="fa-solid fa-paperclip"></i>
                   <p>Nenhum anexo cadastrado</p>
                 </div>
               }
@@ -416,7 +416,7 @@
                       <div class="field">
                         <span class="field-label">Arquivo</span>
                         <a [href]="a.url" target="_blank" rel="noopener noreferrer" class="field-link">
-                          <i class="pi pi-external-link"></i> Abrir arquivo
+                          <i class="fa-solid fa-up-right-from-square"></i> Abrir arquivo
                         </a>
                       </div>
                     }
@@ -437,7 +437,7 @@
             <div class="tab-content">
               @if (!cliente.indicacoes?.length) {
                 <div class="empty-state">
-                  <i class="pi pi-users"></i>
+                  <i class="fa-solid fa-users"></i>
                   <p>Nenhuma indicação registrada</p>
                 </div>
               }
@@ -470,7 +470,7 @@
             <div class="tab-content">
               @if (!cliente.consentimentosLgpd?.length) {
                 <div class="empty-state">
-                  <i class="pi pi-shield"></i>
+                  <i class="fa-solid fa-shield-halved"></i>
                   <p>Nenhum consentimento LGPD registrado</p>
                 </div>
               }

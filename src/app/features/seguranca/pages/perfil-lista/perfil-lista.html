@@ -7,7 +7,7 @@
 
     <div class="header-actions">
       <a routerLink="/seguranca/usuarios" class="p-button p-button-outlined p-button-sm nav-btn">
-        <i class="pi pi-users"></i>
+        <i class="fa-solid fa-users"></i>
         <span>Usuários</span>
       </a>
     </div>
@@ -15,12 +15,12 @@
 
   @if (loading()) {
     <div class="state-box">
-      <i class="pi pi-spin pi-spinner"></i>
+      <i class="fa-solid fa-spin fa-spinner"></i>
       <p>Carregando perfis...</p>
     </div>
   } @else if (error(); as message) {
     <div class="state-box error" role="alert">
-      <i class="pi pi-exclamation-triangle"></i>
+      <i class="fa-solid fa-triangle-exclamation"></i>
       <p>{{ message }}</p>
       <button pButton type="button" label="Tentar novamente" class="p-button-outlined p-button-sm" (click)="carregarDados()"></button>
     </div>
@@ -62,7 +62,7 @@
               pButton
               type="button"
               label="Salvar Permissões"
-              icon="pi pi-save"
+              icon="fa-solid fa-floppy-disk"
               class="p-button-primary p-button-sm"
               [disabled]="savingPermissoes()"
               [loading]="savingPermissoes()"
@@ -95,7 +95,7 @@
           }
         } @else {
           <div class="empty-selection">
-            <i class="pi pi-shield"></i>
+            <i class="fa-solid fa-shield-halved"></i>
             <p>Selecione um perfil à esquerda para visualizar ou editar suas permissões.</p>
           </div>
         }

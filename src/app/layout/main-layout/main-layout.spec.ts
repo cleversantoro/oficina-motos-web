@@ -1,7 +1,6 @@
 import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
-import { ConfirmationService } from 'primeng/api';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AuthService } from '../../core/auth/auth.service';
 import { Toast } from '../../shared/services/toast';
@@ -16,7 +15,6 @@ describe('MainLayout', () => {
       imports: [MainLayout],
       providers: [
         provideRouter([]),
-        ConfirmationService,
         {
           provide: AuthService,
           useValue: {

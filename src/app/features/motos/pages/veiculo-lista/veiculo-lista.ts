@@ -151,14 +151,14 @@ export class VeiculoLista implements OnInit {
   readonly actions: readonly DatatableAction<VeiculoTableRow>[] = [
     {
       id: 'view',
-      icon: 'pi pi-eye',
+      icon: 'fa-solid fa-eye',
       label: 'Visualizar',
       variant: 'view',
       onClick: (row) => this.openDetalhe(row.id),
     },
     {
       id: 'delete',
-      icon: 'pi pi-trash',
+      icon: 'fa-solid fa-trash',
       label: 'Excluir',
       variant: 'delete',
       visible: () => this.canDeleteVeiculo(),

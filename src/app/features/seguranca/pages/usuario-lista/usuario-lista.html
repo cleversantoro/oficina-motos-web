@@ -7,11 +7,11 @@
 
     <div class="header-actions">
       <a routerLink="/seguranca/perfis" class="p-button p-button-outlined p-button-sm nav-btn">
-        <i class="pi pi-shield"></i>
+        <i class="fa-solid fa-shield-halved"></i>
         <span>Perfis de Acesso</span>
       </a>
       <a routerLink="/seguranca/usuarios/novo" class="p-button p-button-primary p-button-sm nav-btn" data-testid="btn-novo-usuario">
-        <i class="pi pi-plus"></i>
+        <i class="fa-solid fa-plus"></i>
         <span>Novo Usuário</span>
       </a>
     </div>
@@ -19,7 +19,7 @@
 
   <div class="toolbar">
     <div class="search-box">
-      <i class="pi pi-search"></i>
+      <i class="fa-solid fa-magnifying-glass"></i>
       <input
         type="search"
         placeholder="Buscar por nome, login, e-mail ou perfil..."
@@ -33,18 +33,18 @@
 
   @if (loading()) {
     <div class="state-box">
-      <i class="pi pi-spin pi-spinner"></i>
+      <i class="fa-solid fa-spin fa-spinner"></i>
       <p>Carregando usuários...</p>
     </div>
   } @else if (error(); as message) {
     <div class="state-box error" role="alert">
-      <i class="pi pi-exclamation-triangle"></i>
+      <i class="fa-solid fa-triangle-exclamation"></i>
       <p>{{ message }}</p>
       <button pButton type="button" label="Tentar novamente" class="p-button-outlined p-button-sm" (click)="carregarUsuarios()"></button>
     </div>
   } @else if (usuariosFiltrados().length === 0) {
     <div class="state-box">
-      <i class="pi pi-users"></i>
+      <i class="fa-solid fa-users"></i>
       <p>Nenhum usuário encontrado.</p>
     </div>
   } @else {
@@ -78,12 +78,12 @@
                   class="p-button p-button-text p-button-sm"
                   title="Editar usuário"
                 >
-                  <i class="pi pi-pencil"></i>
+                  <i class="fa-solid fa-pencil"></i>
                 </a>
                 <button
                   pButton
                   type="button"
-                  icon="pi pi-trash"
+                  icon="fa-solid fa-trash"
                   class="p-button-text p-button-danger p-button-sm"
                   title="Excluir usuário"
                   [disabled]="deletingId() === usuario.id"

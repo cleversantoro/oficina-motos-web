@@ -1,22 +1,32 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  OnInit,
+  TemplateRef,
+  computed,
+  inject,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { ButtonModule } from 'primeng/button';
-import { InputTextModule } from 'primeng/inputtext';
-import { TableModule } from 'primeng/table';
-import { TagModule } from 'primeng/tag';
-import { TooltipModule } from 'primeng/tooltip';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { canPerformBusinessAction } from '../../../../core/auth/rbac-access.helper';
 import { ClientesService } from '../../../../core/services/clientes.service';
 import { Confirmation } from '../../../../shared/services/confirmation';
 import { Toast } from '../../../../shared/services/toast';
+import {
+  DatatableAction,
+  DatatableColumn,
+  DatatableComponent,
+  DatatableStatusOption,
+} from '../../../../shared/ui/datatable';
 
 @Component({
   selector: 'app-cliente-lista',
   standalone: true,
-  imports: [FormsModule, ButtonModule, RouterLink, TableModule, TagModule, TooltipModule, InputTextModule],
+  imports: [RouterLink, DatatableComponent],
   templateUrl: './cliente-lista.html',
   styleUrl: './cliente-lista.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -29,39 +39,74 @@ export class ClienteLista implements OnInit {
   private readonly authService = inject(AuthService);
   private readonly destroyRef = inject(DestroyRef);
 
+  private readonly nomeTpl = viewChild<TemplateRef<{ $implicit: any }>>('nomeTpl');
+  private readonly tipoTpl = viewChild<TemplateRef<{ $implicit: any }>>('tipoTpl');
+  private readonly vipTpl = viewChild<TemplateRef<{ $implicit: any }>>('vipTpl');
+
   readonly clientes = signal<any[]>([]);
   readonly loading = signal(false);
-  readonly searchTerm = signal('');
+
+  readonly statusOptions: readonly DatatableStatusOption[] = [
+    { label: 'Ativo', value: 'Ativo' },
+    { label: 'Inativo', value: 'Inativo' },
+    { label: 'Suspenso', value: 'Suspenso' },
+    { label: 'Bloqueado', value: 'Bloqueado' },
+  ];
+
+  readonly columns = computed<DatatableColumn<any>[]>(() => [
+    { field: 'nome', header: 'Cliente', subField: 'nomeExibicao', cellTemplate: this.nomeTpl() },
+    { field: 'documento', header: 'CPF / CNPJ' },
+    { field: 'email', header: 'E-mail' },
+    { field: 'telefone', header: 'Telefone', sortable: false },
+    { field: 'tipoDescricao', header: 'Tipo', cellTemplate: this.tipoTpl() },
+    { field: 'vip', header: 'VIP', align: 'center', sortable: false, cellTemplate: this.vipTpl() },
+    { field: 'statusDescricao', header: 'Status', dataType: 'badge' },
+  ]);
+
+  readonly actions: readonly DatatableAction<any>[] = [
+    {
+      id: 'view',
+      icon: 'fa-solid fa-eye',
+      label: 'Ver detalhes',
+      variant: 'view',
+      onClick: (c) => this.navigateTo(c.id),
+    },
+    {
+      id: 'edit',
+      icon: 'fa-solid fa-pencil',
+      label: 'Editar',
+      variant: 'edit',
+      visible: () => this.canEditCliente(),
+      onClick: (c) => {
+        void this.router.navigate(['/clientes', c.id, 'editar']);
+      },
+    },
+    {
+      id: 'delete',
+      icon: 'fa-solid fa-trash',
+      label: 'Excluir',
+      variant: 'delete',
+      visible: () => this.canDeleteCliente(),
+      onClick: (c) => {
+        void this.confirmDelete(c.id);
+      },
+    },
+  ];
 
   ngOnInit(): void {
     this.fetchClientes();
   }
 
-  readonly totalAtivos = computed(() =>
-    this.clientes().filter(c => c.status === 1 || c.statusDescricao === 'Ativo').length,
+  readonly totalAtivos = computed(
+    () => this.clientes().filter((c) => c.status === 1 || c.statusDescricao === 'Ativo').length,
   );
 
-  readonly totalVip = computed(() =>
-    this.clientes().filter(c => c.vip).length,
-  );
+  readonly totalVip = computed(() => this.clientes().filter((c) => c.vip).length);
 
-  readonly totalPJ = computed(() =>
-    this.clientes().filter(c =>
-      (c.tipoDescricao ?? '').toLowerCase().includes('jur'),
-    ).length,
+  readonly totalPJ = computed(
+    () =>
+      this.clientes().filter((c) => (c.tipoDescricao ?? '').toLowerCase().includes('jur')).length,
   );
-
-  readonly filteredClientes = computed(() => {
-    const q = this.searchTerm().trim().toLowerCase();
-    const list = this.clientes();
-    if (!q) return list;
-    return list.filter(c =>
-      (c.nome ?? '').toLowerCase().includes(q) ||
-      (c.documento ?? '').toLowerCase().includes(q) ||
-      (c.email ?? '').toLowerCase().includes(q) ||
-      (c.telefone ?? '').toLowerCase().includes(q),
-    );
-  });
 
   fetchClientes(): void {
     this.loading.set(true);
@@ -71,7 +116,12 @@ export class ClienteLista implements OnInit {
       .subscribe({
         next: (resp: any) => {
           const items = Array.isArray(resp) ? resp : (resp?.items ?? resp?.data ?? []);
-          this.clientes.set(items);
+          this.clientes.set(
+            items.map((item: any) => ({
+              ...item,
+              statusDescricao: item.statusDescricao || 'Ativo',
+            })),
+          );
           this.loading.set(false);
         },
         error: () => {
@@ -89,22 +139,18 @@ export class ClienteLista implements OnInit {
 
   getAvatarColor(name: string): string {
     const colors = [
-      '#f97316', '#3b82f6', '#8b5cf6', '#10b981',
-      '#f59e0b', '#ec4899', '#06b6d4', '#84cc16',
+      '#f97316',
+      '#3b82f6',
+      '#8b5cf6',
+      '#10b981',
+      '#f59e0b',
+      '#ec4899',
+      '#06b6d4',
+      '#84cc16',
     ];
     let hash = 0;
-    for (const ch of (name ?? '')) hash = ch.charCodeAt(0) + ((hash << 5) - hash);
+    for (const ch of name ?? '') hash = ch.charCodeAt(0) + ((hash << 5) - hash);
     return colors[Math.abs(hash) % colors.length];
-  }
-
-  getStatusClass(status: string): string {
-    switch ((status ?? '').toLowerCase()) {
-      case 'ativo':    return 'status-ativo';
-      case 'inativo':  return 'status-inativo';
-      case 'suspenso': return 'status-suspenso';
-      case 'bloqueado':return 'status-bloqueado';
-      default:         return 'status-inativo';
-    }
   }
 
   getTipoClass(tipo: string): string {
@@ -112,12 +158,7 @@ export class ClienteLista implements OnInit {
   }
 
   navigateTo(id: number): void {
-    this.router.navigate(['/clientes', id]);
-  }
-
-  editarCliente(event: MouseEvent, id: number): void {
-    event.stopPropagation();
-    this.router.navigate(['/clientes', id, 'editar']);
+    void this.router.navigate(['/clientes', id]);
   }
 
   canEditCliente(): boolean {
@@ -128,14 +169,13 @@ export class ClienteLista implements OnInit {
     return canPerformBusinessAction(this.authService.currentRole(), 'clientes', 'delete');
   }
 
-  async confirmDelete(event: MouseEvent, id: number): Promise<void> {
-    event.stopPropagation();
-    const cliente = this.clientes().find(c => c.id === id);
+  async confirmDelete(id: number): Promise<void> {
+    const cliente = this.clientes().find((c) => c.id === id);
     const confirmado = await this.confirmation.confirmDelete(cliente?.nome || 'este cliente');
     if (confirmado) {
       this.clientesService.delete(id).subscribe({
         next: () => {
-          this.clientes.update(list => list.filter(c => c.id !== id));
+          this.clientes.update((list) => list.filter((c) => c.id !== id));
           this.toast.success('Sucesso', 'Cliente excluído com sucesso');
         },
         error: () => this.toast.error('Erro', 'Erro ao excluir cliente'),

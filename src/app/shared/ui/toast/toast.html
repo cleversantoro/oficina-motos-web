@@ -1,1 +1,20 @@
-<p-toast key="app-toast" position="top-right" [baseZIndex]="9999"></p-toast>
+<div class="toast-stack" aria-live="polite" aria-atomic="true">
+  @for (msg of toastService.messages(); track msg.id) {
+    <div class="toast-item" [attr.data-severity]="msg.severity" role="status">
+      <div class="toast-body">
+        <strong class="toast-summary">{{ msg.summary }}</strong>
+        @if (msg.detail) {
+          <p class="toast-detail">{{ msg.detail }}</p>
+        }
+      </div>
+      <button
+        type="button"
+        class="toast-close"
+        aria-label="Fechar notificação"
+        (click)="toastService.remove(msg.id)"
+      >
+        <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+      </button>
+    </div>
+  }
+</div>

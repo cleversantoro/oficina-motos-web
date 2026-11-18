@@ -1,7 +1,7 @@
 <!-- Loading -->
 @if (loading) {
   <div class="state-card">
-    <span class="pi pi-spin pi-spinner" style="font-size:1.75rem;color:#94a3b8"></span>
+    <span class="fa-solid fa-spin fa-spinner" style="font-size:1.75rem;color:#94a3b8"></span>
     <p>Carregando fornecedor...</p>
   </div>
 }
@@ -9,7 +9,7 @@
 <!-- Error -->
 @if (!loading && error) {
   <div class="state-card error">
-    <span class="pi pi-exclamation-triangle" style="font-size:1.75rem;color:#f87171"></span>
+    <span class="fa-solid fa-triangle-exclamation" style="font-size:1.75rem;color:#f87171"></span>
     <p>{{ error }}</p>
     <button class="ghost" routerLink="/fornecedores">← Voltar à lista</button>
   </div>
@@ -21,7 +21,7 @@
 
   <!-- Back link -->
   <a class="back-link" routerLink="/fornecedores">
-    <span class="pi pi-arrow-left"></span> Todos os fornecedores
+    <span class="fa-solid fa-arrow-left"></span> Todos os fornecedores
   </a>
 
   <header class="header-card">

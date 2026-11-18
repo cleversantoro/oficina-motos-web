@@ -12,15 +12,16 @@ import {
 } from '@angular/core';
 import { CommonModule, CurrencyPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ButtonModule } from 'primeng/button';
-import { DialogModule } from 'primeng/dialog';
-import { TagModule } from 'primeng/tag';
 import {
   CreateOrdemServicoPagamentoRequest,
   OrdemServicoPagamento,
 } from '../../../../core/models';
 import { OrdensService } from '../../../../core/services/ordens.service';
 import { Toast } from '../../../../shared/services/toast';
+import {
+  SIMPLE_BUTTON_IMPORTS,
+  SIMPLE_DIALOG_IMPORTS,
+} from '../../../../shared/ui/simple-primitives';
 
 export interface MetodoPagamentoOpcao {
   label: string;
@@ -31,7 +32,13 @@ export interface MetodoPagamentoOpcao {
 @Component({
   selector: 'app-os-pagamento-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule, CurrencyPipe, DialogModule, ButtonModule, TagModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    CurrencyPipe,
+    ...SIMPLE_DIALOG_IMPORTS,
+    ...SIMPLE_BUTTON_IMPORTS,
+  ],
   templateUrl: './os-pagamento-modal.html',
   styleUrl: './os-pagamento-modal.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -53,11 +60,11 @@ export class OsPagamentoModalComponent implements OnChanges {
   readonly submitting = signal<boolean>(false);
 
   readonly metodosHomologados: MetodoPagamentoOpcao[] = [
-    { label: 'PIX', value: 'PIX', icon: 'pi pi-bolt' },
-    { label: 'Cartão de Crédito', value: 'CartaoCredito', icon: 'pi pi-credit-card' },
-    { label: 'Cartão de Débito', value: 'CartaoDebito', icon: 'pi pi-credit-card' },
-    { label: 'Dinheiro', value: 'Dinheiro', icon: 'pi pi-money-bill' },
-    { label: 'Transferência Bancária', value: 'Transferencia', icon: 'pi pi-arrow-right-arrow-left' },
+    { label: 'PIX', value: 'PIX', icon: 'fa-solid fa-bolt' },
+    { label: 'Cartão de Crédito', value: 'CartaoCredito', icon: 'fa-solid fa-credit-card' },
+    { label: 'Cartão de Débito', value: 'CartaoDebito', icon: 'fa-solid fa-credit-card' },
+    { label: 'Dinheiro', value: 'Dinheiro', icon: 'fa-solid fa-money-bill' },
+    { label: 'Transferência Bancária', value: 'Transferencia', icon: 'fa-solid fa-arrow-right-arrow-left' },
   ];
 
   readonly isIntegral = computed(() => {

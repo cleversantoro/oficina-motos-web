@@ -2,8 +2,6 @@ import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } 
 import { CommonModule, CurrencyPipe, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { ButtonModule } from 'primeng/button';
-import { TagModule } from 'primeng/tag';
 import {
   Cliente,
   OrdemServico,
@@ -21,6 +19,10 @@ import { OrdensService } from '../../../../core/services/ordens.service';
 import { VeiculosService } from '../../../../core/services/veiculos.service';
 import { Confirmation } from '../../../../shared/services/confirmation';
 import { Toast } from '../../../../shared/services/toast';
+import {
+  SIMPLE_BUTTON_IMPORTS,
+  SimpleTagComponent,
+} from '../../../../shared/ui/simple-primitives';
 import { OsItemPecaModalComponent } from '../../components/os-item-peca-modal/os-item-peca-modal';
 import { OsItemServicoModalComponent } from '../../components/os-item-servico-modal/os-item-servico-modal';
 import { OsPagamentoModalComponent } from '../../components/os-pagamento-modal/os-pagamento-modal';
@@ -33,8 +35,8 @@ import { OsPagamentoModalComponent } from '../../components/os-pagamento-modal/o
     DatePipe,
     CurrencyPipe,
     RouterLink,
-    ButtonModule,
-    TagModule,
+    ...SIMPLE_BUTTON_IMPORTS,
+    SimpleTagComponent,
     FormsModule,
     OsItemPecaModalComponent,
     OsItemServicoModalComponent,

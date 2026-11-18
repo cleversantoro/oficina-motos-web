@@ -1,16 +1,24 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, OnInit, Output, inject } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { ButtonModule } from 'primeng/button';
-import { DialogModule } from 'primeng/dialog';
-import { TabsModule } from 'primeng/tabs';
 import { Mecanico } from '../../../../core/models';
 import { MecanicosService } from '../../../../core/services/mecanicos.service';
+import {
+  SIMPLE_BUTTON_IMPORTS,
+  SIMPLE_DIALOG_IMPORTS,
+  SIMPLE_TABS_IMPORTS,
+} from '../../../../shared/ui/simple-primitives';
 
 @Component({
   selector: 'app-mecanico-detalhe',
   standalone: true,
-  imports: [CommonModule, RouterLink, ButtonModule, DialogModule, TabsModule],
+  imports: [
+    CommonModule,
+    RouterLink,
+    ...SIMPLE_BUTTON_IMPORTS,
+    ...SIMPLE_DIALOG_IMPORTS,
+    ...SIMPLE_TABS_IMPORTS,
+  ],
   templateUrl: './mecanico-detalhe.html',
   styleUrl: './mecanico-detalhe.scss',
 })

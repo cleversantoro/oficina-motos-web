@@ -1,6 +1,6 @@
-import { Component, signal, viewChild } from '@angular/core';
+import { Component, inject, signal, viewChild } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { Confirmation } from '../../shared/services/confirmation';
 import { LoadingSpinner } from '../../shared/ui/loading-spinner/loading-spinner';
 import { ToastComponent } from '../../shared/ui/toast/toast';
 import { AppHeader } from '../header/header';
@@ -9,14 +9,7 @@ import { AppSidebar } from '../sidebar/sidebar';
 @Component({
   selector: 'app-main-layout',
   standalone: true,
-  imports: [
-    RouterOutlet,
-    AppHeader,
-    AppSidebar,
-    ToastComponent,
-    LoadingSpinner,
-    ConfirmDialogModule,
-  ],
+  imports: [RouterOutlet, AppHeader, AppSidebar, ToastComponent, LoadingSpinner],
   templateUrl: './main-layout.html',
   styleUrl: './main-layout.scss',
   host: {
@@ -24,6 +17,7 @@ import { AppSidebar } from '../sidebar/sidebar';
   },
 })
 export class MainLayout {
+  protected readonly confirmation = inject(Confirmation);
   readonly menuOpen = signal(false);
   private readonly header = viewChild(AppHeader);
   private readonly sidebar = viewChild(AppSidebar);

@@ -22,7 +22,7 @@
           (click)="preencherTotal()"
           title="Preencher com valor total pendente"
         >
-          <i class="pi pi-check"></i> Quitar Total
+          <i class="fa-solid fa-check"></i> Quitar Total
         </button>
       }
     </div>
@@ -49,11 +49,11 @@
       </div>
       @if (valorExcedente()) {
         <span class="error-msg">
-          <i class="pi pi-exclamation-triangle"></i> O valor não pode exceder o saldo pendente de {{ saldoPendente | currency: 'BRL':'symbol':'1.2-2' }}.
+          <i class="fa-solid fa-triangle-exclamation"></i> O valor não pode exceder o saldo pendente de {{ saldoPendente | currency: 'BRL':'symbol':'1.2-2' }}.
         </span>
       } @else if (isIntegral()) {
         <div class="quitar-notice">
-          <i class="pi pi-info-circle"></i>
+          <i class="fa-solid fa-circle-info"></i>
           <span><strong>Pagamento Integral:</strong> A OS será atualizada automaticamente para <strong>Concluída</strong>.</span>
         </div>
       }
@@ -75,7 +75,7 @@
             <option [value]="opcao.value">{{ opcao.label }}</option>
           }
         </select>
-        <i class="pi pi-chevron-down select-icon"></i>
+        <i class="fa-solid fa-chevron-down select-icon"></i>
       </div>
     </div>
 
@@ -125,7 +125,7 @@
         pButton
         type="button"
         label="Confirmar Pagamento"
-        icon="pi pi-check"
+        icon="fa-solid fa-check"
         class="p-button-success"
         (click)="salvar()"
         [disabled]="!formularioValido() || submitting()"

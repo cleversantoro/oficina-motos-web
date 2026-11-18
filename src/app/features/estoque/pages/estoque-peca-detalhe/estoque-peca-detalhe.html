@@ -1,13 +1,13 @@
 @if (loading()) {
   <div class="state-card">
-    <span class="pi pi-spin pi-spinner" style="font-size: 1.75rem; color: #94a3b8"></span>
+    <span class="fa-solid fa-spin fa-spinner" style="font-size: 1.75rem; color: #94a3b8"></span>
     <p>Carregando detalhes da peça...</p>
   </div>
 }
 
 @if (!loading() && error()) {
   <div class="state-card error">
-    <span class="pi pi-exclamation-triangle" style="font-size: 1.75rem; color: #f87171"></span>
+    <span class="fa-solid fa-triangle-exclamation" style="font-size: 1.75rem; color: #f87171"></span>
     <p>{{ error() }}</p>
     <button class="btn-secondary" type="button" routerLink="/estoque">← Voltar ao estoque</button>
   </div>

@@ -1,7 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { ButtonModule } from 'primeng/button';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { canPerformPermission } from '../../../../core/auth/rbac-access.helper';
 import { ClientesService } from '../../../../core/services/clientes.service';
@@ -10,6 +9,7 @@ import { OrdensService } from '../../../../core/services/ordens.service';
 import { VeiculosService } from '../../../../core/services/veiculos.service';
 import { CreateOrdemServicoRequest } from '../../../../core/models';
 import { Toast } from '../../../../shared/services/toast';
+import { SIMPLE_BUTTON_IMPORTS } from '../../../../shared/ui/simple-primitives';
 
 interface ClienteOpcao { id: number; nome?: string; nomeExibicao?: string; documento?: string; }
 interface VeiculoOpcao { id: number; placa: string; modelo?: string; cor?: string; }
@@ -18,7 +18,7 @@ interface MecanicoOpcao { id: number; nome: string; sobrenome?: string; }
 @Component({
   selector: 'app-os-novo',
   standalone: true,
-  imports: [ReactiveFormsModule, ButtonModule],
+  imports: [ReactiveFormsModule, ...SIMPLE_BUTTON_IMPORTS],
   templateUrl: './os-novo.html',
   styleUrl: './os-novo.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

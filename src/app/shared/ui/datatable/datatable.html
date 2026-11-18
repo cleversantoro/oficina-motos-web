@@ -3,7 +3,7 @@
   <div class="dt-toolbar">
     <div class="dt-toolbar-filters">
       <div class="dt-search-wrap">
-        <i class="pi pi-search dt-search-icon" aria-hidden="true"></i>
+        <i class="fa-solid fa-magnifying-glass dt-search-icon" aria-hidden="true"></i>
         <input
           type="text"
           class="dt-search-input"
@@ -19,7 +19,7 @@
             aria-label="Limpar busca"
             (click)="clearSearch()"
           >
-            <i class="pi pi-times" aria-hidden="true"></i>
+            <i class="fa-solid fa-xmark" aria-hidden="true"></i>
           </button>
         }
       </div>
@@ -47,7 +47,7 @@
           </span>
           <span class="dt-bulk-divider" aria-hidden="true"></span>
           <button type="button" class="dt-bulk-delete" (click)="triggerBulkDelete()">
-            <i class="pi pi-trash" aria-hidden="true"></i>
+            <i class="fa-solid fa-trash" aria-hidden="true"></i>
             <span>Excluir</span>
           </button>
         </div>
@@ -55,7 +55,7 @@
 
       @if (exportable()) {
         <button type="button" class="dt-export-btn" (click)="exportToCSV()">
-          <i class="pi pi-download" aria-hidden="true"></i>
+          <i class="fa-solid fa-download" aria-hidden="true"></i>
           <span>Exportar CSV</span>
         </button>
       }
@@ -66,7 +66,7 @@
   @if (loading()) {
     <div class="dt-empty-state" role="status" aria-live="polite">
       <div class="dt-empty-icon">
-        <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
+        <i class="fa-solid fa-spin fa-spinner" aria-hidden="true"></i>
       </div>
       <p class="dt-empty-title">Carregando dados...</p>
     </div>
@@ -108,12 +108,12 @@
                     >
                       @if (sortColumn() === col.field) {
                         <i
-                          class="pi"
-                          [class.pi-arrow-up]="sortDirection() === 'asc'"
-                          [class.pi-arrow-down]="sortDirection() === 'desc'"
+                          class="fa-solid"
+                          [class.fa-arrow-up]="sortDirection() === 'asc'"
+                          [class.fa-arrow-down]="sortDirection() === 'desc'"
                         ></i>
                       } @else {
-                        <i class="pi pi-sort-alt"></i>
+                        <i class="fa-solid fa-sort"></i>
                       }
                     </span>
                   }
@@ -200,7 +200,7 @@
     @if (totalItems() === 0) {
       <div class="dt-empty-state">
         <div class="dt-empty-icon">
-          <i class="pi pi-search" aria-hidden="true"></i>
+          <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
         </div>
         <h3 class="dt-empty-title">{{ emptyTitle() }}</h3>
         <p class="dt-empty-desc">{{ emptyDescription() }}</p>
@@ -251,7 +251,7 @@
           [disabled]="effectivePage() === 1 || totalItems() === 0"
           (click)="goToPage(effectivePage() - 1)"
         >
-          <i class="pi pi-chevron-left" aria-hidden="true"></i>
+          <i class="fa-solid fa-chevron-left" aria-hidden="true"></i>
         </button>
 
         @for (page of pageNumbers(); track $index) {
@@ -277,7 +277,7 @@
           [disabled]="effectivePage() === totalPages() || totalItems() === 0"
           (click)="goToPage(effectivePage() + 1)"
         >
-          <i class="pi pi-chevron-right" aria-hidden="true"></i>
+          <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
         </button>
       </nav>
     </div>

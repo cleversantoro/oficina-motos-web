@@ -10,19 +10,27 @@ import {
 } from '@angular/core';
 import { CommonModule, CurrencyPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ButtonModule } from 'primeng/button';
-import { DialogModule } from 'primeng/dialog';
 import {
   CreateOrdemServicoItemRequest,
   OrdemServicoItem,
 } from '../../../../core/models';
 import { OrdensService } from '../../../../core/services/ordens.service';
 import { Toast } from '../../../../shared/services/toast';
+import {
+  SIMPLE_BUTTON_IMPORTS,
+  SIMPLE_DIALOG_IMPORTS,
+} from '../../../../shared/ui/simple-primitives';
 
 @Component({
   selector: 'app-os-item-servico-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule, CurrencyPipe, DialogModule, ButtonModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    CurrencyPipe,
+    ...SIMPLE_DIALOG_IMPORTS,
+    ...SIMPLE_BUTTON_IMPORTS,
+  ],
   templateUrl: './os-item-servico-modal.html',
   styleUrl: './os-item-servico-modal.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

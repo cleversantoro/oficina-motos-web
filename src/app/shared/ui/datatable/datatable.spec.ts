@@ -109,7 +109,7 @@ describe('DatatableComponent', () => {
   it('deve executar ações por linha e exibir estado vazio quando não houver resultados', () => {
     const viewSpy = vi.fn();
     const actions: DatatableAction<MockRow>[] = [
-      { id: 'view', icon: 'pi pi-eye', label: 'Visualizar', variant: 'view', onClick: viewSpy },
+      { id: 'view', icon: 'fa-solid fa-eye', label: 'Visualizar', variant: 'view', onClick: viewSpy },
     ];
     fixture.componentRef.setInput('actions', actions);
     fixture.detectChanges();

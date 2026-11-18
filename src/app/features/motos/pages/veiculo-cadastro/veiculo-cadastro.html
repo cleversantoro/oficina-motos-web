@@ -5,7 +5,7 @@
     <header class="content-head">
       <div>
         <a class="back-link" routerLink="/motos">
-          <i class="pi pi-arrow-left"></i> Voltar para a lista
+          <i class="fa-solid fa-arrow-left"></i> Voltar para a lista
         </a>
         <h1 class="page-title">Cadastrar Motocicleta</h1>
         <p class="muted">Informe os dados do veículo e vincule ao proprietário.</p>
@@ -19,7 +19,7 @@
             <span class="btn-spinner"></span>
             Salvando...
           } @else {
-            <i class="pi pi-check"></i>
+            <i class="fa-solid fa-check"></i>
             Salvar Veículo
           }
         </button>
@@ -30,7 +30,7 @@
     <section class="card">
       <div class="card-head">
         <div class="card-title">
-          <i class="pi pi-user card-icon"></i>
+          <i class="fa-solid fa-user card-icon"></i>
           <div>
             <h2>Proprietário</h2>
             <p class="card-subtitle">Vínculo obrigatório com o cliente proprietário do veículo</p>
@@ -44,7 +44,7 @@
           <div class="cliente-selecionado-box">
             <div class="cliente-info">
               <div class="cliente-avatar">
-                <i class="pi pi-user"></i>
+                <i class="fa-solid fa-user"></i>
               </div>
               <div class="cliente-detalhes">
                 <strong class="cliente-nome">{{ clienteSelecionado()?.nomeExibicao || clienteSelecionado()?.nome }}</strong>
@@ -54,7 +54,7 @@
               </div>
             </div>
             <button type="button" class="btn-remove-cliente" (click)="clearCliente()" title="Trocar cliente">
-              <i class="pi pi-times"></i> Trocar
+              <i class="fa-solid fa-xmark"></i> Trocar
             </button>
           </div>
         } @else {
@@ -62,7 +62,7 @@
             <label class="field" [class.invalid]="hasError('clienteId')">
               <span class="field-label">Buscar cliente por nome ou documento <em>*</em></span>
               <div class="input-with-icon">
-                <i class="pi pi-search input-icon"></i>
+                <i class="fa-solid fa-magnifying-glass input-icon"></i>
                 <input
                   type="text"
                   #clienteInput
@@ -93,7 +93,7 @@
                           <span class="item-doc">{{ cliente.documento }}</span>
                         }
                       </div>
-                      <i class="pi pi-plus-circle select-icon"></i>
+                      <i class="fa-solid fa-circle-plus select-icon"></i>
                     </li>
                   }
                 </ul>
@@ -102,7 +102,7 @@
               <div class="autocomplete-dropdown empty">
                 <p>Nenhum cliente encontrado para "{{ clienteTermo() }}".</p>
                 <a routerLink="/clientes/novo" class="link-novo-cliente">
-                  <i class="pi pi-external-link"></i> Cadastrar novo cliente
+                  <i class="fa-solid fa-up-right-from-square"></i> Cadastrar novo cliente
                 </a>
               </div>
             }
@@ -115,7 +115,7 @@
     <section class="card">
       <div class="card-head">
         <div class="card-title">
-          <i class="pi pi-id-card card-icon"></i>
+          <i class="fa-solid fa-id-card card-icon"></i>
           <div>
             <h2>Identificação</h2>
             <p class="card-subtitle">Placa, números de identificação e cor</p>
@@ -194,7 +194,7 @@
     <section class="card">
       <div class="card-head">
         <div class="card-title">
-          <i class="pi pi-cog card-icon"></i>
+          <i class="fa-solid fa-gear card-icon"></i>
           <div>
             <h2>Especificações Técnicas</h2>
             <p class="card-subtitle">Marca, modelo, anos de fabricação e odômetro</p>
@@ -321,7 +321,7 @@
     <section class="card">
       <div class="card-head">
         <div class="card-title">
-          <i class="pi pi-file-edit card-icon"></i>
+          <i class="fa-solid fa-file-pen card-icon"></i>
           <div>
             <h2>Informações Adicionais</h2>
             <p class="card-subtitle">Configurações e observações gerais</p>
@@ -372,7 +372,7 @@
           <span class="btn-spinner"></span>
           Salvando...
         } @else {
-          <i class="pi pi-check"></i>
+          <i class="fa-solid fa-check"></i>
           Salvar Veículo
         }
       </button>

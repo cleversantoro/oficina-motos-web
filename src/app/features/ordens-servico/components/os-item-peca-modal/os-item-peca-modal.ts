@@ -10,9 +10,6 @@ import {
 } from '@angular/core';
 import { CommonModule, CurrencyPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ButtonModule } from 'primeng/button';
-import { DialogModule } from 'primeng/dialog';
-import { TagModule } from 'primeng/tag';
 import {
   CreateOrdemServicoItemRequest,
   EstoquePeca,
@@ -21,11 +18,23 @@ import {
 import { EstoqueService } from '../../../../core/services/estoque.service';
 import { OrdensService } from '../../../../core/services/ordens.service';
 import { Toast } from '../../../../shared/services/toast';
+import {
+  SIMPLE_BUTTON_IMPORTS,
+  SIMPLE_DIALOG_IMPORTS,
+  SimpleTagComponent,
+} from '../../../../shared/ui/simple-primitives';
 
 @Component({
   selector: 'app-os-item-peca-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule, CurrencyPipe, DialogModule, ButtonModule, TagModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    CurrencyPipe,
+    ...SIMPLE_DIALOG_IMPORTS,
+    ...SIMPLE_BUTTON_IMPORTS,
+    SimpleTagComponent,
+  ],
   templateUrl: './os-item-peca-modal.html',
   styleUrl: './os-item-peca-modal.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

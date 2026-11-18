@@ -10,7 +10,6 @@ import {
   Validators,
 } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ButtonModule } from 'primeng/button';
 import { forkJoin } from 'rxjs';
 import { ClientesService } from '../../../../core/services/clientes.service';
 import { Toast } from '../../../../shared/services/toast';
@@ -28,7 +27,7 @@ type TabId = 'perfil' | 'contato' | 'financeiro' | 'legal' | 'anexos';
 @Component({
   selector: 'app-cliente-editar',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, ButtonModule, FileUploadComponent],
+  imports: [CommonModule, ReactiveFormsModule, FileUploadComponent],
   templateUrl: './cliente-editar.html',
   styleUrl: './cliente-editar.scss',
 })

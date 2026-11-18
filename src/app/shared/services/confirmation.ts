@@ -1,5 +1,4 @@
-import { Injectable, inject } from '@angular/core';
-import { ConfirmationService } from 'primeng/api';
+import { Injectable, signal } from '@angular/core';
 
 export interface ConfirmOptions {
   message?: string;
@@ -11,40 +10,51 @@ export interface ConfirmOptions {
   rejectButtonStyleClass?: string;
 }
 
-/**
- * Serviço wrapper para facilitar o uso de diálogos de confirmação
- * com PrimeNG ConfirmDialog
- */
+export interface ActiveConfirmDialog {
+  message: string;
+  header: string;
+  icon: string;
+  acceptLabel: string;
+  rejectLabel: string;
+  acceptButtonStyleClass?: string;
+  rejectButtonStyleClass?: string;
+  resolve: (accepted: boolean) => void;
+}
+
 @Injectable({
   providedIn: 'root',
 })
 export class Confirmation {
-  private confirmationService = inject(ConfirmationService);
+  private readonly dialogSignal = signal<ActiveConfirmDialog | null>(null);
+  readonly activeDialog = this.dialogSignal.asReadonly();
 
-  /**
-   * Exibe um diálogo de confirmação genérico
-   * Retorna uma Promise que resolve com true (aceito) ou false (rejeitado)
-   */
   confirm(options: ConfirmOptions = {}): Promise<boolean> {
     return new Promise((resolve) => {
-      this.confirmationService.confirm({
+      this.dialogSignal.set({
         message: options.message || 'Tem certeza que deseja continuar?',
         header: options.header || 'Confirmação',
-        icon: options.icon || 'pi pi-exclamation-triangle',
+        icon: options.icon || 'fa-solid fa-triangle-exclamation',
         acceptLabel: options.acceptLabel || 'Sim',
         rejectLabel: options.rejectLabel || 'Não',
         acceptButtonStyleClass: options.acceptButtonStyleClass,
         rejectButtonStyleClass: options.rejectButtonStyleClass,
-        accept: () => resolve(true),
-        reject: () => resolve(false),
+        resolve,
       });
     });
   }
 
-  /**
-   * Diálogo específico para confirmação de exclusão
-   * Estilo danger (vermelho) por padrão
-   */
+  accept(): void {
+    const current = this.dialogSignal();
+    this.dialogSignal.set(null);
+    current?.resolve(true);
+  }
+
+  reject(): void {
+    const current = this.dialogSignal();
+    this.dialogSignal.set(null);
+    current?.resolve(false);
+  }
+
   confirmDelete(itemName?: string): Promise<boolean> {
     const message = itemName
       ? `Tem certeza que deseja excluir "${itemName}"? Esta ação não pode ser desfeita.`
@@ -53,53 +63,32 @@ export class Confirmation {
     return this.confirm({
       message,
       header: 'Confirmar Exclusão',
-      icon: 'pi pi-trash',
+      icon: 'fa-solid fa-trash',
       acceptLabel: 'Excluir',
       rejectLabel: 'Cancelar',
-      acceptButtonStyleClass: 'p-button-danger',
+      acceptButtonStyleClass: 'btn-danger',
     });
   }
 
-  /**
-   * Diálogo para confirmação de ações que podem causar perda de dados
-   */
   confirmDiscard(message?: string): Promise<boolean> {
     return this.confirm({
       message: message || 'Você tem alterações não salvas. Deseja descartá-las?',
       header: 'Descartar Alterações',
-      icon: 'pi pi-exclamation-circle',
+      icon: 'fa-solid fa-circle-exclamation',
       acceptLabel: 'Descartar',
       rejectLabel: 'Continuar Editando',
-      acceptButtonStyleClass: 'p-button-warning',
+      acceptButtonStyleClass: 'btn-warning',
     });
   }
 
-  /**
-   * Diálogo para ações críticas (ex: cancelar pedidos, resetar dados)
-   */
   confirmCritical(message: string, header?: string): Promise<boolean> {
     return this.confirm({
       message,
       header: header || 'Ação Crítica',
-      icon: 'pi pi-exclamation-triangle',
+      icon: 'fa-solid fa-triangle-exclamation',
       acceptLabel: 'Confirmar',
       rejectLabel: 'Cancelar',
-      acceptButtonStyleClass: 'p-button-danger',
+      acceptButtonStyleClass: 'btn-danger',
     });
   }
 }
-
-
-// exemplo de uso:
-// import { Component } from '@angular/core';
-
-// async deletarSelecionados() {
-//   const count = this.clientesSelecionados.length;
-//   const confirmado = await this.confirmation.confirmDelete(
-//     `${count} cliente(s) selecionado(s)`
-//   );
-
-//   if (confirmado) {
-//     // Deleta todos...
-//   }
-// }

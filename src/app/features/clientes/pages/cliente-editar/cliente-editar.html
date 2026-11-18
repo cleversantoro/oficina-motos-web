@@ -1,6 +1,6 @@
 @if (loading) {
   <div class="editar-loading">
-    <i class="pi pi-spin pi-spinner"></i>
+    <i class="fa-solid fa-spin fa-spinner"></i>
     <p>Carregando dados do cliente…</p>
   </div>
 } @else {
@@ -29,7 +29,7 @@
             <p class="nav-label">{{ tab.label }}</p>
             <p class="nav-desc">{{ tab.desc }}</p>
           </div>
-          <span class="pi pi-chevron-right"></span>
+          <span class="fa-solid fa-chevron-right"></span>
         </button>
       }
     </nav>
@@ -278,7 +278,7 @@
                 <label class="field" [class.invalid]="!isCepLoading($index) && eg.get('cep')?.invalid && (eg.get('cep')?.dirty || eg.get('cep')?.touched)">
                   <span>CEP
                     @if (isCepLoading($index)) {
-                      <span class="cep-spinner"><i class="pi pi-spin pi-spinner"></i></span>
+                      <span class="cep-spinner"><i class="fa-solid fa-spin fa-spinner"></i></span>
                     }
                   </span>
                   <input type="text" formControlName="cep" placeholder="00000-000"

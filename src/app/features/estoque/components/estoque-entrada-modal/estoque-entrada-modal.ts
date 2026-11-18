@@ -9,8 +9,6 @@ import {
   signal,
 } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ButtonModule } from 'primeng/button';
-import { DialogModule } from 'primeng/dialog';
 import { finalize, switchMap } from 'rxjs/operators';
 import { AuthService } from '../../../../core/auth/auth.service';
 import {
@@ -21,11 +19,15 @@ import {
 } from '../../../../core/models';
 import { EstoqueService } from '../../../../core/services/estoque.service';
 import { Toast } from '../../../../shared/services/toast';
+import {
+  SIMPLE_BUTTON_IMPORTS,
+  SIMPLE_DIALOG_IMPORTS,
+} from '../../../../shared/ui/simple-primitives';
 
 @Component({
   selector: 'app-estoque-entrada-modal',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, DialogModule, ButtonModule],
+  imports: [CommonModule, ReactiveFormsModule, ...SIMPLE_DIALOG_IMPORTS, ...SIMPLE_BUTTON_IMPORTS],
   templateUrl: './estoque-entrada-modal.html',
   styleUrl: './estoque-entrada-modal.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

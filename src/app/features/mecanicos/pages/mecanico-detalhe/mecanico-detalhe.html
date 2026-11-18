@@ -77,24 +77,24 @@
 
       <div class="profile-info">
         @if (primaryContact !== '-') {
-          <p class="info-row"><i class="pi pi-phone"></i> {{ primaryContact }}</p>
+          <p class="info-row"><i class="fa-solid fa-phone"></i> {{ primaryContact }}</p>
         }
         @if (primaryCity !== '-') {
-          <p class="info-row"><i class="pi pi-map-marker"></i> {{ primaryCity }}</p>
+          <p class="info-row"><i class="fa-solid fa-location-dot"></i> {{ primaryCity }}</p>
         }
         @if (m.dataAdmissao) {
-          <p class="info-row"><i class="pi pi-briefcase"></i> Admissão: {{ formatDate(m.dataAdmissao) }}</p>
+          <p class="info-row"><i class="fa-solid fa-briefcase"></i> Admissão: {{ formatDate(m.dataAdmissao) }}</p>
         }
         @if (m.documentoPrincipal) {
-          <p class="info-row"><i class="pi pi-id-card"></i> {{ m.documentoPrincipal }}</p>
+          <p class="info-row"><i class="fa-solid fa-id-card"></i> {{ m.documentoPrincipal }}</p>
         }
         @if (m.codigo) {
-          <p class="info-row"><i class="pi pi-hashtag"></i> Cód: {{ m.codigo }}</p>
+          <p class="info-row"><i class="fa-solid fa-hashtag"></i> Cód: {{ m.codigo }}</p>
         }
       </div>
 
       <button class="close-btn" type="button" (click)="close()">
-        <i class="pi" [class.pi-arrow-left]="isRoutedPage" [class.pi-times]="!isRoutedPage"></i>
+        <i class="fa-solid" [class.fa-arrow-left]="isRoutedPage" [class.fa-xmark]="!isRoutedPage"></i>
         {{ isRoutedPage ? 'Voltar' : 'Fechar' }}
       </button>
     </aside>
@@ -131,7 +131,7 @@
                       }
                       @if (esp.anotacoes) {
                         <span class="chip-note" title="{{ esp.anotacoes }}">
-                          <i class="pi pi-info-circle"></i>
+                          <i class="fa-solid fa-circle-info"></i>
                         </span>
                       }
                     </div>
@@ -153,7 +153,7 @@
                     <div class="day-card">
                       <p class="day-label">{{ diaSemanaLabel(d.diaSemana) }}</p>
                       <div class="time-slot">
-                        <i class="pi pi-clock"></i>
+                        <i class="fa-solid fa-clock"></i>
                         {{ d.horaInicio }} – {{ d.horaFim }}
                       </div>
                       @if (d.capacidadeAtendimentos) {

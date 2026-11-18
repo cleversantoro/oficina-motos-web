@@ -8,7 +8,6 @@ import {
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { ButtonModule } from 'primeng/button';
 import {
   CreateVeiculoRequest,
   VeiculoMarca,
@@ -29,7 +28,7 @@ export interface ClienteOpcao {
 @Component({
   selector: 'app-veiculo-cadastro',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, ButtonModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink],
   templateUrl: './veiculo-cadastro.html',
   styleUrl: './veiculo-cadastro.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

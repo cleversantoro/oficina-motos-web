@@ -12,17 +12,15 @@
     </div>
 
     <form [formGroup]="form" (ngSubmit)="submit()" class="login-form" novalidate>
-
       <div class="field">
         <label for="email">E-mail</label>
         <input
-          pInputText
           id="email"
           type="email"
           formControlName="email"
           placeholder="seu@email.com"
           autocomplete="email"
-          class="w-full"
+          class="p-inputtext w-full"
         />
         @if (form.get('email')?.invalid && form.get('email')?.touched) {
           <small class="field-error">Informe um e-mail válido.</small>
@@ -31,16 +29,24 @@
 
       <div class="field">
         <label for="password">Senha</label>
-        <p-password
-          inputId="password"
-          formControlName="password"
-          placeholder="••••••••"
-          [feedback]="false"
-          [toggleMask]="true"
-          styleClass="w-full"
-          inputStyleClass="w-full"
-          autocomplete="current-password"
-        />
+        <div class="password-wrap" style="position: relative; display: flex; align-items: center;">
+          <input
+            id="password"
+            [type]="showPassword() ? 'text' : 'password'"
+            formControlName="password"
+            placeholder="••••••••"
+            autocomplete="current-password"
+            class="p-inputtext w-full"
+          />
+          <button
+            type="button"
+            aria-label="Alternar visibilidade da senha"
+            style="position: absolute; right: 0.75rem; background: transparent; border: none; color: #94a3b8; cursor: pointer;"
+            (click)="showPassword.set(!showPassword())"
+          >
+            <i class="fa-solid" [class.fa-eye]="!showPassword()" [class.fa-eye-slash]="showPassword()"></i>
+          </button>
+        </div>
         @if (form.get('password')?.invalid && form.get('password')?.touched) {
           <small class="field-error">Senha obrigatória.</small>
         }
@@ -48,19 +54,19 @@
 
       @if (errorMessage()) {
         <div class="alert-error" role="alert">
-          <span class="pi pi-exclamation-triangle"></span>
+          <span class="fa-solid fa-triangle-exclamation"></span>
           {{ errorMessage() }}
         </div>
       }
 
-      <p-button
+      <button
         type="submit"
-        label="Entrar"
-        icon="pi pi-sign-in"
-        [loading]="loading()"
-        styleClass="login-btn w-full"
-      />
-
+        class="p-button login-btn w-full"
+        [disabled]="loading()"
+      >
+        <i class="fa-solid" [class.fa-right-to-bracket]="!loading()" [class.fa-spin]="loading()" [class.fa-spinner]="loading()"></i>
+        <span>Entrar</span>
+      </button>
     </form>
   </div>
 </div>

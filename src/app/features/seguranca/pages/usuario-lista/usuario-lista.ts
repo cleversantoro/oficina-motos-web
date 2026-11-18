@@ -2,17 +2,26 @@ import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } 
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { ButtonModule } from 'primeng/button';
-import { TagModule } from 'primeng/tag';
 import { SegUsuarioTableItem } from '../../../../core/models';
 import { SegurancaService } from '../../../../core/services/seguranca.service';
 import { Confirmation } from '../../../../shared/services/confirmation';
 import { Toast } from '../../../../shared/services/toast';
+import {
+  SIMPLE_BUTTON_IMPORTS,
+  SimpleTagComponent,
+} from '../../../../shared/ui/simple-primitives';
 
 @Component({
   selector: 'app-usuario-lista',
   standalone: true,
-  imports: [CommonModule, DatePipe, FormsModule, RouterLink, ButtonModule, TagModule],
+  imports: [
+    CommonModule,
+    DatePipe,
+    FormsModule,
+    RouterLink,
+    ...SIMPLE_BUTTON_IMPORTS,
+    SimpleTagComponent,
+  ],
   templateUrl: './usuario-lista.html',
   styleUrl: './usuario-lista.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

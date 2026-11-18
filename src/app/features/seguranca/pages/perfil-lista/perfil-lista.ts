@@ -2,16 +2,18 @@ import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } 
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { ButtonModule } from 'primeng/button';
-import { TagModule } from 'primeng/tag';
 import { SegPerfil, SegPermissao } from '../../../../core/models';
 import { SegurancaService } from '../../../../core/services/seguranca.service';
 import { Toast } from '../../../../shared/services/toast';
+import {
+  SIMPLE_BUTTON_IMPORTS,
+  SimpleTagComponent,
+} from '../../../../shared/ui/simple-primitives';
 
 @Component({
   selector: 'app-perfil-lista',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, ButtonModule, TagModule],
+  imports: [CommonModule, FormsModule, RouterLink, ...SIMPLE_BUTTON_IMPORTS, SimpleTagComponent],
   templateUrl: './perfil-lista.html',
   styleUrl: './perfil-lista.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

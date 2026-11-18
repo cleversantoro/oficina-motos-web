@@ -10,7 +10,6 @@ import { AbstractControl, FormBuilder, ReactiveFormsModule, Validators } from '@
 import { Router, RouterLink } from '@angular/router';
 import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
-import { ButtonModule } from 'primeng/button';
 import {
   CreateMecanicoRequest,
   Mecanico,
@@ -26,7 +25,7 @@ import {
 @Component({
   selector: 'app-mecanico-cadastro',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, ButtonModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink],
   templateUrl: './mecanico-cadastro.html',
   styleUrl: './mecanico-cadastro.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

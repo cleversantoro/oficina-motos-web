@@ -10,7 +10,6 @@ import {
   Validators,
 } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { ButtonModule } from 'primeng/button';
 import { ClientesService } from '../../../../core/services/clientes.service';
 import { Toast } from '../../../../shared/services/toast';
 import {
@@ -25,7 +24,7 @@ type TabId = 'perfil' | 'contato' | 'financeiro' | 'legal' | 'anexos';
 @Component({
   selector: 'app-cliente-cadastro',
   standalone: true,
-  imports: [RouterLink, ReactiveFormsModule, CommonModule, ButtonModule],
+  imports: [RouterLink, ReactiveFormsModule, CommonModule],
   templateUrl: './cliente-cadastro.html',
   styleUrl: './cliente-cadastro.scss',
 })

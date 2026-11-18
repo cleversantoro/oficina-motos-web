@@ -2,7 +2,6 @@ import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } 
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { ButtonModule } from 'primeng/button';
 import {
   CreateSegUsuarioRequest,
   SegPerfil,
@@ -10,11 +9,12 @@ import {
 } from '../../../../core/models';
 import { SegurancaService } from '../../../../core/services/seguranca.service';
 import { Toast } from '../../../../shared/services/toast';
+import { SIMPLE_BUTTON_IMPORTS } from '../../../../shared/ui/simple-primitives';
 
 @Component({
   selector: 'app-usuario-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, ButtonModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, ...SIMPLE_BUTTON_IMPORTS],
   templateUrl: './usuario-form.html',
   styleUrl: './usuario-form.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -1,15 +1,15 @@
 <section class="os-shell">
   @if (loading()) {
     <div class="state loading-state">
-      <i class="pi pi-spin pi-spinner state-icon"></i>
+      <i class="fa-solid fa-spin fa-spinner state-icon"></i>
       <p>Carregando dados da ordem de serviço...</p>
     </div>
   } @else if (error(); as message) {
     <div class="state error-state" role="alert">
-      <i class="pi pi-exclamation-triangle state-icon"></i>
+      <i class="fa-solid fa-triangle-exclamation state-icon"></i>
       <p>{{ message }}</p>
       <a routerLink="/ordens" class="btn-back">
-        <i class="pi pi-arrow-left"></i> Voltar para a lista de ordens
+        <i class="fa-solid fa-arrow-left"></i> Voltar para a lista de ordens
       </a>
     </div>
   } @else if (ordem(); as item) {
@@ -17,7 +17,7 @@
     <header class="page-header">
       <div class="header-main">
         <a routerLink="/ordens" class="back-link">
-          <i class="pi pi-arrow-left"></i> Voltar para ordens
+          <i class="fa-solid fa-arrow-left"></i> Voltar para ordens
         </a>
         <div class="title-group">
           <h1>Ordem de Serviço #{{ item.id }}</h1>
@@ -26,7 +26,7 @@
             pButton
             type="button"
             label="Imprimir OS"
-            icon="pi pi-print"
+            icon="fa-solid fa-print"
             class="p-button-outlined p-button-sm"
             data-testid="btn-imprimir-os"
             [disabled]="printingPdf()"
@@ -59,7 +59,7 @@
                 pButton
                 type="button"
                 label="Alterar Status"
-                icon="pi pi-check"
+                icon="fa-solid fa-check"
                 class="p-button-primary p-button-sm"
                 [disabled]="!statusSelecionado() || submittingStatus()"
                 [loading]="submittingStatus()"
@@ -69,7 +69,7 @@
           </div>
         } @else {
           <div class="terminal-status-notice">
-            <i class="pi pi-lock"></i>
+            <i class="fa-solid fa-lock"></i>
             <span>Ordem de serviço finalizada ({{ statusLabel() }}). Nenhuma nova transição permitida.</span>
           </div>
         }
@@ -80,7 +80,7 @@
       <!-- 1. CARD: DADOS GERAIS (T-010.3 / US1) -->
       <article class="detail-card dados-gerais-card">
         <h2 class="card-title">
-          <i class="pi pi-info-circle"></i> Dados Gerais
+          <i class="fa-solid fa-circle-info"></i> Dados Gerais
         </h2>
 
         <div class="info-grid">
@@ -147,7 +147,7 @@
         <div class="card-header-row">
           <div class="title-with-actions">
             <h2 class="card-title">
-              <i class="pi pi-wrench"></i> Itens da OS
+              <i class="fa-solid fa-wrench"></i> Itens da OS
             </h2>
             @if (!isTerminal()) {
               <div class="item-actions-group">
@@ -155,7 +155,7 @@
                   pButton
                   type="button"
                   label="Adicionar Peça"
-                  icon="pi pi-plus"
+                  icon="fa-solid fa-plus"
                   class="p-button-outlined p-button-sm btn-item-action"
                   (click)="abrirModalPeca()"
                 ></button>
@@ -163,7 +163,7 @@
                   pButton
                   type="button"
                   label="Adicionar Serviço"
-                  icon="pi pi-plus"
+                  icon="fa-solid fa-plus"
                   class="p-button-outlined p-button-sm btn-item-action"
                   (click)="abrirModalServico()"
                 ></button>
@@ -205,7 +205,7 @@
                         <button
                           pButton
                           type="button"
-                          icon="pi pi-trash"
+                          icon="fa-solid fa-trash"
                           class="p-button-danger p-button-text p-button-sm btn-delete-item"
                           title="Remover item"
                           [disabled]="deletingItemId() === peca.id"
@@ -232,7 +232,7 @@
           </div>
         } @else {
           <div class="empty-notice">
-            <i class="pi pi-inbox"></i>
+            <i class="fa-solid fa-inbox"></i>
             <p>Nenhum item adicionado a esta OS.</p>
           </div>
         }
@@ -241,7 +241,7 @@
       <!-- 3. SEÇÃO: OBSERVAÇÕES (T-010.6 / US4) -->
       <article class="detail-card observacoes-card">
         <h2 class="card-title">
-          <i class="pi pi-comment"></i> Observações
+          <i class="fa-solid fa-comment"></i> Observações
         </h2>
 
         @if (item.observacoes && item.observacoes.length > 0) {
@@ -250,7 +250,7 @@
               <li class="observacao-item">
                 <div class="observacao-meta">
                   <span class="observacao-user">
-                    <i class="pi pi-user"></i> {{ obs.usuario || 'Sistema' }}
+                    <i class="fa-solid fa-user"></i> {{ obs.usuario || 'Sistema' }}
                   </span>
                 </div>
                 <p class="observacao-text">{{ obs.texto }}</p>
@@ -259,7 +259,7 @@
           </ul>
         } @else {
           <div class="empty-notice">
-            <i class="pi pi-comment"></i>
+            <i class="fa-solid fa-comment"></i>
             <p>Nenhuma observação registrada para esta OS.</p>
           </div>
         }
@@ -269,20 +269,20 @@
       <article class="detail-card pagamentos-card">
         <div class="card-header-row">
           <h2 class="card-title">
-            <i class="pi pi-wallet"></i> Pagamentos
+            <i class="fa-solid fa-wallet"></i> Pagamentos
           </h2>
           @if (!isTerminal() && saldoPendente() > 0 && totalItens() > 0) {
             <button
               pButton
               type="button"
               label="Registrar Pagamento"
-              icon="pi pi-plus"
+              icon="fa-solid fa-plus"
               class="p-button-success p-button-sm btn-pagamento-action"
               (click)="abrirModalPagamento()"
             ></button>
           } @else if (saldoPendente() === 0 && totalItens() > 0) {
             <span class="paid-badge">
-              <i class="pi pi-check-circle"></i> OS Quitada
+              <i class="fa-solid fa-circle-check"></i> OS Quitada
             </span>
           }
         </div>
@@ -334,7 +334,7 @@
           </div>
         } @else {
           <div class="empty-notice">
-            <i class="pi pi-credit-card"></i>
+            <i class="fa-solid fa-credit-card"></i>
             <p>Nenhum pagamento registrado para esta OS.</p>
           </div>
         }

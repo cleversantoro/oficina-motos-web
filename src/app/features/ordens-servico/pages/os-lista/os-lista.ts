@@ -1,49 +1,77 @@
-import { ChangeDetectionStrategy, Component, OnInit, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, ViewChild, computed, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { ButtonModule } from 'primeng/button';
+import { forkJoin } from 'rxjs';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { canPerformBusinessAction, canPerformPermission } from '../../../../core/auth/rbac-access.helper';
-import { OrdensService } from '../../../../core/services/ordens.service';
 import { OrdemServico } from '../../../../core/models';
+import { OrdensService } from '../../../../core/services/ordens.service';
 import { Confirmation } from '../../../../shared/services/confirmation';
 import { Toast } from '../../../../shared/services/toast';
-import { DataTable, TableAction, TableColumn } from '../../../../shared/ui/data-table';
+import {
+  DatatableAction,
+  DatatableColumn,
+  DatatableComponent,
+  DatatableStatusOption,
+} from '../../../../shared/ui/datatable';
+import { SIMPLE_BUTTON_IMPORTS } from '../../../../shared/ui/simple-primitives';
+
+type OrdemRow = OrdemServico & Record<string, unknown>;
 
 @Component({
   selector: 'app-os-lista',
   standalone: true,
-  imports: [ButtonModule, DataTable],
+  imports: [...SIMPLE_BUTTON_IMPORTS, DatatableComponent],
   templateUrl: './os-lista.html',
   styleUrl: './os-lista.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class OsListaComponent implements OnInit {
+  @ViewChild('dt') private dt?: DatatableComponent<OrdemRow>;
+
   readonly ordens = signal<OrdemServico[]>([]);
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
 
-  readonly columns: TableColumn<OrdemServico>[] = [
+  readonly tableRows = computed<OrdemRow[]>(() =>
+    this.ordens().map((ordem) => ({ ...ordem })),
+  );
+
+  readonly statusOptions: readonly DatatableStatusOption[] = [
+    { label: 'Aberta', value: 'Aberta' },
+    { label: 'Em Andamento', value: 'EmAndamento' },
+    { label: 'Aguardando Peça', value: 'AguardandoPeca' },
+    { label: 'Concluída', value: 'Concluida' },
+    { label: 'Cancelada', value: 'Cancelada' },
+  ];
+
+  readonly columns: readonly DatatableColumn<OrdemRow>[] = [
     { field: 'id', header: 'ID', dataType: 'number', width: '90px', sortable: true },
-    { field: 'status', header: 'Status', sortable: true},
+    { field: 'status', header: 'Status', dataType: 'badge', sortable: true },
     { field: 'dataAbertura', header: 'Abertura', dataType: 'date', sortable: true },
-    { field: 'clienteId', header: 'Cliente', dataType: 'number', sortable: true },
-    { field: 'mecanicoId', header: 'Mecânico', dataType: 'number', sortable: true },
+    { field: 'clienteNome', header: 'Cliente', sortable: true },
+    { field: 'mecanicoNome', header: 'Mecânico', sortable: true },
+    { field: 'veiculoModeloNome', header: 'Veículo', sortable: true },
+    { field: 'veiculoPlaca', header: 'Placa', sortable: true },
     { field: 'descricaoProblema', header: 'Descrição', sortable: false },
   ];
 
-  readonly actions: TableAction<OrdemServico>[] = [
+  readonly actions: readonly DatatableAction<OrdemRow>[] = [
     {
-      icon: 'pi pi-eye',
-      tooltip: 'Detalhes',
-      styleClass: 'p-button-rounded p-button-text p-button-info act-btn act-view',
-      onClick: ordem => this.openDetails(ordem),
-      disabled: ordem => !Number.isInteger(ordem.id) || ordem.id <= 0,
+      id: 'view',
+      icon: 'fa-solid fa-eye',
+      label: 'Detalhes',
+      variant: 'view',
+      onClick: (ordem) => this.openDetails(ordem),
+      disabled: (ordem) => !Number.isInteger(ordem.id) || ordem.id <= 0,
     },
     {
-      icon: 'pi pi-trash',
-      tooltip: 'Excluir',
-      styleClass: 'p-button-rounded p-button-text p-button-danger act-btn act-del',
-      onClick: ordem => this.confirmDelete(ordem.id),
+      id: 'delete',
+      icon: 'fa-solid fa-trash',
+      label: 'Excluir',
+      variant: 'delete',
+      onClick: (ordem) => {
+        void this.confirmDelete(ordem.id);
+      },
       visible: () => this.canDeleteOrdem(),
     },
   ];
@@ -64,7 +92,7 @@ export class OsListaComponent implements OnInit {
     this.loading.set(true);
     this.error.set(null);
     this.ordensService.list<OrdemServico[]>().subscribe({
-      next: response => {
+      next: (response) => {
         this.ordens.set(response ?? []);
         this.loading.set(false);
       },
@@ -76,7 +104,12 @@ export class OsListaComponent implements OnInit {
   }
 
   canCreateOrdem(): boolean {
-    return canPerformPermission(this.authService.permissions(), 'ordens', 'criar', this.authService.currentRole());
+    return canPerformPermission(
+      this.authService.permissions(),
+      'ordens',
+      'criar',
+      this.authService.currentRole(),
+    );
   }
 
   canDeleteOrdem(): boolean {
@@ -102,10 +135,29 @@ export class OsListaComponent implements OnInit {
     if (!confirmado) return;
     this.ordensService.delete(id).subscribe({
       next: () => {
-        this.ordens.update(ordens => ordens.filter(ordem => ordem.id !== id));
+        this.ordens.update((ordens) => ordens.filter((ordem) => ordem.id !== id));
         this.toast.success('Ordem excluída', `OS #${id} removida com sucesso.`);
       },
       error: () => this.toast.error('Erro', 'Não foi possível excluir a ordem de serviço.'),
+    });
+  }
+
+  async confirmBulkDelete(rows: OrdemRow[]): Promise<void> {
+    if (!this.canDeleteOrdem() || rows.length === 0) return;
+    const confirmado = await this.confirmation.confirmDelete(`${rows.length} ordem(ns) de serviço`);
+    if (!confirmado) return;
+
+    const ids = rows.map((r) => r.id).filter((id) => Number.isInteger(id) && id > 0);
+    if (ids.length === 0) return;
+
+    forkJoin(ids.map((id) => this.ordensService.delete(id))).subscribe({
+      next: () => {
+        const idSet = new Set(ids);
+        this.ordens.update((ordens) => ordens.filter((ordem) => !idSet.has(ordem.id)));
+        this.dt?.clearSelection();
+        this.toast.success('Ordens excluídas', `${ids.length} ordem(ns) removida(s) com sucesso.`);
+      },
+      error: () => this.toast.error('Erro', 'Não foi possível excluir as ordens selecionadas.'),
     });
   }
 }
