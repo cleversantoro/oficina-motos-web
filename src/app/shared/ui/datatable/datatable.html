@@ -1,0 +1,285 @@
+<div class="dt-card">
+  <!-- Barra de ferramentas: busca, filtro de status, ações em lote e exportação -->
+  <div class="dt-toolbar">
+    <div class="dt-toolbar-filters">
+      <div class="dt-search-wrap">
+        <i class="pi pi-search dt-search-icon" aria-hidden="true"></i>
+        <input
+          type="text"
+          class="dt-search-input"
+          [placeholder]="searchPlaceholder()"
+          [attr.aria-label]="searchPlaceholder()"
+          [ngModel]="searchQuery()"
+          (ngModelChange)="onSearchChange($event)"
+        />
+        @if (searchQuery()) {
+          <button
+            type="button"
+            class="dt-search-clear"
+            aria-label="Limpar busca"
+            (click)="clearSearch()"
+          >
+            <i class="pi pi-times" aria-hidden="true"></i>
+          </button>
+        }
+      </div>
+
+      @if (statusField() && statusOptions().length > 0) {
+        <select
+          class="dt-select"
+          aria-label="Filtrar por status"
+          [ngModel]="statusFilter()"
+          (ngModelChange)="onStatusFilterChange($event)"
+        >
+          <option value="Todos">Todos os Status</option>
+          @for (opt of statusOptions(); track opt.value) {
+            <option [value]="opt.value">{{ opt.label }}</option>
+          }
+        </select>
+      }
+    </div>
+
+    <div class="dt-toolbar-actions">
+      @if (selectable() && selectedCount() > 0) {
+        <div class="dt-bulk-bar" role="status" aria-live="polite">
+          <span class="dt-bulk-count">
+            <strong>{{ selectedCount() }}</strong> selecionado(s)
+          </span>
+          <span class="dt-bulk-divider" aria-hidden="true"></span>
+          <button type="button" class="dt-bulk-delete" (click)="triggerBulkDelete()">
+            <i class="pi pi-trash" aria-hidden="true"></i>
+            <span>Excluir</span>
+          </button>
+        </div>
+      }
+
+      @if (exportable()) {
+        <button type="button" class="dt-export-btn" (click)="exportToCSV()">
+          <i class="pi pi-download" aria-hidden="true"></i>
+          <span>Exportar CSV</span>
+        </button>
+      }
+    </div>
+  </div>
+
+  <!-- Estado de carregamento -->
+  @if (loading()) {
+    <div class="dt-empty-state" role="status" aria-live="polite">
+      <div class="dt-empty-icon">
+        <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
+      </div>
+      <p class="dt-empty-title">Carregando dados...</p>
+    </div>
+  } @else {
+    <!-- Tabela responsiva -->
+    <div class="dt-table-wrap">
+      <table class="dt-table">
+        <thead>
+          <tr>
+            @if (selectable()) {
+              <th scope="col" class="dt-th-check">
+                <input
+                  type="checkbox"
+                  class="dt-checkbox"
+                  aria-label="Selecionar todos da página"
+                  [checked]="allPageSelected()"
+                  [indeterminate]="somePageSelected()"
+                  (change)="toggleSelectAllOnPage($any($event.target).checked)"
+                />
+              </th>
+            }
+
+            @for (col of columns(); track col.field) {
+              <th
+                scope="col"
+                [style.width]="col.width || null"
+                [class.dt-sortable]="col.sortable !== false"
+                [class.dt-align-right]="col.align === 'right'"
+                [class.dt-align-center]="col.align === 'center'"
+                (click)="handleSort(col)"
+              >
+                <div class="dt-th-content">
+                  <span>{{ col.header }}</span>
+                  @if (col.sortable !== false) {
+                    <span
+                      class="dt-sort-icon"
+                      [class.active]="sortColumn() === col.field"
+                      aria-hidden="true"
+                    >
+                      @if (sortColumn() === col.field) {
+                        <i
+                          class="pi"
+                          [class.pi-arrow-up]="sortDirection() === 'asc'"
+                          [class.pi-arrow-down]="sortDirection() === 'desc'"
+                        ></i>
+                      } @else {
+                        <i class="pi pi-sort-alt"></i>
+                      }
+                    </span>
+                  }
+                </div>
+              </th>
+            }
+
+            @if (actions().length > 0) {
+              <th scope="col" class="dt-align-right">Ações</th>
+            }
+          </tr>
+        </thead>
+
+        <tbody>
+          @for (row of paginatedData(); track getRowKey(row)) {
+            <tr
+              class="dt-row"
+              [class.selected]="isRowSelected(row)"
+              (click)="rowClick.emit(row)"
+            >
+              @if (selectable()) {
+                <td class="dt-td-check" (click)="$event.stopPropagation()">
+                  <input
+                    type="checkbox"
+                    class="dt-checkbox"
+                    aria-label="Selecionar linha"
+                    [checked]="isRowSelected(row)"
+                    (change)="toggleRowSelection(row)"
+                  />
+                </td>
+              }
+
+              @for (col of columns(); track col.field) {
+                <td
+                  [class.dt-align-right]="col.align === 'right'"
+                  [class.dt-align-center]="col.align === 'center'"
+                >
+                  @if (col.cellTemplate) {
+                    <ng-container
+                      *ngTemplateOutlet="col.cellTemplate; context: { $implicit: row }"
+                    ></ng-container>
+                  } @else if (col.dataType === 'badge') {
+                    <span class="dt-status-pill" [attr.data-tone]="getBadgeTone(row[col.field])">
+                      <span class="dt-status-dot" aria-hidden="true"></span>
+                      {{ formatCell(row, col) }}
+                    </span>
+                  } @else {
+                    <div class="dt-cell-primary">{{ formatCell(row, col) }}</div>
+                    @if (getSubValue(row, col); as sub) {
+                      <div class="dt-cell-sub">{{ sub }}</div>
+                    }
+                  }
+                </td>
+              }
+
+              @if (actions().length > 0) {
+                <td class="dt-align-right" (click)="$event.stopPropagation()">
+                  <div class="dt-row-actions">
+                    @for (action of actions(); track action.id) {
+                      @if (isActionVisible(action, row)) {
+                        <button
+                          type="button"
+                          class="dt-action-btn"
+                          [attr.data-variant]="action.variant || 'default'"
+                          [title]="action.label"
+                          [attr.aria-label]="action.label"
+                          [disabled]="isActionDisabled(action, row)"
+                          (click)="action.onClick(row)"
+                        >
+                          <i [class]="action.icon" aria-hidden="true"></i>
+                        </button>
+                      }
+                    }
+                  </div>
+                </td>
+              }
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Estado vazio -->
+    @if (totalItems() === 0) {
+      <div class="dt-empty-state">
+        <div class="dt-empty-icon">
+          <i class="pi pi-search" aria-hidden="true"></i>
+        </div>
+        <h3 class="dt-empty-title">{{ emptyTitle() }}</h3>
+        <p class="dt-empty-desc">{{ emptyDescription() }}</p>
+        @if (hasActiveFilters()) {
+          <button type="button" class="dt-reset-btn" (click)="resetFilters()">
+            Limpar filtros
+          </button>
+        }
+      </div>
+    }
+
+    <!-- Rodapé de Paginação -->
+    <div class="dt-footer">
+      <div class="dt-footer-info">
+        <div class="dt-page-size">
+          <span>Mostrar</span>
+          <select
+            class="dt-page-select"
+            aria-label="Itens por página"
+            [ngModel]="pageSize()"
+            (ngModelChange)="onPageSizeChange($event)"
+          >
+            @for (size of pageSizeOptions(); track size) {
+              <option [value]="size">{{ size }}</option>
+            }
+          </select>
+          <span>por página</span>
+        </div>
+
+        <span class="dt-footer-sep" aria-hidden="true">|</span>
+
+        <div class="dt-pagination-summary">
+          @if (totalItems() === 0) {
+            Mostrando <strong>0</strong> resultados
+          } @else {
+            Mostrando <strong>{{ startIndex() + 1 }}</strong> a
+            <strong>{{ endIndex() }}</strong> de
+            <strong>{{ totalItems() }}</strong> resultados
+          }
+        </div>
+      </div>
+
+      <nav class="dt-pagination" aria-label="Paginação">
+        <button
+          type="button"
+          class="dt-page-btn dt-page-prev"
+          aria-label="Página anterior"
+          [disabled]="effectivePage() === 1 || totalItems() === 0"
+          (click)="goToPage(effectivePage() - 1)"
+        >
+          <i class="pi pi-chevron-left" aria-hidden="true"></i>
+        </button>
+
+        @for (page of pageNumbers(); track $index) {
+          @if (page === '...') {
+            <span class="dt-page-ellipsis" aria-hidden="true">...</span>
+          } @else {
+            <button
+              type="button"
+              class="dt-page-btn"
+              [class.active]="page === effectivePage()"
+              [attr.aria-current]="page === effectivePage() ? 'page' : null"
+              (click)="goToPage(page)"
+            >
+              {{ page }}
+            </button>
+          }
+        }
+
+        <button
+          type="button"
+          class="dt-page-btn dt-page-next"
+          aria-label="Próxima página"
+          [disabled]="effectivePage() === totalPages() || totalItems() === 0"
+          (click)="goToPage(effectivePage() + 1)"
+        >
+          <i class="pi pi-chevron-right" aria-hidden="true"></i>
+        </button>
+      </nav>
+    </div>
+  }
+</div>

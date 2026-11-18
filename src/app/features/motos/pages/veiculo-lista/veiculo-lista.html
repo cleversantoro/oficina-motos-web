@@ -2,13 +2,13 @@
   <header class="lista-header">
     <div class="header-title">
       <h1>Veículos</h1>
-      <span class="count-pill">{{ filtered.length }} registros</span>
+      <span class="count-pill">{{ tableRows().length }} registros</span>
     </div>
     <div class="header-actions">
       @if (canCreateVeiculo()) {
         <a routerLink="/motos/novo">
           <button class="btn-primary" type="button">
-            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
               <line x1="12" y1="5" x2="12" y2="19"></line>
               <line x1="5" y1="12" x2="19" y2="12"></line>
             </svg>
@@ -16,162 +16,51 @@
           </button>
         </a>
       }
-      <div class="search-wrap">
-        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
-        </svg>
-        <input
-          class="search-input"
-          type="text"
-          placeholder="Buscar por placa, marca, modelo, cor..."
-          [(ngModel)]="filterText"
-          (ngModelChange)="first = 0"
-        />
-      </div>
     </div>
   </header>
 
-  @if (loading) {
-    <div class="state-card">
-      <div class="spinner"></div>
-      <p>Carregando veículos...</p>
+  @if (!loading() && error()) {
+    <div class="state-card error" role="alert">
+      <p>{{ error() }}</p>
+      <button type="button" class="btn-ghost" (click)="load()">Tentar novamente</button>
     </div>
+  } @else {
+    <app-datatable
+      #dt
+      [data]="tableRows()"
+      [columns]="columns()"
+      [actions]="actions"
+      [loading]="loading()"
+      [selectable]="canDeleteVeiculo()"
+      [exportable]="true"
+      statusField="statusLabel"
+      [statusOptions]="statusOptions"
+      searchPlaceholder="Buscar por placa, marca, modelo, cor..."
+      emptyTitle="Nenhum veículo encontrado"
+      emptyDescription="Não encontramos veículos correspondentes aos filtros atuais."
+      (rowClick)="openDetalhe($event.id)"
+      (bulkDelete)="confirmBulkDelete($event)"
+    />
   }
 
-  @if (!loading && error) {
-    <div class="state-card error">
-      <p>{{ error }}</p>
-      <button class="btn-ghost" (click)="load()">Tentar novamente</button>
-    </div>
-  }
-
-  @if (!loading && !error) {
-    <div class="table-card">
-      <div class="table-scroll">
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th>Placa</th>
-            <th>Marca / Modelo</th>
-            <th>Ano</th>
-            <th class="hide-sm">Cor</th>
-            <th class="hide-sm">Combustível</th>
-            <th class="hide-sm">KM</th>
-            <th>Status</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          @if (filtered.length === 0) {
-            <tr>
-              <td colspan="8" class="empty-cell">
-                @if (filterText) {
-                  Nenhum veículo encontrado para "{{ filterText }}".
-                } @else {
-                  Nenhum veículo cadastrado.
-                }
-              </td>
-            </tr>
-          }
-          @for (v of filtered.slice(first, first + rows); track v.id) {
-            <tr class="data-row" tabindex="0" (click)="openDetalhe(v.id)" (keydown.enter)="openDetalhe(v.id)">
-              <td>
-                <span class="placa-pill">{{ v.placa }}</span>
-                @if (v.principal) {
-                  <span class="badge-principal">Principal</span>
-                }
-              </td>
-              <td>
-                <div class="modelo-cell">
-                  <span class="marca-nome">{{ marcaNome(v.modeloId) }}</span>
-                  <span class="modelo-nome">{{ modeloNome(v.modeloId) }}</span>
-                </div>
-              </td>
-              <td>{{ v.anoFab ? (v.anoMod && v.anoMod !== v.anoFab ? v.anoFab + '/' + v.anoMod : v.anoFab) : '—' }}</td>
-              <td class="hide-sm">
-                <div class="cor-cell">
-                  <span class="cor-dot" [style.background]="corHex(v.cor)"></span>
-                  {{ v.cor ?? '—' }}
-                </div>
-              </td>
-              <td class="hide-sm">{{ v.combustivel ?? '—' }}</td>
-              <td class="hide-sm mono">{{ v.km ?? '—' }}</td>
-              <td>
-                <span class="status-pill" [class.ativo]="v.ativo" [class.inativo]="!v.ativo">
-                  {{ v.ativo ? 'Ativo' : 'Inativo' }}
-                </span>
-              </td>
-              <td class="action-cell">
-                <button
-                  class="icon-btn view-btn"
-                  (click)="openDetalhe(v.id); $event.stopPropagation()"
-                  title="Visualizar"
-                >
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                    <circle cx="12" cy="12" r="3"/>
-                  </svg>
-                </button>
-                @if (canDeleteVeiculo()) {
-                  <button
-                    class="icon-btn delete-btn"
-                    (click)="confirmDelete(v.id); $event.stopPropagation()"
-                    title="Excluir"
-                  >
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <polyline points="3 6 5 6 21 6"/>
-                      <path d="m19 6-.867 14.142A2 2 0 0 1 16.138 22H7.862a2 2 0 0 1-1.995-1.858L5 6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
-                    </svg>
-                  </button>
-                }
-              </td>
-            </tr>
-          }
-        </tbody>
-      </table>
-      </div>
-
-      <div class="mobile-cards" aria-label="Lista de veículos">
-        @if (filtered.length === 0) {
-          <div class="mobile-empty">
-            @if (filterText) { Nenhum veículo encontrado para "{{ filterText }}". }
-            @else { Nenhum veículo cadastrado. }
-          </div>
-        }
-        @for (v of filtered.slice(first, first + rows); track v.id) {
-          <article class="mobile-card" tabindex="0" (click)="openDetalhe(v.id)" (keydown.enter)="openDetalhe(v.id)">
-            <div class="mobile-card-head">
-              <div>
-                <span class="placa-pill">{{ v.placa }}</span>
-                <p class="marca-nome" style="margin:.35rem 0 0">{{ marcaNome(v.modeloId) }} {{ modeloNome(v.modeloId) }}</p>
-              </div>
-              <span class="status-pill" [class.ativo]="v.ativo" [class.inativo]="!v.ativo">
-                {{ v.ativo ? 'Ativo' : 'Inativo' }}
-              </span>
-            </div>
-            <div class="mobile-card-grid">
-              <div><span class="mobile-label">Ano</span><span>{{ v.anoFab ? (v.anoMod && v.anoMod !== v.anoFab ? v.anoFab + '/' + v.anoMod : v.anoFab) : '—' }}</span></div>
-              <div><span class="mobile-label">Cor</span><span>{{ v.cor ?? '—' }}</span></div>
-              <div><span class="mobile-label">Combustível</span><span>{{ v.combustivel ?? '—' }}</span></div>
-              <div><span class="mobile-label">KM</span><span class="mono">{{ v.km ?? '—' }}</span></div>
-            </div>
-            <div class="mobile-card-actions">
-              <button type="button" class="pg-btn mobile-action-btn" (click)="openDetalhe(v.id); $event.stopPropagation()">Visualizar</button>
-              @if (canDeleteVeiculo()) {
-                <button type="button" class="pg-btn delete-btn mobile-action-btn" (click)="confirmDelete(v.id); $event.stopPropagation()">Excluir</button>
-              }
-            </div>
-          </article>
-        }
-      </div>
-    </div>
-
-    @if (filtered.length > rows) {
-      <div class="pagination">
-        <button class="pg-btn" [disabled]="first === 0" (click)="prevPage()">← Anterior</button>
-        <span class="pg-info">{{ first + 1 }}–{{ pageEnd }} de {{ filtered.length }}</span>
-        <button class="pg-btn" [disabled]="first + rows >= filtered.length" (click)="nextPage()">Próximo →</button>
-      </div>
+  <ng-template #placaTpl let-row>
+    <span class="placa-pill">{{ row.placa }}</span>
+    @if (row.principal) {
+      <span class="badge-principal">Principal</span>
     }
-  }
+  </ng-template>
+
+  <ng-template #modeloTpl let-row>
+    <div class="modelo-cell">
+      <span class="marca-nome">{{ row.marca }}</span>
+      <span class="modelo-nome">{{ row.modelo }}</span>
+    </div>
+  </ng-template>
+
+  <ng-template #corTpl let-row>
+    <div class="cor-cell">
+      <span class="cor-dot" [style.background]="row.corHex" aria-hidden="true"></span>
+      <span>{{ row.cor }}</span>
+    </div>
+  </ng-template>
 </section>

@@ -1,6 +1,15 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  OnInit,
+  TemplateRef,
+  computed,
+  inject,
+  signal,
+  viewChild,
+} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router, RouterLink } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { AuthService } from '../../../../core/auth/auth.service';
@@ -8,96 +17,183 @@ import { canPerformBusinessAction } from '../../../../core/auth/rbac-access.help
 import { VeiculosService } from '../../../../core/services/veiculos.service';
 import { Confirmation } from '../../../../shared/services/confirmation';
 import { Toast } from '../../../../shared/services/toast';
+import {
+  DatatableAction,
+  DatatableColumn,
+  DatatableComponent,
+  DatatableStatusOption,
+} from '../../../../shared/ui/datatable';
+
+interface VeiculoApiItem {
+  id: number;
+  placa?: string | null;
+  principal?: boolean;
+  modeloId?: number | null;
+  anoFab?: number | null;
+  anoMod?: number | null;
+  cor?: string | null;
+  combustivel?: string | null;
+  km?: number | string | null;
+  ativo?: boolean;
+}
+
+interface MarcaApiItem {
+  id: number;
+  nome?: string;
+}
+
+interface ModeloApiItem {
+  id: number;
+  nome?: string;
+  marcaId?: number;
+}
+
+export interface VeiculoTableRow extends Record<string, unknown> {
+  id: number;
+  placa: string;
+  principal: boolean;
+  marca: string;
+  modelo: string;
+  anoLabel: string;
+  cor: string;
+  corHex: string;
+  combustivel: string;
+  km: string;
+  statusLabel: 'Ativo' | 'Inativo';
+}
+
+const COR_HEX_MAP: Record<string, string> = {
+  Prata: '#9ca3af',
+  Preto: '#374151',
+  Branco: '#f3f4f6',
+  Vermelho: '#ef4444',
+  Azul: '#3b82f6',
+  Cinza: '#6b7280',
+  Verde: '#22c55e',
+  Amarelo: '#eab308',
+  Laranja: '#f97316',
+};
 
 @Component({
   selector: 'app-veiculo-lista',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [RouterLink, DatatableComponent],
   templateUrl: './veiculo-lista.html',
   styleUrl: './veiculo-lista.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class VeiculoLista implements OnInit {
-  veiculos: any[] = [];
-  marcas: any[]  = [];
-  modelos: any[] = [];
-  loading = false;
-  error   = '';
+  private readonly svc = inject(VeiculosService);
+  private readonly router = inject(Router);
+  private readonly authService = inject(AuthService);
+  private readonly confirmation = inject(Confirmation);
+  private readonly toast = inject(Toast);
+  private readonly destroyRef = inject(DestroyRef);
 
-  filterText = '';
-  first = 0;
-  rows  = 5;
+  private readonly datatable = viewChild<DatatableComponent<VeiculoTableRow>>('dt');
+  private readonly placaTpl = viewChild<TemplateRef<{ $implicit: VeiculoTableRow }>>('placaTpl');
+  private readonly modeloTpl = viewChild<TemplateRef<{ $implicit: VeiculoTableRow }>>('modeloTpl');
+  private readonly corTpl = viewChild<TemplateRef<{ $implicit: VeiculoTableRow }>>('corTpl');
 
-  constructor(
-    private svc: VeiculosService,
-    private router: Router,
-    private authService: AuthService,
-    private confirmation: Confirmation,
-    private toast: Toast,
-  ) {}
+  readonly veiculos = signal<VeiculoApiItem[]>([]);
+  readonly marcas = signal<MarcaApiItem[]>([]);
+  readonly modelos = signal<ModeloApiItem[]>([]);
+  readonly loading = signal(false);
+  readonly error = signal('');
+
+  readonly statusOptions: readonly DatatableStatusOption[] = [
+    { label: 'Ativo', value: 'Ativo' },
+    { label: 'Inativo', value: 'Inativo' },
+  ];
+
+  readonly tableRows = computed<VeiculoTableRow[]>(() => {
+    const modelosList = this.modelos();
+    const marcasList = this.marcas();
+
+    return this.veiculos().map((v) => {
+      const modeloObj = v.modeloId ? modelosList.find((m) => m.id === v.modeloId) : undefined;
+      const marcaObj = modeloObj?.marcaId
+        ? marcasList.find((mk) => mk.id === modeloObj.marcaId)
+        : undefined;
+
+      const anoLabel = v.anoFab
+        ? v.anoMod && v.anoMod !== v.anoFab
+          ? `${v.anoFab}/${v.anoMod}`
+          : String(v.anoFab)
+        : '—';
+
+      return {
+        id: v.id,
+        placa: v.placa ?? '—',
+        principal: Boolean(v.principal),
+        marca: marcaObj?.nome ?? '—',
+        modelo: modeloObj?.nome ?? '—',
+        anoLabel,
+        cor: v.cor ?? '—',
+        corHex: COR_HEX_MAP[v.cor ?? ''] ?? '#64748b',
+        combustivel: v.combustivel ?? '—',
+        km: v.km !== null && v.km !== undefined && v.km !== '' ? String(v.km) : '—',
+        statusLabel: v.ativo ? 'Ativo' : 'Inativo',
+      };
+    });
+  });
+
+  readonly columns = computed<DatatableColumn<VeiculoTableRow>[]>(() => [
+    { field: 'placa', header: 'Placa', cellTemplate: this.placaTpl() },
+    { field: 'marca', header: 'Marca / Modelo', subField: 'modelo', cellTemplate: this.modeloTpl() },
+    { field: 'anoLabel', header: 'Ano' },
+    { field: 'cor', header: 'Cor', cellTemplate: this.corTpl() },
+    { field: 'combustivel', header: 'Combustível' },
+    { field: 'km', header: 'KM', align: 'right' },
+    { field: 'statusLabel', header: 'Status', dataType: 'badge' },
+  ]);
+
+  readonly actions: readonly DatatableAction<VeiculoTableRow>[] = [
+    {
+      id: 'view',
+      icon: 'pi pi-eye',
+      label: 'Visualizar',
+      variant: 'view',
+      onClick: (row) => this.openDetalhe(row.id),
+    },
+    {
+      id: 'delete',
+      icon: 'pi pi-trash',
+      label: 'Excluir',
+      variant: 'delete',
+      visible: () => this.canDeleteVeiculo(),
+      onClick: (row) => {
+        void this.confirmDelete(row.id);
+      },
+    },
+  ];
 
   ngOnInit(): void {
     this.load();
   }
 
   load(): void {
-    this.loading = true;
-    this.error   = '';
+    this.loading.set(true);
+    this.error.set('');
 
     forkJoin({
       veiculos: this.svc.list(),
-      marcas:   this.svc.marcas(),
-      modelos:  this.svc.modelos(),
-    }).subscribe({
-      next: ({ veiculos, marcas, modelos }: any) => {
-        this.veiculos = Array.isArray(veiculos) ? veiculos : veiculos?.data ?? [];
-        this.marcas   = Array.isArray(marcas)   ? marcas   : marcas?.data   ?? [];
-        this.modelos  = Array.isArray(modelos)  ? modelos  : modelos?.data  ?? [];
-        this.loading  = false;
-      },
-      error: (err: any) => {
-        this.error   = err?.error?.message ?? 'Erro ao carregar veículos.';
-        this.loading = false;
-      },
-    });
-  }
-
-  get filtered(): any[] {
-    const q = this.filterText.toLowerCase();
-    if (!q) return this.veiculos;
-    return this.veiculos.filter(v =>
-      (v.placa        ?? '').toLowerCase().includes(q) ||
-      (this.marcaNome(v.modeloId)  ?? '').toLowerCase().includes(q) ||
-      (this.modeloNome(v.modeloId) ?? '').toLowerCase().includes(q) ||
-      (v.cor          ?? '').toLowerCase().includes(q) ||
-      (v.combustivel  ?? '').toLowerCase().includes(q)
-    );
-  }
-
-  modeloNome(modeloId: number | null): string {
-    if (!modeloId) return '—';
-    return this.modelos.find(m => m.id === modeloId)?.nome ?? '—';
-  }
-
-  marcaNome(modeloId: number | null): string {
-    if (!modeloId) return '—';
-    const modelo = this.modelos.find(m => m.id === modeloId);
-    if (!modelo) return '—';
-    return this.marcas.find(mk => mk.id === modelo.marcaId)?.nome ?? '—';
-  }
-
-  corHex(cor: string | null): string {
-    const map: Record<string, string> = {
-      'Prata':    '#9ca3af',
-      'Preto':    '#374151',
-      'Branco':   '#f3f4f6',
-      'Vermelho': '#ef4444',
-      'Azul':     '#3b82f6',
-      'Cinza':    '#6b7280',
-      'Verde':    '#22c55e',
-      'Amarelo':  '#eab308',
-      'Laranja':  '#f97316',
-    };
-    return map[cor ?? ''] ?? '#64748b';
+      marcas: this.svc.marcas(),
+      modelos: this.svc.modelos(),
+    })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: ({ veiculos, marcas, modelos }) => {
+          this.veiculos.set(this.extractArray<VeiculoApiItem>(veiculos));
+          this.marcas.set(this.extractArray<MarcaApiItem>(marcas));
+          this.modelos.set(this.extractArray<ModeloApiItem>(modelos));
+          this.loading.set(false);
+        },
+        error: (err: { error?: { message?: string } }) => {
+          this.error.set(err?.error?.message ?? 'Erro ao carregar veículos.');
+          this.loading.set(false);
+        },
+      });
   }
 
   openDetalhe(id: number): void {
@@ -112,32 +208,49 @@ export class VeiculoLista implements OnInit {
     return canPerformBusinessAction(this.authService.currentRole(), 'veiculos', 'delete');
   }
 
-  prevPage(): void {
-    this.first = Math.max(0, this.first - this.rows);
-  }
-
-  nextPage(): void {
-    if (this.first + this.rows < this.filtered.length) {
-      this.first += this.rows;
-    }
-  }
-
-  get pageEnd(): number {
-    const end = this.first + this.rows;
-    return end > this.filtered.length ? this.filtered.length : end;
-  }
-
   async confirmDelete(id: number): Promise<void> {
-    const veiculo = this.veiculos.find(v => v.id === id);
+    const veiculo = this.veiculos().find((v) => v.id === id);
     const label = veiculo?.placa ? `Veículo ${veiculo.placa}` : `Veículo #${id}`;
     const confirmado = await this.confirmation.confirmDelete(label);
     if (!confirmado) return;
-    this.svc.delete(id).subscribe({
-      next: () => {
-        this.veiculos = this.veiculos.filter(v => v.id !== id);
-        this.toast.success('Veículo excluído', `"${label}" foi removido com sucesso.`);
-      },
-      error: () => this.toast.error('Erro ao excluir', 'Não foi possível excluir o veículo.'),
-    });
+
+    this.svc
+      .delete(id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.veiculos.update((list) => list.filter((v) => v.id !== id));
+          this.toast.success('Veículo excluído', `"${label}" foi removido com sucesso.`);
+        },
+        error: () => this.toast.error('Erro ao excluir', 'Não foi possível excluir o veículo.'),
+      });
+  }
+
+  async confirmBulkDelete(rows: VeiculoTableRow[]): Promise<void> {
+    if (!this.canDeleteVeiculo() || rows.length === 0) return;
+
+    const confirmado = await this.confirmation.confirmDelete(`${rows.length} veículo(s) selecionado(s)`);
+    if (!confirmado) return;
+
+    const ids = rows.map((r) => r.id);
+    forkJoin(ids.map((id) => this.svc.delete(id)))
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          const idSet = new Set(ids);
+          this.veiculos.update((list) => list.filter((v) => !idSet.has(v.id)));
+          this.datatable()?.clearSelection();
+          this.toast.success('Veículos excluídos', `${ids.length} registro(s) removido(s) com sucesso.`);
+        },
+        error: () => this.toast.error('Erro ao excluir', 'Não foi possível excluir os veículos selecionados.'),
+      });
+  }
+
+  private extractArray<T>(resp: unknown): T[] {
+    if (Array.isArray(resp)) return resp as T[];
+    if (resp && typeof resp === 'object' && 'data' in resp && Array.isArray((resp as { data: unknown }).data)) {
+      return (resp as { data: T[] }).data;
+    }
+    return [];
   }
 }
