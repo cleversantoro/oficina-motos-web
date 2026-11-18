@@ -16,7 +16,6 @@ import { MecanicoDetalhe } from '../mecanico-detalhe/mecanico-detalhe';
   imports: [CommonModule, FormsModule, RouterLink, MecanicoDetalhe],
   templateUrl: './mecanico-lista.html',
   styleUrl: './mecanico-lista.scss',
-  providers: [MecanicosService]
 })
 export class MecanicoLista implements OnInit {
   mecanicos: any[] = [];

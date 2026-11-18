@@ -1,6 +1,7 @@
 <header class="header-shell">
   <div class="brand">
     <button
+      #menuToggleBtn
       type="button"
       class="cta ghost menu-toggle-btn"
       [attr.aria-expanded]="menuOpen()"
@@ -37,6 +38,7 @@
     }
 
     <button
+      #menuToggleBtn
       type="button"
       class="cta ghost"
       (click)="sincronizar()"

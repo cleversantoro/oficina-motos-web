@@ -102,5 +102,18 @@ describe('EstoqueListaComponent', () => {
     expect(prodLinks.length).toBe(2);
     expect(prodLinks[0].getAttribute('href')).toBe('/estoque/1');
   });
+
+  it('deve filtrar itens por categoria, fabricante e status de estoque baixo', () => {
+    component.toggleCategoria(1);
+    expect(component.filtered.length).toBe(2);
+
+    component.toggleStatusFiltro(component.statusFiltros[0]);
+    expect(component.filtered.length).toBe(1);
+    expect(component.filtered[0].id).toBe(1);
+
+    component.toggleStatusFiltro(component.statusFiltros[0]);
+    component.toggleFabricante(999);
+    expect(component.filtered.length).toBe(0);
+  });
 });
 

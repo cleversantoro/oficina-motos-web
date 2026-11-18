@@ -31,7 +31,6 @@ type TabId = 'perfil' | 'contato' | 'financeiro' | 'legal' | 'anexos';
   imports: [CommonModule, ReactiveFormsModule, ButtonModule, FileUploadComponent],
   templateUrl: './cliente-editar.html',
   styleUrl: './cliente-editar.scss',
-  providers: [ClientesService],
 })
 export class ClienteEditar implements OnInit {
   private route = inject(ActivatedRoute);

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input, output, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, computed, inject, input, output, signal, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
@@ -19,6 +19,11 @@ export class AppHeader {
 
   readonly menuOpen = input(false);
   readonly menuToggle = output<void>();
+  private readonly menuToggleBtn = viewChild<ElementRef<HTMLButtonElement>>('menuToggleBtn');
+
+  focusMenuToggle(): void {
+    this.menuToggleBtn()?.nativeElement.focus();
+  }
 
   readonly currentUser = this.auth.currentUser;
   readonly searchTerm = signal('');

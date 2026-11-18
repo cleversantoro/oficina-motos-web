@@ -22,7 +22,6 @@ type Filtro = { label: string; checked: boolean };
   imports: [DecimalPipe, FormsModule, RouterLink],
   templateUrl: './estoque-lista.html',
   styleUrl: './estoque-lista.scss',
-  providers: [EstoqueService],
 })
 export class EstoqueLista implements OnInit {
   itens: EstoquePeca[] = [];
@@ -31,6 +30,8 @@ export class EstoqueLista implements OnInit {
   localizacoes: EstoqueLocalizacao[] = [];
   loading = false;
   filterText = '';
+  selectedCategoriaIds: number[] = [];
+  selectedFabricanteIds: number[] = [];
   first = 0;
   rows = 5;
 
@@ -90,12 +91,47 @@ export class EstoqueLista implements OnInit {
 
   get filtered(): EstoquePeca[] {
     const q = this.filterText.trim().toLowerCase();
-    if (!q) return this.itens;
-    return this.itens.filter(
-      (i) =>
+    const filtroBaixo = this.statusFiltros[0]?.checked;
+    const filtroReposicao = this.statusFiltros[1]?.checked;
+
+    return this.itens.filter((i) => {
+      if (this.selectedCategoriaIds.length > 0 && (!i.categoriaId || !this.selectedCategoriaIds.includes(i.categoriaId))) {
+        return false;
+      }
+      if (this.selectedFabricanteIds.length > 0 && (!i.fabricanteId || !this.selectedFabricanteIds.includes(i.fabricanteId))) {
+        return false;
+      }
+      if (filtroBaixo && !this.isCritico(i)) {
+        return false;
+      }
+      if (filtroReposicao && i.quantidade > i.estoqueMinimo) {
+        return false;
+      }
+      if (!q) return true;
+      return (
         (i.descricao ?? '').toLowerCase().includes(q) ||
         (i.codigo ?? '').toLowerCase().includes(q)
-    );
+      );
+    });
+  }
+
+  toggleCategoria(id: number): void {
+    this.selectedCategoriaIds = this.selectedCategoriaIds.includes(id)
+      ? this.selectedCategoriaIds.filter((c) => c !== id)
+      : [...this.selectedCategoriaIds, id];
+    this.first = 0;
+  }
+
+  toggleFabricante(id: number): void {
+    this.selectedFabricanteIds = this.selectedFabricanteIds.includes(id)
+      ? this.selectedFabricanteIds.filter((f) => f !== id)
+      : [...this.selectedFabricanteIds, id];
+    this.first = 0;
+  }
+
+  toggleStatusFiltro(filtro: Filtro): void {
+    filtro.checked = !filtro.checked;
+    this.first = 0;
   }
 
   isCritico(item: EstoquePeca): boolean {

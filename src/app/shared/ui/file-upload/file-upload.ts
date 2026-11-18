@@ -22,7 +22,6 @@ interface Anexo {
   imports: [CommonModule, FormsModule, ButtonModule, FileUploadModule],
   templateUrl: './file-upload.html',
   styleUrl: './file-upload.scss',
-  providers: [ClientesService],
 })
 export class FileUpload implements OnInit, OnChanges {
   @Input() clienteId!: number;

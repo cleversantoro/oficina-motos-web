@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal, viewChild } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { LoadingSpinner } from '../../shared/ui/loading-spinner/loading-spinner';
@@ -26,14 +26,25 @@ import { AppSidebar } from '../sidebar/sidebar';
 })
 export class MainLayout {
   readonly menuOpen = signal(false);
+  private readonly header = viewChild(AppHeader);
+  private readonly sidebar = viewChild(AppSidebar);
 
   toggleMenu(): void {
-    this.menuOpen.update((open) => !open);
+    const next = !this.menuOpen();
+    this.menuOpen.set(next);
+    setTimeout(() => {
+      if (next) {
+        this.sidebar()?.focusCloseButton();
+      } else {
+        this.header()?.focusMenuToggle();
+      }
+    });
   }
 
   closeMenu(): void {
     if (this.menuOpen()) {
       this.menuOpen.set(false);
+      setTimeout(() => this.header()?.focusMenuToggle());
     }
   }
 }

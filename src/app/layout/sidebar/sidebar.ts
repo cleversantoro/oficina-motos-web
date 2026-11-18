@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, input, output, viewChild } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 
 type NavItem = {
@@ -19,6 +19,11 @@ type NavItem = {
 export class AppSidebar {
   readonly isOpen = input(false);
   readonly navigate = output<void>();
+  private readonly closeBtn = viewChild<ElementRef<HTMLButtonElement>>('closeBtn');
+
+  focusCloseButton(): void {
+    this.closeBtn()?.nativeElement.focus();
+  }
 
   readonly navItems: NavItem[] = [
     { label: 'Dashboard', icon: 'pi-home', route: '/dashboard', hint: 'Resumo do dia' },

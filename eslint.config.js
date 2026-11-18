@@ -50,7 +50,8 @@ module.exports = defineConfig([
       angular.configs.templateAccessibility,
     ],
     rules: {
-      "@angular-eslint/template/elements-content": "warn",
+      // PrimeNG pButton usa o atributo [label] para texto acessível
+      "@angular-eslint/template/elements-content": "off",
     },
   }
 ]);

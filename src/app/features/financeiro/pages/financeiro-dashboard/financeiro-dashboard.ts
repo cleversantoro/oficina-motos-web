@@ -17,8 +17,7 @@ type Kpi = { label: string; valor: number; tipo?: 'entrada' | 'saida' | 'alerta'
   standalone: true,
   imports: [CommonModule, DatePipe, DecimalPipe, FormsModule, RouterLink],
   templateUrl: './financeiro-dashboard.html',
-  styleUrl: './financeiro-dashboard.scss',
-  providers: [FinanceiroService]
+  styleUrl: './financeiro-dashboard.scss'
 })
 export class FinanceiroDashboard implements OnInit {
   activeTab: TabId = 'pagar';

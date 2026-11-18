@@ -19,7 +19,6 @@ import { Toast } from '../../../../shared/services/toast';
   imports: [CommonModule, FormsModule, ButtonModule, RouterLink, TableModule, TagModule, TooltipModule, InputTextModule],
   templateUrl: './cliente-lista.html',
   styleUrl: './cliente-lista.scss',
-  providers: [ClientesService],
 })
 export class ClienteLista implements OnInit {
   private toast = inject(Toast);

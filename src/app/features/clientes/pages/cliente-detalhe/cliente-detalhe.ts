@@ -16,7 +16,6 @@ import { Confirmation } from '../../../../shared/services/confirmation';
   imports: [CommonModule, DatePipe, ButtonModule, TabsModule, TagModule, RouterLink],
   templateUrl: './cliente-detalhe.html',
   styleUrl: './cliente-detalhe.scss',
-  providers: [ClientesService],
 })
 export class ClienteDetalhe implements OnInit {
   private route = inject(ActivatedRoute);
