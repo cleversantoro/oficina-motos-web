@@ -86,9 +86,9 @@ export class DataTable<T = any> {
     responsive: true,
     selectable: false,
     selectionMode: 'single',
-    showGridlines: true,
+    showGridlines: false,
     hoverable: true,
-    size: 'normal',
+    size: 'small',
     emptyMessage: 'Nenhum registro encontrado',
     globalFilter: true,
     globalFilterPlaceholder: 'Buscar...',
@@ -96,8 +96,8 @@ export class DataTable<T = any> {
 
   /** Configurações de paginação */
   @Input() paginationConfig: TablePaginationConfig = {
-    rows: 10,
-    rowsPerPageOptions: [5, 10, 25, 50],
+    rows: 5,
+    rowsPerPageOptions: [10, 25, 50],
     showPaginator: true,
     paginatorPosition: 'bottom',
   };
@@ -111,6 +111,7 @@ export class DataTable<T = any> {
   // Outputs (eventos)
   @Output() rowSelect = new EventEmitter<T>();
   @Output() rowUnselect = new EventEmitter<T>();
+  @Output() rowClick = new EventEmitter<T>();
   @Output() rowsSelect = new EventEmitter<T[]>();
   @Output() pageChange = new EventEmitter<TablePageEvent>();
   @Output() sortChange = new EventEmitter<TableSortEvent>();
@@ -198,6 +199,15 @@ export class DataTable<T = any> {
    */
   isActionDisabled(action: TableAction<T>, row: T): boolean {
     return action.disabled ? action.disabled(row) : false;
+  }
+
+  /**
+   * Handler de clique na linha
+   */
+  onRowClick(event: any): void {
+    if (event?.data !== undefined) {
+      this.rowClick.emit(event.data);
+    }
   }
 
   /**

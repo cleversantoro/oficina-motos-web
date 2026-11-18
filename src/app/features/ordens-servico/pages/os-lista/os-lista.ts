@@ -23,26 +23,26 @@ export class OsListaComponent implements OnInit {
   readonly error = signal<string | null>(null);
 
   readonly columns: TableColumn<OrdemServico>[] = [
-    { field: 'id', header: 'ID', dataType: 'number', width: '90px', sortable: true, filterable: true, filterType: 'numeric' },
-    { field: 'status', header: 'Status', sortable: true, filterable: true, filterType: 'text' },
+    { field: 'id', header: 'ID', dataType: 'number', width: '90px', sortable: true },
+    { field: 'status', header: 'Status', sortable: true},
     { field: 'dataAbertura', header: 'Abertura', dataType: 'date', sortable: true },
-    { field: 'clienteId', header: 'Cliente', dataType: 'number', sortable: true, filterable: true, filterType: 'numeric' },
-    { field: 'mecanicoId', header: 'Mecânico', dataType: 'number', sortable: true, filterable: true, filterType: 'numeric' },
+    { field: 'clienteId', header: 'Cliente', dataType: 'number', sortable: true },
+    { field: 'mecanicoId', header: 'Mecânico', dataType: 'number', sortable: true },
     { field: 'descricaoProblema', header: 'Descrição', sortable: false },
   ];
 
   readonly actions: TableAction<OrdemServico>[] = [
     {
       icon: 'pi pi-eye',
-      tooltip: 'Visualizar ordem',
-      styleClass: 'p-button-rounded p-button-text p-button-info',
+      tooltip: 'Detalhes',
+      styleClass: 'p-button-rounded p-button-text p-button-info act-btn act-view',
       onClick: ordem => this.openDetails(ordem),
       disabled: ordem => !Number.isInteger(ordem.id) || ordem.id <= 0,
     },
     {
       icon: 'pi pi-trash',
-      tooltip: 'Excluir ordem',
-      styleClass: 'p-button-rounded p-button-text p-button-danger',
+      tooltip: 'Excluir',
+      styleClass: 'p-button-rounded p-button-text p-button-danger act-btn act-del',
       onClick: ordem => this.confirmDelete(ordem.id),
       visible: () => this.canDeleteOrdem(),
     },
