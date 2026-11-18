@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { AppHeader } from '../header/header';
 import { AppSidebar } from '../sidebar/sidebar';
@@ -21,5 +21,6 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
   ],
   templateUrl: './main-layout.html',
   styleUrl: './main-layout.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MainLayout {}

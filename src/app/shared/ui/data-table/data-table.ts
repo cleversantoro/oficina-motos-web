@@ -1,4 +1,5 @@
 import {
+  ChangeDetectionStrategy,
   Component,
   Input,
   Output,
@@ -60,6 +61,7 @@ import { hasAnyRole } from '../../../core/auth/rbac-access.helper';
   providers: [CurrencyPipe, DatePipe],
   templateUrl: './data-table.html',
   styleUrl: './data-table.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DataTable<T = any> {
   @ViewChild('dt') table!: Table;

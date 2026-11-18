@@ -85,13 +85,14 @@ describe('EstoquePecaCadastroComponent', () => {
     fixture.detectChanges();
   });
 
-  it('deve registrar a rota estoque/novo em app.routes.ts (T-018.2)', () => {
+  it('deve registrar a rota estoque/novo em app.routes.ts (T-018.2)', async () => {
     const mainRoute = routes.find((r) => r.path === '' && Array.isArray(r.children));
     expect(mainRoute).toBeTruthy();
 
     const novoRoute = mainRoute!.children!.find((r) => r.path === 'estoque/novo');
     expect(novoRoute).toBeTruthy();
-    expect(novoRoute!.component).toBe(EstoquePecaCadastroComponent);
+    const loaded = novoRoute!.component ?? (await novoRoute!.loadComponent!());
+    expect(loaded).toBe(EstoquePecaCadastroComponent);
   });
 
   it('deve inicializar o formulário e carregar dropdowns de fabricante, categoria e fornecedor (T-018.1, T-018.3)', () => {

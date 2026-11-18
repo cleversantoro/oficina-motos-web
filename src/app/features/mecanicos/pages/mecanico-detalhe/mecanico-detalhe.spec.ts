@@ -94,7 +94,7 @@ describe('MecanicoDetalheComponent', () => {
     mecanicosServiceMock.get.mockReturnValue(of(mockMecanico));
   });
 
-  it('deve registrar a rota mecanicos/:id após mecanicos/novo em app.routes.ts (T-016.1)', () => {
+  it('deve registrar a rota mecanicos/:id após mecanicos/novo em app.routes.ts (T-016.1)', async () => {
     const mainRoute = routes.find(r => r.path === '' && Array.isArray(r.children));
     expect(mainRoute).toBeTruthy();
 
@@ -104,7 +104,8 @@ describe('MecanicoDetalheComponent', () => {
 
     expect(novoIdx).toBeGreaterThanOrEqual(0);
     expect(detalheIdx).toBeGreaterThan(novoIdx);
-    expect(children[detalheIdx].component).toBe(MecanicoDetalheComponent);
+    const loaded = children[detalheIdx].component ?? (await children[detalheIdx].loadComponent!());
+    expect(loaded).toBe(MecanicoDetalheComponent);
   });
 
   it('deve carregar os dados do mecânico via rota /mecanicos/:id e ativar modo página', async () => {

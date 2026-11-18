@@ -113,14 +113,14 @@ describe('ContasReceberListaComponent (US-022)', () => {
     expect(rows.length).toBe(4);
   });
 
-  it('deve registrar a rota /financeiro/contas-receber em app.routes.ts apontando para ContasReceberListaComponent (T-022.2)', () => {
+  it('deve registrar a rota /financeiro/contas-receber em app.routes.ts apontando para ContasReceberListaComponent (T-022.2)', async () => {
     const mainRoute = routes.find((r) => r.path === '' && Array.isArray(r.children));
     expect(mainRoute).toBeTruthy();
     const contasReceberRoute = mainRoute?.children?.find(
       (c) => c.path === 'financeiro/contas-receber',
     );
     expect(contasReceberRoute).toBeTruthy();
-    expect(contasReceberRoute?.component).toBe(ContasReceberListaComponent);
+    expect(contasReceberRoute?.component ?? (await contasReceberRoute?.loadComponent?.())).toBe(ContasReceberListaComponent);
   });
 
   it('deve exibir a coluna "OS Origem" com link para /ordens/:id quando houver OS vinculada e "-" quando for manual (T-022.3)', () => {

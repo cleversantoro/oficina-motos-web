@@ -112,12 +112,12 @@ describe('ContasPagarListaComponent (US-020)', () => {
     expect(rows.length).toBe(4);
   });
 
-  it('deve registrar a rota /financeiro/contas-pagar em app.routes.ts apontando para ContasPagarListaComponent (T-020.2)', () => {
+  it('deve registrar a rota /financeiro/contas-pagar em app.routes.ts apontando para ContasPagarListaComponent (T-020.2)', async () => {
     const mainRoute = routes.find((r) => r.path === '' && Array.isArray(r.children));
     expect(mainRoute).toBeTruthy();
     const contasPagarRoute = mainRoute?.children?.find((c) => c.path === 'financeiro/contas-pagar');
     expect(contasPagarRoute).toBeTruthy();
-    expect(contasPagarRoute?.component).toBe(ContasPagarListaComponent);
+    expect(contasPagarRoute?.component ?? (await contasPagarRoute?.loadComponent?.())).toBe(ContasPagarListaComponent);
   });
 
   it('deve destacar visualmente contas vencidas (.row-vencida, .status-vencido, .overdue-pill) e não destacar contas pagas ou canceladas (T-020.4)', () => {

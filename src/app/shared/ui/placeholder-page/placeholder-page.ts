@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 
 @Component({
   selector: 'app-placeholder-page',
@@ -6,6 +6,7 @@ import { Component, Input } from '@angular/core';
   imports: [],
   templateUrl: './placeholder-page.html',
   styleUrl: './placeholder-page.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PlaceholderPage {
   @Input() title = 'Em breve';

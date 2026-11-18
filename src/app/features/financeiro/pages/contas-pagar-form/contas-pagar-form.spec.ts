@@ -99,7 +99,7 @@ describe('ContasPagarFormComponent (US-021)', () => {
     fornecedoresServiceMock.list.mockReturnValue(of(mockFornecedores));
   });
 
-  it('deve registrar as rotas de criação (/financeiro/contas-pagar/novo) e edição (/financeiro/contas-pagar/:id/editar) em app.routes.ts (T-021.2)', () => {
+  it('deve registrar as rotas de criação (/financeiro/contas-pagar/novo) e edição (/financeiro/contas-pagar/:id/editar) em app.routes.ts (T-021.2)', async () => {
     const mainRoute = routes.find((r) => r.path === '' && Array.isArray(r.children));
     expect(mainRoute).toBeTruthy();
 
@@ -111,9 +111,9 @@ describe('ContasPagarFormComponent (US-021)', () => {
     );
 
     expect(createRoute).toBeTruthy();
-    expect(createRoute?.component).toBe(ContasPagarFormComponent);
+    expect(createRoute?.component ?? (await createRoute?.loadComponent?.())).toBe(ContasPagarFormComponent);
     expect(editRoute).toBeTruthy();
-    expect(editRoute?.component).toBe(ContasPagarFormComponent);
+    expect(editRoute?.component ?? (await editRoute?.loadComponent?.())).toBe(ContasPagarFormComponent);
   });
 
   it('deve iniciar em modo de criação quando não houver parâmetro :id e carregar fornecedores e métodos (T-021.1)', async () => {

@@ -82,7 +82,7 @@ describe('FornecedorCadastroComponent', () => {
     fixture.detectChanges();
   });
 
-  it('deve registrar a rota fornecedores/novo antes de fornecedores/:id em app.routes.ts (T-017.2)', () => {
+  it('deve registrar a rota fornecedores/novo antes de fornecedores/:id em app.routes.ts (T-017.2)', async () => {
     const mainRoute = routes.find((r) => r.path === '' && Array.isArray(r.children));
     expect(mainRoute).toBeTruthy();
 
@@ -92,7 +92,8 @@ describe('FornecedorCadastroComponent', () => {
 
     expect(novoIdx).toBeGreaterThanOrEqual(0);
     expect(detalheIdx).toBeGreaterThan(novoIdx);
-    expect(children[novoIdx].component).toBe(FornecedorCadastroComponent);
+    const loaded = children[novoIdx].component ?? (await children[novoIdx].loadComponent!());
+    expect(loaded).toBe(FornecedorCadastroComponent);
   });
 
   it('deve inicializar o componente, sugerir código FOR-003 e carregar segmentos ativos no dropdown (T-017.1, T-017.4)', () => {

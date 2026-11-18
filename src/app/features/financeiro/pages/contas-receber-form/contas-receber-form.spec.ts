@@ -99,7 +99,7 @@ describe('ContasReceberFormComponent (US-023)', () => {
     clientesServiceMock.list.mockReturnValue(of(mockClientes));
   });
 
-  it('deve registrar as rotas de criação (/financeiro/contas-receber/novo) e edição (/financeiro/contas-receber/:id/editar) em app.routes.ts (T-023.2)', () => {
+  it('deve registrar as rotas de criação (/financeiro/contas-receber/novo) e edição (/financeiro/contas-receber/:id/editar) em app.routes.ts (T-023.2)', async () => {
     const mainRoute = routes.find((r) => r.path === '' && Array.isArray(r.children));
     expect(mainRoute).toBeTruthy();
 
@@ -111,9 +111,9 @@ describe('ContasReceberFormComponent (US-023)', () => {
     );
 
     expect(createRoute).toBeTruthy();
-    expect(createRoute?.component).toBe(ContasReceberFormComponent);
+    expect(createRoute?.component ?? (await createRoute?.loadComponent?.())).toBe(ContasReceberFormComponent);
     expect(editRoute).toBeTruthy();
-    expect(editRoute?.component).toBe(ContasReceberFormComponent);
+    expect(editRoute?.component ?? (await editRoute?.loadComponent?.())).toBe(ContasReceberFormComponent);
   });
 
   it('deve iniciar em modo de criação quando não houver parâmetro :id e carregar clientes e métodos (T-023.1)', async () => {

@@ -1,4 +1,4 @@
-import { Component, OnInit, computed, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, computed, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { DashboardService } from '../../../../core/services/dashboard.service';
@@ -41,6 +41,7 @@ const STATUS_CORES: Record<string, string> = {
   imports: [RouterLink, CommonModule],
   templateUrl: './dashboard-principal.html',
   styleUrl: './dashboard-principal.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DashboardPrincipalComponent implements OnInit {
   readonly skeletonPlaceholders = [1, 2, 3, 4];

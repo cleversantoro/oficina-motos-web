@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { Loading } from '../../services/loading';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 
@@ -8,6 +8,7 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
   imports: [ProgressSpinnerModule],
   templateUrl: './loading-spinner.html',
   styleUrl: './loading-spinner.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LoadingSpinner {
   protected loadingService = inject(Loading);
