@@ -5,6 +5,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { MecanicoListaComponent } from './mecanico-lista';
 import { MecanicosService } from '../../../../core/services/mecanicos.service';
 import { AuthService } from '../../../../core/auth/auth.service';
+import { Confirmation } from '../../../../shared/services/confirmation';
+import { Toast } from '../../../../shared/services/toast';
 
 describe('MecanicoListaComponent', () => {
   let fixture: ComponentFixture<MecanicoListaComponent>;
@@ -53,6 +55,8 @@ describe('MecanicoListaComponent', () => {
       providers: [
         { provide: MecanicosService, useValue: mecanicosServiceMock },
         { provide: AuthService, useValue: authServiceMock },
+        { provide: Confirmation, useValue: { confirmDelete: vi.fn().mockResolvedValue(true) } },
+        { provide: Toast, useValue: { success: vi.fn(), error: vi.fn() } },
         provideRouter([]),
       ],
     })

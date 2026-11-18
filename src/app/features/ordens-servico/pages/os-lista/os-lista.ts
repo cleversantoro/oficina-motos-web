@@ -5,6 +5,7 @@ import { AuthService } from '../../../../core/auth/auth.service';
 import { canPerformBusinessAction, canPerformPermission } from '../../../../core/auth/rbac-access.helper';
 import { OrdensService } from '../../../../core/services/ordens.service';
 import { OrdemServico } from '../../../../core/models';
+import { Confirmation } from '../../../../shared/services/confirmation';
 import { Toast } from '../../../../shared/services/toast';
 import { DataTable, TableAction, TableColumn } from '../../../../shared/ui/data-table';
 
@@ -52,6 +53,7 @@ export class OsListaComponent implements OnInit {
     private readonly authService: AuthService,
     private readonly router: Router,
     private readonly toast: Toast,
+    private readonly confirmation: Confirmation,
   ) {}
 
   ngOnInit(): void {
@@ -94,11 +96,14 @@ export class OsListaComponent implements OnInit {
     void this.router.navigate(['/ordens', ordem.id]);
   }
 
-  confirmDelete(id: number): void {
-    if (!Number.isInteger(id) || id <= 0 || !confirm('Tem certeza que deseja excluir esta OS?')) return;
+  async confirmDelete(id: number): Promise<void> {
+    if (!Number.isInteger(id) || id <= 0) return;
+    const confirmado = await this.confirmation.confirmDelete(`OS #${id}`);
+    if (!confirmado) return;
     this.ordensService.delete(id).subscribe({
       next: () => {
         this.ordens.update(ordens => ordens.filter(ordem => ordem.id !== id));
+        this.toast.success('Ordem excluída', `OS #${id} removida com sucesso.`);
       },
       error: () => this.toast.error('Erro', 'Não foi possível excluir a ordem de serviço.'),
     });

@@ -6,6 +6,8 @@ import { AuthService } from '../../../../core/auth/auth.service';
 import { canPerformBusinessAction } from '../../../../core/auth/rbac-access.helper';
 import { MecanicosService } from '../../../../core/services/mecanicos.service';
 import { Mecanico } from '../../../../core/models';
+import { Confirmation } from '../../../../shared/services/confirmation';
+import { Toast } from '../../../../shared/services/toast';
 import { MecanicoDetalhe } from '../mecanico-detalhe/mecanico-detalhe';
 
 @Component({
@@ -28,6 +30,8 @@ export class MecanicoLista implements OnInit {
   constructor(
     private mecanicosService: MecanicosService,
     private authService: AuthService,
+    private confirmation: Confirmation,
+    private toast: Toast,
     @Optional() private router?: Router,
   ) {}
 
@@ -81,11 +85,17 @@ export class MecanicoLista implements OnInit {
     return canPerformBusinessAction(this.authService.currentRole(), 'mecanicos', 'delete');
   }
 
-  confirmDelete(id: number): void {
-    if (!confirm('Tem certeza que deseja excluir este mec\u00e2nico?')) return;
+  async confirmDelete(id: number): Promise<void> {
+    const mec = this.mecanicos.find(m => m.id === id);
+    const nome = mec ? [mec.nome, mec.sobrenome].filter(Boolean).join(' ') : `Mecânico #${id}`;
+    const confirmado = await this.confirmation.confirmDelete(nome);
+    if (!confirmado) return;
     this.mecanicosService.delete(id).subscribe({
-      next: () => { this.mecanicos = this.mecanicos.filter(m => m.id !== id); },
-      error: () => alert('Erro ao excluir mec\u00e2nico.'),
+      next: () => {
+        this.mecanicos = this.mecanicos.filter(m => m.id !== id);
+        this.toast.success('Mecânico excluído', `"${nome}" foi removido com sucesso.`);
+      },
+      error: () => this.toast.error('Erro ao excluir', 'Não foi possível excluir o mecânico.'),
     });
   }
 

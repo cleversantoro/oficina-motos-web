@@ -8,8 +8,9 @@ describe('OsListaComponent', () => {
       permissions: () => permissions,
       currentRole: () => 'Consulta',
     } as any;
-    const toast = { warn: () => undefined, error: () => undefined } as any;
-    return new OsListaComponent({} as any, auth, router, toast);
+    const toast = { warn: () => undefined, error: () => undefined, success: () => undefined } as any;
+    const confirmation = { confirmDelete: () => Promise.resolve(true) } as any;
+    return new OsListaComponent({} as any, auth, router, toast, confirmation);
   }
 
   it('permite a ação de criação quando a sessão possui a permissão', () => {

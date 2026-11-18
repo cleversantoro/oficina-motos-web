@@ -5,6 +5,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { EstoqueListaComponent } from './estoque-lista';
 import { EstoqueService } from '../../../../core/services/estoque.service';
 import { AuthService } from '../../../../core/auth/auth.service';
+import { Confirmation } from '../../../../shared/services/confirmation';
+import { Toast } from '../../../../shared/services/toast';
 
 describe('EstoqueListaComponent', () => {
   let fixture: ComponentFixture<EstoqueListaComponent>;
@@ -64,6 +66,8 @@ describe('EstoqueListaComponent', () => {
         provideRouter([]),
         { provide: EstoqueService, useValue: estoqueServiceMock },
         { provide: AuthService, useValue: authServiceMock },
+        { provide: Confirmation, useValue: { confirmDelete: vi.fn().mockResolvedValue(true) } },
+        { provide: Toast, useValue: { success: vi.fn(), error: vi.fn() } },
       ],
     })
       .overrideComponent(EstoqueListaComponent, {

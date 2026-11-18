@@ -1,6 +1,6 @@
 <header class="header-shell">
   <div class="brand">
-    <div class="brand-mark">OM</div>
+    <div class="brand-mark" aria-hidden="true">OM</div>
     <div>
       <p class="brand-title">Oficina MotoPro</p>
       <p class="brand-subtitle">Painel operacional</p>
@@ -8,20 +8,33 @@
   </div>
 
   <div class="header-actions">
-    <div class="search">
-      <span class="pi pi-search"></span>
+    <form class="search" (ngSubmit)="onSearch()" role="search">
+      <span class="pi pi-search" aria-hidden="true"></span>
       <input
-        type="text"
+        type="search"
+        name="globalSearch"
         placeholder="Buscar por cliente, placa ou OS"
         aria-label="Buscar por cliente, placa ou OS"
+        [ngModel]="searchTerm()"
+        (ngModelChange)="searchTerm.set($event)"
       />
-    </div>
-    <button class="cta strong">
-      <span class="pi pi-bolt"></span>
-      Nova OS
-    </button>
-    <button class="cta ghost" aria-label="Sincronizar">
-      <span class="pi pi-refresh"></span>
+    </form>
+
+    @if (canCreateOrdem()) {
+      <button type="button" class="cta strong" (click)="novaOrdem()">
+        <span class="pi pi-bolt" aria-hidden="true"></span>
+        Nova OS
+      </button>
+    }
+
+    <button
+      type="button"
+      class="cta ghost"
+      (click)="sincronizar()"
+      aria-label="Sincronizar"
+      title="Sincronizar"
+    >
+      <span class="pi pi-refresh" aria-hidden="true"></span>
     </button>
 
     @if (currentUser(); as user) {
@@ -31,12 +44,12 @@
       </div>
     }
 
-    <div class="avatar" [title]="currentUser()?.name ?? ''">
+    <div class="avatar" [title]="currentUser()?.name ?? ''" aria-hidden="true">
       {{ initials() }}
     </div>
 
-    <button class="cta ghost logout-btn" (click)="logout()" aria-label="Sair">
-      <span class="pi pi-sign-out"></span>
+    <button type="button" class="cta ghost logout-btn" (click)="logout()" aria-label="Sair" title="Sair">
+      <span class="pi pi-sign-out" aria-hidden="true"></span>
     </button>
   </div>
 </header>

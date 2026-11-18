@@ -5,6 +5,8 @@ import { RouterLink } from '@angular/router';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { canPerformBusinessAction } from '../../../../core/auth/rbac-access.helper';
 import { EstoqueService } from '../../../../core/services/estoque.service';
+import { Confirmation } from '../../../../shared/services/confirmation';
+import { Toast } from '../../../../shared/services/toast';
 import {
   EstoquePeca,
   EstoqueCategoria,
@@ -40,6 +42,8 @@ export class EstoqueLista implements OnInit {
   constructor(
     private estoqueService: EstoqueService,
     private authService: AuthService,
+    private confirmation: Confirmation,
+    private toast: Toast,
   ) {}
 
   ngOnInit(): void {
@@ -129,13 +133,16 @@ export class EstoqueLista implements OnInit {
     return end > this.filtered.length ? this.filtered.length : end;
   }
 
-  confirmDelete(id: number): void {
-    if (!confirm('Tem certeza que deseja excluir este item do estoque?')) return;
+  async confirmDelete(id: number): Promise<void> {
+    const item = this.itens.find((i) => i.id === id);
+    const confirmado = await this.confirmation.confirmDelete(item?.descricao || `Item #${id}`);
+    if (!confirmado) return;
     this.estoqueService.removerPeca(id).subscribe({
       next: () => {
         this.itens = this.itens.filter((i) => i.id !== id);
+        this.toast.success('Item excluído', 'Item removido do estoque com sucesso.');
       },
-      error: () => alert('Erro ao excluir item.'),
+      error: () => this.toast.error('Erro ao excluir', 'Não foi possível excluir o item do estoque.'),
     });
   }
 }

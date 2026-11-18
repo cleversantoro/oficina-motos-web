@@ -6,6 +6,8 @@ import { forkJoin } from 'rxjs';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { canPerformBusinessAction } from '../../../../core/auth/rbac-access.helper';
 import { VeiculosService } from '../../../../core/services/veiculos.service';
+import { Confirmation } from '../../../../shared/services/confirmation';
+import { Toast } from '../../../../shared/services/toast';
 
 @Component({
   selector: 'app-veiculo-lista',
@@ -29,6 +31,8 @@ export class VeiculoLista implements OnInit {
     private svc: VeiculosService,
     private router: Router,
     private authService: AuthService,
+    private confirmation: Confirmation,
+    private toast: Toast,
   ) {}
 
   ngOnInit(): void {
@@ -123,11 +127,17 @@ export class VeiculoLista implements OnInit {
     return end > this.filtered.length ? this.filtered.length : end;
   }
 
-  confirmDelete(id: number): void {
-    if (!confirm('Tem certeza que deseja excluir este veículo?')) return;
+  async confirmDelete(id: number): Promise<void> {
+    const veiculo = this.veiculos.find(v => v.id === id);
+    const label = veiculo?.placa ? `Veículo ${veiculo.placa}` : `Veículo #${id}`;
+    const confirmado = await this.confirmation.confirmDelete(label);
+    if (!confirmado) return;
     this.svc.delete(id).subscribe({
-      next: () => { this.veiculos = this.veiculos.filter(v => v.id !== id); },
-      error: () => alert('Erro ao excluir veículo.'),
+      next: () => {
+        this.veiculos = this.veiculos.filter(v => v.id !== id);
+        this.toast.success('Veículo excluído', `"${label}" foi removido com sucesso.`);
+      },
+      error: () => this.toast.error('Erro ao excluir', 'Não foi possível excluir o veículo.'),
     });
   }
 }
