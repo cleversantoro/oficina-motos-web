@@ -1,25 +1,31 @@
-<aside class="sidebar">
+<aside class="sidebar" [class.open]="isOpen()" aria-label="Menu principal">
+  <div class="drawer-head">
+    <span class="drawer-title">Navegação</span>
+    <button
+      type="button"
+      class="drawer-close"
+      aria-label="Fechar menu"
+      (click)="onNavigate()"
+    >
+      <span class="pi pi-times" aria-hidden="true"></span>
+    </button>
+  </div>
+
   <nav class="nav">
     @for (item of navItems; track item.route) {
       <a
-        routerLink="{{ item.route }}"
+        [routerLink]="item.route"
         routerLinkActive="active"
         class="nav-link"
+        (click)="onNavigate()"
       >
-        <span class="pi" [ngClass]="item.icon"></span>
+        <span class="pi" [class]="item.icon" aria-hidden="true"></span>
         <div class="nav-copy">
           <span class="label">{{ item.label }}</span>
           <small class="hint">{{ item.hint }}</small>
         </div>
-        <span class="caret pi pi-chevron-right"></span>
+        <span class="caret pi pi-chevron-right" aria-hidden="true"></span>
       </a>
     }
   </nav>
-
-  <!-- <div class="callout">
-    <div class="tag">Status</div>
-    <p class="callout-title">Oficina aberta</p>
-    <p class="callout-text">Fila com 4 ordens em diagnostico. Tudo sob controle.</p>
-    <button class="cta">Ver agenda</button>
-  </div> -->
 </aside>

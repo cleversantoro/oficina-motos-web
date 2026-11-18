@@ -1,5 +1,4 @@
-import { NgClass } from '@angular/common';
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 
 type NavItem = {
@@ -12,12 +11,15 @@ type NavItem = {
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [NgClass, RouterLink, RouterLinkActive],
+  imports: [RouterLink, RouterLinkActive],
   templateUrl: './sidebar.html',
   styleUrl: './sidebar.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AppSidebar {
+  readonly isOpen = input(false);
+  readonly navigate = output<void>();
+
   readonly navItems: NavItem[] = [
     { label: 'Dashboard', icon: 'pi-home', route: '/dashboard', hint: 'Resumo do dia' },
     { label: 'Clientes', icon: 'pi-users', route: '/clientes', hint: 'Carteira ativa' },
@@ -29,4 +31,8 @@ export class AppSidebar {
     { label: 'Financeiro', icon: 'pi-wallet', route: '/financeiro', hint: 'Fluxo e recebiveis' },
     { label: 'Seguranca', icon: 'pi-shield', route: '/seguranca/usuarios', hint: 'Usuarios e perfis' },
   ];
+
+  onNavigate(): void {
+    this.navigate.emit();
+  }
 }

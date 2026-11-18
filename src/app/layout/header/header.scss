@@ -18,6 +18,21 @@
   gap: 0.75rem;
 }
 
+.menu-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+  min-height: 40px;
+  padding: 0.45rem;
+}
+
+@media (min-width: 1024px) {
+  .menu-toggle-btn {
+    display: none;
+  }
+}
+
 .brand-mark {
   width: 2.75rem;
   height: 2.75rem;

@@ -1,5 +1,14 @@
 <header class="header-shell">
   <div class="brand">
+    <button
+      type="button"
+      class="cta ghost menu-toggle-btn"
+      [attr.aria-expanded]="menuOpen()"
+      aria-label="Alternar menu de navegação"
+      (click)="menuToggle.emit()"
+    >
+      <span class="pi" [class.pi-bars]="!menuOpen()" [class.pi-times]="menuOpen()" aria-hidden="true"></span>
+    </button>
     <div class="brand-mark" aria-hidden="true">OM</div>
     <div>
       <p class="brand-title">Oficina MotoPro</p>

@@ -73,6 +73,7 @@
       </div>
     </div>
 
+    <div class="desktop-table-wrap">
     <p-table
       #dt
       [value]="clientes"
@@ -207,6 +208,51 @@
         </tr>
       </ng-template>
     </p-table>
+    </div>
+
+    <!-- Visão Mobile -->
+    <div class="mobile-cards" aria-label="Lista de clientes">
+      @if (loading) {
+        <div class="mobile-empty">Carregando clientes...</div>
+      } @else if (filteredClientes.length === 0) {
+        <div class="mobile-empty">Nenhum cliente encontrado.</div>
+      } @else {
+        @for (c of filteredClientes; track c.id) {
+          <article class="mobile-card" (click)="navigateTo(c.id)">
+            <div class="mobile-card-head">
+              <div class="cell-name">
+                <span class="avatar" [style.background]="getAvatarColor(c.nome)">
+                  {{ getInitials(c.nome) }}
+                </span>
+                <div>
+                  <p class="name-main">{{ c.nome }}</p>
+                  @if (c.nomeExibicao) {
+                    <p class="name-sub">{{ c.nomeExibicao }}</p>
+                  }
+                </div>
+              </div>
+              <span class="badge" [ngClass]="getStatusClass(c.statusDescricao)">
+                {{ c.statusDescricao || 'Ativo' }}
+              </span>
+            </div>
+            <div class="mobile-card-grid">
+              <div><span class="mobile-label">Documento</span><span class="cell-mono">{{ c.documento || '—' }}</span></div>
+              <div><span class="mobile-label">Telefone</span><span class="cell-mono">{{ c.telefone || '—' }}</span></div>
+              <div style="grid-column:1/-1"><span class="mobile-label">E-mail</span><span class="cell-muted">{{ c.email || '—' }}</span></div>
+            </div>
+            <div class="mobile-card-actions">
+              <button type="button" class="ghost-btn mobile-action-btn" (click)="navigateTo(c.id); $event.stopPropagation()">Ver</button>
+              @if (canEditCliente()) {
+                <button type="button" class="ghost-btn mobile-action-btn" (click)="editarCliente($event, c.id)">Editar</button>
+              }
+              @if (canDeleteCliente()) {
+                <button type="button" class="ghost-btn mobile-action-btn" (click)="confirmDelete($event, c.id)">Excluir</button>
+              }
+            </div>
+          </article>
+        }
+      }
+    </div>
   </div>
 
 </section>

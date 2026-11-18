@@ -47,6 +47,7 @@
 
   @if (!loading && !error) {
     <div class="table-card">
+      <div class="table-scroll">
       <table class="data-table">
         <thead>
           <tr>
@@ -128,6 +129,41 @@
           }
         </tbody>
       </table>
+      </div>
+
+      <div class="mobile-cards" aria-label="Lista de veículos">
+        @if (filtered.length === 0) {
+          <div class="mobile-empty">
+            @if (filterText) { Nenhum veículo encontrado para "{{ filterText }}". }
+            @else { Nenhum veículo cadastrado. }
+          </div>
+        }
+        @for (v of filtered.slice(first, first + rows); track v.id) {
+          <article class="mobile-card" (click)="openDetalhe(v.id)">
+            <div class="mobile-card-head">
+              <div>
+                <span class="placa-pill">{{ v.placa }}</span>
+                <p class="marca-nome" style="margin:.35rem 0 0">{{ marcaNome(v.modeloId) }} {{ modeloNome(v.modeloId) }}</p>
+              </div>
+              <span class="status-pill" [class.ativo]="v.ativo" [class.inativo]="!v.ativo">
+                {{ v.ativo ? 'Ativo' : 'Inativo' }}
+              </span>
+            </div>
+            <div class="mobile-card-grid">
+              <div><span class="mobile-label">Ano</span><span>{{ v.anoFab ? (v.anoMod && v.anoMod !== v.anoFab ? v.anoFab + '/' + v.anoMod : v.anoFab) : '—' }}</span></div>
+              <div><span class="mobile-label">Cor</span><span>{{ v.cor ?? '—' }}</span></div>
+              <div><span class="mobile-label">Combustível</span><span>{{ v.combustivel ?? '—' }}</span></div>
+              <div><span class="mobile-label">KM</span><span class="mono">{{ v.km ?? '—' }}</span></div>
+            </div>
+            <div class="mobile-card-actions">
+              <button type="button" class="pg-btn mobile-action-btn" (click)="openDetalhe(v.id); $event.stopPropagation()">Visualizar</button>
+              @if (canDeleteVeiculo()) {
+                <button type="button" class="pg-btn delete-btn mobile-action-btn" (click)="confirmDelete(v.id); $event.stopPropagation()">Excluir</button>
+              }
+            </div>
+          </article>
+        }
+      </div>
     </div>
 
     @if (filtered.length > rows) {

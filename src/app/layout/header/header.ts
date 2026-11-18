@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
@@ -16,6 +16,9 @@ export class AppHeader {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
   private readonly toast = inject(Toast);
+
+  readonly menuOpen = input(false);
+  readonly menuToggle = output<void>();
 
   readonly currentUser = this.auth.currentUser;
   readonly searchTerm = signal('');

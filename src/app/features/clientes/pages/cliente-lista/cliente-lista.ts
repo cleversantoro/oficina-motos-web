@@ -51,6 +51,17 @@ export class ClienteLista implements OnInit {
     ).length;
   }
 
+  get filteredClientes(): any[] {
+    const q = this.searchTerm.trim().toLowerCase();
+    if (!q) return this.clientes;
+    return this.clientes.filter(c =>
+      (c.nome ?? '').toLowerCase().includes(q) ||
+      (c.documento ?? '').toLowerCase().includes(q) ||
+      (c.email ?? '').toLowerCase().includes(q) ||
+      (c.telefone ?? '').toLowerCase().includes(q)
+    );
+  }
+
   fetchClientes(): void {
     this.loading = true;
     this.clientesService.listTable().subscribe({

@@ -53,7 +53,8 @@
         <button class="cta primary" routerLink="/estoque/novo">+ Nova peça</button>
       </div>
 
-      <table class="data-table">
+      <div class="table-scroll">
+        <table class="data-table">
         <thead>
           <tr>
             <th class="w-produto">Produto</th>
@@ -118,6 +119,44 @@
           }
         </tbody>
       </table>
+      </div>
+
+      <!-- Visão Mobile -->
+      <div class="mobile-cards" aria-label="Itens de estoque">
+        @if (filtered.length === 0) {
+          <div class="mobile-empty">
+            @if (filterText) { Nenhum item encontrado para "{{ filterText }}". }
+            @else { Nenhum item em estoque. }
+          </div>
+        }
+        @for (item of filtered.slice(first, first + rows); track item.id) {
+          <article class="mobile-card">
+            <div class="mobile-card-head">
+              <div>
+                <a class="prod-name mobile-prod-link" [routerLink]="['/estoque', item.id]">{{ item.descricao }}</a>
+                <p class="sku">SKU: {{ item.codigo }} · {{ getCategoria(item.categoriaId) }}</p>
+              </div>
+              <div class="stock-cell">
+                <span class="stock" [class.low]="isCritico(item)">
+                  @if (isCritico(item)) {⚠}
+                  {{ item.quantidade }} {{ (item.unidade || 'un').toLowerCase() }}
+                </span>
+              </div>
+            </div>
+            <div class="mobile-card-grid">
+              <div><span class="mobile-label">Preço</span><span>R$ {{ item.precoUnitario | number : '1.0-2' }}</span></div>
+              <div><span class="mobile-label">Fabricante</span><span>{{ getFabricante(item.fabricanteId) }}</span></div>
+              <div><span class="mobile-label">Localização</span><span>{{ getLocalizacao(item.localizacaoId) }}</span></div>
+            </div>
+            <div class="mobile-card-actions">
+              <button type="button" class="ghost mobile-action-btn" [routerLink]="['/estoque', item.id]">Visualizar</button>
+              @if (canDeleteItem()) {
+                <button type="button" class="ghost delete-btn mobile-action-btn" (click)="confirmDelete(item.id)">Excluir</button>
+              }
+            </div>
+          </article>
+        }
+      </div>
 
       @if (filtered.length > rows) {
         <div class="pagination">

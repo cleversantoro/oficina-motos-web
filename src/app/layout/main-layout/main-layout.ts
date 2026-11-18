@@ -1,11 +1,10 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { LoadingSpinner } from '../../shared/ui/loading-spinner/loading-spinner';
+import { ToastComponent } from '../../shared/ui/toast/toast';
 import { AppHeader } from '../header/header';
 import { AppSidebar } from '../sidebar/sidebar';
-import { ToastComponent } from '../../shared/ui/toast/toast';
-import { LoadingSpinner } from '../../shared/ui/loading-spinner/loading-spinner';
-import { ConfirmDialogModule } from 'primeng/confirmdialog';
-//import { AppFooter } from '../footer/footer';
 
 @Component({
   selector: 'app-main-layout',
@@ -17,10 +16,24 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
     ToastComponent,
     LoadingSpinner,
     ConfirmDialogModule,
-    //AppFooter
   ],
   templateUrl: './main-layout.html',
   styleUrl: './main-layout.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: {
+    '(document:keydown.escape)': 'closeMenu()',
+  },
 })
-export class MainLayout {}
+export class MainLayout {
+  readonly menuOpen = signal(false);
+
+  toggleMenu(): void {
+    this.menuOpen.update((open) => !open);
+  }
+
+  closeMenu(): void {
+    if (this.menuOpen()) {
+      this.menuOpen.set(false);
+    }
+  }
+}
