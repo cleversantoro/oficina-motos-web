@@ -141,7 +141,7 @@
           </td>
           <!-- Tipo -->
           <td>
-            <span class="badge" [ngClass]="getTipoClass(c.tipoDescricao)">
+            <span [class]="'badge ' + getTipoClass(c.tipoDescricao)">
               {{ c.tipoDescricao || '—' }}
             </span>
           </td>
@@ -155,7 +155,7 @@
           </td>
           <!-- Status -->
           <td>
-            <span class="badge" [ngClass]="getStatusClass(c.statusDescricao)">
+            <span [class]="'badge ' + getStatusClass(c.statusDescricao)">
               {{ c.statusDescricao || 'Ativo' }}
             </span>
           </td>
@@ -203,9 +203,11 @@
       </ng-template>
 
       <ng-template pTemplate="loadingbody">
-        <tr *ngFor="let i of [1,2,3,4,5]">
-          <td colspan="8"><div class="skeleton-row"></div></td>
-        </tr>
+        @for (i of [1,2,3,4,5]; track i) {
+          <tr>
+            <td colspan="8"><div class="skeleton-row"></div></td>
+          </tr>
+        }
       </ng-template>
     </p-table>
     </div>
@@ -218,7 +220,7 @@
         <div class="mobile-empty">Nenhum cliente encontrado.</div>
       } @else {
         @for (c of filteredClientes; track c.id) {
-          <article class="mobile-card" (click)="navigateTo(c.id)">
+          <article class="mobile-card" tabindex="0" (click)="navigateTo(c.id)" (keydown.enter)="navigateTo(c.id)">
             <div class="mobile-card-head">
               <div class="cell-name">
                 <span class="avatar" [style.background]="getAvatarColor(c.nome)">
@@ -231,7 +233,7 @@
                   }
                 </div>
               </div>
-              <span class="badge" [ngClass]="getStatusClass(c.statusDescricao)">
+              <span [class]="'badge ' + getStatusClass(c.statusDescricao)">
                 {{ c.statusDescricao || 'Ativo' }}
               </span>
             </div>

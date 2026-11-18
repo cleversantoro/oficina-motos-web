@@ -38,7 +38,7 @@
       @if (pecasSugeridas().length > 0) {
         <ul class="suggestions-list" role="listbox">
           @for (peca of pecasSugeridas(); track peca.id) {
-            <li class="suggestion-item" (click)="selecionarPeca(peca)" role="option">
+            <li class="suggestion-item" tabindex="0" (click)="selecionarPeca(peca)" (keydown.enter)="selecionarPeca(peca)" role="option" [attr.aria-selected]="false">
               <div class="item-primary">
                 <span class="item-code">{{ peca.codigo }}</span>
                 <span class="item-desc">{{ peca.descricao }}</span>

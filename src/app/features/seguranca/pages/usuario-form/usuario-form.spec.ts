@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Router, convertToParamMap, provideRouter } from '@angular/router';
 import { of } from 'rxjs';
-import { describe, expect, it, vi, beforeEach } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { SegurancaService } from '../../../../core/services/seguranca.service';
 import { Toast } from '../../../../shared/services/toast';
 import { UsuarioFormComponent } from './usuario-form';

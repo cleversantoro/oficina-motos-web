@@ -96,8 +96,8 @@
           @if (!col.hidden) {
             <th
               [pSortableColumn]="getSortableColumn(col)"
-              [ngStyle]="{ width: col.width }"
-              [ngClass]="col.styleClass"
+              [style.width]="col.width"
+              [class]="col.styleClass ?? ''"
             >
               <div class="flex align-items-center gap-2">
                 {{ col.header }}
@@ -155,8 +155,8 @@
         @for (col of columns; track col.field) {
           @if (!col.hidden) {
             <td
-              [ngClass]="col.styleClass"
-              [ngStyle]="{ 'text-align': col.align || 'left' }"
+              [class]="col.styleClass ?? ''"
+              [style.text-align]="col.align || 'left'"
             >
               <!-- Template customizado ou valor formatado -->
               @if (col.cellTemplate) {
@@ -182,7 +182,7 @@
                     [label]="action.label || ''"
                     [pTooltip]="action.tooltip"
                     [attr.aria-label]="action.tooltip || action.label || 'Ação'"
-                    [ngClass]="action.styleClass || 'p-button-rounded p-button-text'"
+                    [class]="action.styleClass || 'p-button-rounded p-button-text'"
                     [disabled]="isActionDisabled(action, row)"
                     (click)="action.onClick(row)"
                   ></button>

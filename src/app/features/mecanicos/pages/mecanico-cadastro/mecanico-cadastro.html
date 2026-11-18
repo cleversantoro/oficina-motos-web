@@ -235,9 +235,11 @@
           @for (esp of especialidades(); track esp.id) {
             <div
               class="especialidade-chip"
+              tabindex="0"
               [class.selected]="isEspecialidadeSelected(esp.id)"
               [class.principal]="isEspecialidadePrincipal(esp.id)"
               (click)="toggleEspecialidade(esp.id)"
+              (keydown.enter)="toggleEspecialidade(esp.id)"
             >
               <div class="chip-main">
                 <input

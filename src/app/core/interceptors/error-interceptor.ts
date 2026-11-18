@@ -83,13 +83,15 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
               'Não foi possível conectar ao servidor. Verifique sua conexão com a internet.'
             );
             break;
-          default:
+          default: {
             // Outros erros HTTP
             const errorMessage = error.error?.message || error.message || 'Erro desconhecido';
             toast.error(
               `Erro ${error.status}`,
               errorMessage
             );
+            break;
+          }
         }
       } else {
         // Erro não HTTP (ex: erro de JavaScript)

@@ -71,7 +71,7 @@
                 </span>
               </td>
               <td class="hide-sm mono">{{ m.documentoPrincipal ?? '—' }}</td>
-              <td class="hide-sm">{{ m.valorHora != null ? 'R$ ' + m.valorHora.toFixed(2) : '—' }}</td>
+              <td class="hide-sm">{{ m.valorHora !== null && m.valorHora !== undefined ? 'R$ ' + m.valorHora.toFixed(2) : '—' }}</td>
               <td class="action-cell">
                 <a class="icon-btn view-btn" [routerLink]="['/mecanicos', m.id]" (click)="openDetails(m); $event.stopPropagation()" title="Visualizar">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -117,7 +117,7 @@
             </div>
             <div class="mobile-card-grid">
               <div><span class="mobile-label">Documento</span><span class="mono">{{ m.documentoPrincipal ?? '—' }}</span></div>
-              <div><span class="mobile-label">Valor/Hora</span><span>{{ m.valorHora != null ? 'R$ ' + m.valorHora.toFixed(2) : '—' }}</span></div>
+              <div><span class="mobile-label">Valor/Hora</span><span>{{ m.valorHora !== null && m.valorHora !== undefined ? 'R$ ' + m.valorHora.toFixed(2) : '—' }}</span></div>
             </div>
             <div class="mobile-card-actions">
               <a class="pg-btn mobile-action-btn" [routerLink]="['/mecanicos', m.id]" (click)="openDetails(m); $event.stopPropagation()">Visualizar</a>

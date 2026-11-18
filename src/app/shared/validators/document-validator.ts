@@ -92,7 +92,7 @@ export function cnpjValidator(): ValidatorFn {
       sum += parseInt(cnpj.charAt(i)) * weight;
       weight = weight === 9 ? 2 : weight + 1;
     }
-    let firstDigit = sum % 11 < 2 ? 0 : 11 - (sum % 11);
+    const firstDigit = sum % 11 < 2 ? 0 : 11 - (sum % 11);
 
     if (parseInt(cnpj.charAt(12)) !== firstDigit) {
       return { cnpj: { message: 'CNPJ inválido' } };
@@ -105,7 +105,7 @@ export function cnpjValidator(): ValidatorFn {
       sum += parseInt(cnpj.charAt(i)) * weight;
       weight = weight === 9 ? 2 : weight + 1;
     }
-    let secondDigit = sum % 11 < 2 ? 0 : 11 - (sum % 11);
+    const secondDigit = sum % 11 < 2 ? 0 : 11 - (sum % 11);
 
     if (parseInt(cnpj.charAt(13)) !== secondDigit) {
       return { cnpj: { message: 'CNPJ inválido' } };
@@ -186,7 +186,7 @@ export function isCnpjValid(cnpj: string): boolean {
     sum += parseInt(cleaned.charAt(i)) * weight;
     weight = weight === 9 ? 2 : weight + 1;
   }
-  let firstDigit = sum % 11 < 2 ? 0 : 11 - (sum % 11);
+  const firstDigit = sum % 11 < 2 ? 0 : 11 - (sum % 11);
   if (parseInt(cleaned.charAt(12)) !== firstDigit) return false;
 
   sum = 0;
@@ -195,7 +195,7 @@ export function isCnpjValid(cnpj: string): boolean {
     sum += parseInt(cleaned.charAt(i)) * weight;
     weight = weight === 9 ? 2 : weight + 1;
   }
-  let secondDigit = sum % 11 < 2 ? 0 : 11 - (sum % 11);
+  const secondDigit = sum % 11 < 2 ? 0 : 11 - (sum % 11);
   if (parseInt(cleaned.charAt(13)) !== secondDigit) return false;
 
   return true;

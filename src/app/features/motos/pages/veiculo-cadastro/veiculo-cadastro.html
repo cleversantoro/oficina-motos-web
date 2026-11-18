@@ -86,7 +86,7 @@
               <div class="autocomplete-dropdown">
                 <ul class="dropdown-list">
                   @for (cliente of sugestoesClientes(); track cliente.id) {
-                    <li class="dropdown-item" (click)="selectCliente(cliente)">
+                    <li class="dropdown-item" tabindex="0" (click)="selectCliente(cliente)" (keydown.enter)="selectCliente(cliente)">
                       <div class="item-main">
                         <strong>{{ cliente.nomeExibicao || cliente.nome }}</strong>
                         @if (cliente.documento) {

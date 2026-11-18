@@ -54,7 +54,7 @@ export function cepValidator(): ValidatorFn {
  * IMPORTANTE: Este é um validador assíncrono
  * Requer injeção do serviço de CEP
  */
-export function cepExistsValidator(cepService: any): ValidatorFn {
+export function cepExistsValidator(_cepService: unknown): ValidatorFn {
   return (control: AbstractControl): ValidationErrors | null => {
     const value = control.value;
 

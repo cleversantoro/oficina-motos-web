@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { Subject, of } from 'rxjs';
+import { Subject } from 'rxjs';
 import { Router } from '@angular/router';
 import { provideRouter } from '@angular/router';
 import { OsCadastroComponent } from './os-novo';

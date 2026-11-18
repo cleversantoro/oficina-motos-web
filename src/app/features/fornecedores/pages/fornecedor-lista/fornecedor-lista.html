@@ -199,7 +199,7 @@
       <!-- Visão Mobile (cards empilhados sem ocultar contato) -->
       <div class="mobile-cards" aria-label="Lista de fornecedores">
         @for (f of paginated(); track f.id) {
-          <article class="mobile-card" (click)="openDetalhe(f.id)">
+          <article class="mobile-card" tabindex="0" (click)="openDetalhe(f.id)" (keydown.enter)="openDetalhe(f.id)">
             <div class="mobile-card-top">
               <div class="nome-cell">
                 <div class="avatar" aria-hidden="true">

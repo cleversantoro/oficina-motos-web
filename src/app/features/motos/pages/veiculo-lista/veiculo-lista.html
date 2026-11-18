@@ -74,7 +74,7 @@
             </tr>
           }
           @for (v of filtered.slice(first, first + rows); track v.id) {
-            <tr class="data-row" (click)="openDetalhe(v.id)">
+            <tr class="data-row" tabindex="0" (click)="openDetalhe(v.id)" (keydown.enter)="openDetalhe(v.id)">
               <td>
                 <span class="placa-pill">{{ v.placa }}</span>
                 @if (v.principal) {
@@ -139,7 +139,7 @@
           </div>
         }
         @for (v of filtered.slice(first, first + rows); track v.id) {
-          <article class="mobile-card" (click)="openDetalhe(v.id)">
+          <article class="mobile-card" tabindex="0" (click)="openDetalhe(v.id)" (keydown.enter)="openDetalhe(v.id)">
             <div class="mobile-card-head">
               <div>
                 <span class="placa-pill">{{ v.placa }}</span>

@@ -32,8 +32,11 @@
           @for (perfil of perfis(); track perfil.id) {
             <li
               class="perfil-item"
+              tabindex="0"
+              role="button"
               [class.active]="perfilSelecionado()?.id === perfil.id"
               (click)="selecionarPerfil(perfil)"
+              (keydown.enter)="selecionarPerfil(perfil)"
             >
               <div class="perfil-main">
                 <span class="perfil-nome">{{ perfil.nome }}</span>
