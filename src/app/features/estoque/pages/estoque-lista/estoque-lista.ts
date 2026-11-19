@@ -1,29 +1,46 @@
 import { DecimalPipe } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Optional, TemplateRef, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { canPerformBusinessAction } from '../../../../core/auth/rbac-access.helper';
+import {
+  EstoqueCategoria,
+  EstoqueFabricante,
+  EstoqueLocalizacao,
+  EstoquePeca,
+} from '../../../../core/models';
 import { EstoqueService } from '../../../../core/services/estoque.service';
 import { Confirmation } from '../../../../shared/services/confirmation';
 import { Toast } from '../../../../shared/services/toast';
 import {
-  EstoquePeca,
-  EstoqueCategoria,
-  EstoqueFabricante,
-  EstoqueLocalizacao,
-} from '../../../../core/models';
+  DatatableAction,
+  DatatableColumn,
+  DatatableComponent,
+} from '../../../../shared/ui/datatable';
 
 type Filtro = { label: string; checked: boolean };
+
+export type EstoqueTableRow = EstoquePeca &
+  Record<string, unknown> & {
+    fabricanteNome: string;
+    categoriaNome: string;
+    localizacaoNome: string;
+  };
 
 @Component({
   selector: 'app-estoque-lista',
   standalone: true,
-  imports: [DecimalPipe, FormsModule, RouterLink],
+  imports: [DecimalPipe, FormsModule, RouterLink, DatatableComponent],
   templateUrl: './estoque-lista.html',
   styleUrl: './estoque-lista.scss',
 })
 export class EstoqueLista implements OnInit {
+  @ViewChild('produtoTpl', { static: true }) produtoTpl?: TemplateRef<{ $implicit: EstoqueTableRow }>;
+  @ViewChild('precoTpl', { static: true }) precoTpl?: TemplateRef<{ $implicit: EstoqueTableRow }>;
+  @ViewChild('localizacaoTpl', { static: true }) localizacaoTpl?: TemplateRef<{ $implicit: EstoqueTableRow }>;
+  @ViewChild('estoqueTpl', { static: true }) estoqueTpl?: TemplateRef<{ $implicit: EstoqueTableRow }>;
+
   itens: EstoquePeca[] = [];
   categorias: EstoqueCategoria[] = [];
   fabricantes: EstoqueFabricante[] = [];
@@ -35,6 +52,28 @@ export class EstoqueLista implements OnInit {
   first = 0;
   rows = 5;
 
+  columns: DatatableColumn<EstoqueTableRow>[] = [];
+
+  readonly actions: DatatableAction<EstoqueTableRow>[] = [
+    {
+      id: 'view',
+      icon: 'fa-solid fa-eye',
+      label: 'Visualizar',
+      variant: 'view',
+      onClick: (item) => this.openDetalhe(item.id),
+    },
+    {
+      id: 'delete',
+      icon: 'fa-solid fa-trash',
+      label: 'Excluir',
+      variant: 'delete',
+      visible: () => this.canDeleteItem(),
+      onClick: (item) => {
+        void this.confirmDelete(item.id);
+      },
+    },
+  ];
+
   readonly statusFiltros: Filtro[] = [
     { label: 'Estoque baixo', checked: false },
     { label: 'Reposicao pendente', checked: false },
@@ -45,9 +84,38 @@ export class EstoqueLista implements OnInit {
     private authService: AuthService,
     private confirmation: Confirmation,
     private toast: Toast,
+    @Optional() private router?: Router,
   ) {}
 
   ngOnInit(): void {
+    this.columns = [
+      {
+        field: 'descricao',
+        header: 'Produto',
+        subField: 'codigo',
+        cellTemplate: this.produtoTpl,
+      },
+      {
+        field: 'precoUnitario',
+        header: 'Preço Venda',
+        cellTemplate: this.precoTpl,
+      },
+      {
+        field: 'fabricanteNome',
+        header: 'Fabricante',
+      },
+      {
+        field: 'localizacaoNome',
+        header: 'Localização',
+        cellTemplate: this.localizacaoTpl,
+      },
+      {
+        field: 'quantidade',
+        header: 'Estoque',
+        cellTemplate: this.estoqueTpl,
+      },
+    ];
+
     this.loading = true;
     this.estoqueService.pecas().subscribe({
       next: (resp: any) => {
@@ -95,10 +163,16 @@ export class EstoqueLista implements OnInit {
     const filtroReposicao = this.statusFiltros[1]?.checked;
 
     return this.itens.filter((i) => {
-      if (this.selectedCategoriaIds.length > 0 && (!i.categoriaId || !this.selectedCategoriaIds.includes(i.categoriaId))) {
+      if (
+        this.selectedCategoriaIds.length > 0 &&
+        (!i.categoriaId || !this.selectedCategoriaIds.includes(i.categoriaId))
+      ) {
         return false;
       }
-      if (this.selectedFabricanteIds.length > 0 && (!i.fabricanteId || !this.selectedFabricanteIds.includes(i.fabricanteId))) {
+      if (
+        this.selectedFabricanteIds.length > 0 &&
+        (!i.fabricanteId || !this.selectedFabricanteIds.includes(i.fabricanteId))
+      ) {
         return false;
       }
       if (filtroBaixo && !this.isCritico(i)) {
@@ -113,6 +187,15 @@ export class EstoqueLista implements OnInit {
         (i.codigo ?? '').toLowerCase().includes(q)
       );
     });
+  }
+
+  get tableRows(): EstoqueTableRow[] {
+    return this.filtered.map((item) => ({
+      ...item,
+      fabricanteNome: this.getFabricante(item.fabricanteId),
+      categoriaNome: this.getCategoria(item.categoriaId),
+      localizacaoNome: this.getLocalizacao(item.localizacaoId),
+    }));
   }
 
   toggleCategoria(id: number): void {
@@ -157,16 +240,8 @@ export class EstoqueLista implements OnInit {
     return this.localizacoes.find((l) => l.id === id)?.descricao ?? String(id);
   }
 
-  prevPage(): void {
-    this.first = Math.max(0, this.first - this.rows);
-  }
-  nextPage(): void {
-    if (this.first + this.rows < this.filtered.length) this.first += this.rows;
-  }
-
-  get pageEnd(): number {
-    const end = this.first + this.rows;
-    return end > this.filtered.length ? this.filtered.length : end;
+  openDetalhe(id: number): void {
+    void this.router?.navigate(['/estoque', id]);
   }
 
   async confirmDelete(id: number): Promise<void> {
@@ -178,7 +253,8 @@ export class EstoqueLista implements OnInit {
         this.itens = this.itens.filter((i) => i.id !== id);
         this.toast.success('Item excluído', 'Item removido do estoque com sucesso.');
       },
-      error: () => this.toast.error('Erro ao excluir', 'Não foi possível excluir o item do estoque.'),
+      error: () =>
+        this.toast.error('Erro ao excluir', 'Não foi possível excluir o item do estoque.'),
     });
   }
 }

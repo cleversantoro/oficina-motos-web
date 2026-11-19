@@ -79,7 +79,7 @@
   </ng-template>
 
   <ng-template #tipoTpl let-c>
-    <span [class]="'badge ' + getTipoClass(c.tipoDescricao)">
+    <span [class]="'badge ' + getTipoClass(c.tipo, c.tipoDescricao)">
       {{ c.tipoDescricao || '—' }}
     </span>
   </ng-template>

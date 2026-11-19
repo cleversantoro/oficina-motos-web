@@ -52,7 +52,7 @@ export class OsListaComponent implements OnInit {
     { field: 'mecanicoNome', header: 'Mecânico', sortable: true },
     { field: 'veiculoModeloNome', header: 'Veículo', sortable: true },
     { field: 'veiculoPlaca', header: 'Placa', sortable: true },
-    { field: 'descricaoProblema', header: 'Descrição', sortable: false },
+    { field: 'descricaoProblema', header: 'Descrição', width:'50px', sortable: false },
   ];
 
   readonly actions: readonly DatatableAction<OrdemRow>[] = [

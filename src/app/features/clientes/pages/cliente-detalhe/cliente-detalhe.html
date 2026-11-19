@@ -70,7 +70,7 @@
             [severity]="getStatusSeverity(cliente.status)">
           </p-tag>
           @if (cliente.tipoDescricao || cliente.tipo) {
-            <p-tag [value]="cliente.tipoDescricao || cliente.tipo" severity="info"></p-tag>
+            <p-tag [value]="getTipoLabel(cliente.tipo, cliente.tipoDescricao)" severity="info"></p-tag>
           }
           @if (cliente.origemDescricao) {
             <p-tag [value]="cliente.origemDescricao" severity="secondary"></p-tag>
@@ -148,7 +148,7 @@
                   </div>
                   <div class="field">
                     <span class="field-label">Tipo de cliente</span>
-                    <span class="field-value">{{ fmt(cliente.tipoDescricao || cliente.tipo) }}</span>
+                    <span class="field-value">{{ getTipoLabel(cliente.tipo, cliente.tipoDescricao) }}</span>
                   </div>
                   <div class="field">
                     <span class="field-label">Status</span>
@@ -193,7 +193,7 @@
                 </div>
               }
 
-              @if (cliente.pessoaFisica) {
+              @if (isPessoaFisica(cliente) && cliente.pessoaFisica) {
                 <div class="section-card">
                   <h3 class="section-title">Pessoa Física</h3>
                   <div class="field-grid">
@@ -227,7 +227,7 @@
                 </div>
               }
 
-              @if (cliente.pessoaJuridica) {
+              @if (isPessoaJuridica(cliente) && cliente.pessoaJuridica) {
                 <div class="section-card">
                   <h3 class="section-title">Pessoa Jurídica</h3>
                   <div class="field-grid">

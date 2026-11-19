@@ -1,5 +1,14 @@
 import { DecimalPipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit,
+  TemplateRef,
+  ViewChild,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../../core/auth/auth.service';
@@ -8,22 +17,60 @@ import { Fornecedor } from '../../../../core/models/fornecedor';
 import { FornecedoresService } from '../../../../core/services/fornecedores.service';
 import { Confirmation } from '../../../../shared/services/confirmation';
 import { Toast } from '../../../../shared/services/toast';
+import {
+  DatatableAction,
+  DatatableColumn,
+  DatatableComponent,
+} from '../../../../shared/ui/datatable';
 
 export type FornecedorStatusFilter = 'TODOS' | 'ATIVO' | 'INATIVO' | 'SUSPENSO';
+export type FornecedorTableRow = Fornecedor & Record<string, unknown>;
 
 @Component({
   selector: 'app-fornecedor-lista',
-  imports: [DecimalPipe, FormsModule, RouterLink],
+  imports: [DecimalPipe, FormsModule, RouterLink, DatatableComponent],
   templateUrl: './fornecedor-lista.html',
   styleUrl: './fornecedor-lista.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FornecedorLista implements OnInit {
+  @ViewChild('fornecedorTpl', { static: true })
+  fornecedorTpl?: TemplateRef<{ $implicit: FornecedorTableRow }>;
+  @ViewChild('contatoTpl', { static: true })
+  contatoTpl?: TemplateRef<{ $implicit: FornecedorTableRow }>;
+  @ViewChild('scoreTpl', { static: true })
+  scoreTpl?: TemplateRef<{ $implicit: FornecedorTableRow }>;
+  @ViewChild('statusTpl', { static: true })
+  statusTpl?: TemplateRef<{ $implicit: FornecedorTableRow }>;
+
   private readonly svc = inject(FornecedoresService);
   private readonly router = inject(Router);
   private readonly authService = inject(AuthService);
   private readonly confirmation = inject(Confirmation);
   private readonly toast = inject(Toast);
+
+  columns: DatatableColumn<FornecedorTableRow>[] = [];
+
+  readonly actions: readonly DatatableAction<FornecedorTableRow>[] = [
+    {
+      id: 'view',
+      icon: 'fa-solid fa-eye',
+      label: 'Visualizar',
+      variant: 'view',
+      onClick: (f) => this.openDetalhe(f.id),
+    },
+    {
+      id: 'delete',
+      icon: 'fa-solid fa-trash',
+      label: 'Excluir',
+      variant: 'delete',
+      visible: () => this.canDeleteFornecedor(),
+      disabled: (f) => this.deletingId() === f.id,
+      onClick: (f) => {
+        void this.confirmDelete(f);
+      },
+    },
+  ];
 
   readonly fornecedores = signal<Fornecedor[]>([]);
   readonly loading = signal(false);
@@ -112,7 +159,18 @@ export class FornecedorLista implements OnInit {
     () => this.first() + this.rows() >= this.filtered().length,
   );
 
+  readonly tableRows = computed<FornecedorTableRow[]>(() =>
+    this.filtered().map((f) => ({ ...f })),
+  );
+
   ngOnInit(): void {
+    this.columns = [
+      { field: 'razaoSocial', header: 'Fornecedor', subField: 'nomeFantasia', cellTemplate: this.fornecedorTpl },
+      { field: 'documento', header: 'CNPJ' },
+      { field: 'email', header: 'Contato', subField: 'telefonePrincipal', cellTemplate: this.contatoTpl },
+      { field: 'notaMedia', header: 'Score', cellTemplate: this.scoreTpl },
+      { field: 'status', header: 'Status', cellTemplate: this.statusTpl },
+    ];
     this.load();
   }
 

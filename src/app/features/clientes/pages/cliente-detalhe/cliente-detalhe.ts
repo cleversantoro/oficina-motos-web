@@ -3,6 +3,11 @@ import { Component, OnInit, inject } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { canPerformBusinessAction } from '../../../../core/auth/rbac-access.helper';
+import {
+  getClienteTipoLabel,
+  isClientePessoaFisica,
+  isClientePessoaJuridica,
+} from '../../../../core/models/cliente';
 import { ClientesService } from '../../../../core/services/clientes.service';
 import { Toast } from '../../../../shared/services/toast';
 import { Confirmation } from '../../../../shared/services/confirmation';
@@ -119,6 +124,24 @@ export class ClienteDetalhe implements OnInit {
       case 3: return 'Bloqueado';
       default: return 'Desconhecido';
     }
+  }
+
+  getTipoLabel(tipo?: number | string | null, desc?: string | null): string {
+    return getClienteTipoLabel(tipo, desc);
+  }
+
+  isPessoaFisica(c: any): boolean {
+    if (c?.tipo !== undefined && c?.tipo !== null) {
+      return isClientePessoaFisica(c.tipo);
+    }
+    return !!c?.pessoaFisica;
+  }
+
+  isPessoaJuridica(c: any): boolean {
+    if (c?.tipo !== undefined && c?.tipo !== null) {
+      return isClientePessoaJuridica(c.tipo);
+    }
+    return !!c?.pessoaJuridica;
   }
 
   objEntries(obj: any): [string, any][] {

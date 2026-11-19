@@ -13,6 +13,11 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { canPerformBusinessAction } from '../../../../core/auth/rbac-access.helper';
+import {
+  ClienteTipo,
+  getClienteTipoLabel,
+  isClientePessoaJuridica,
+} from '../../../../core/models/cliente';
 import { ClientesService } from '../../../../core/services/clientes.service';
 import { Confirmation } from '../../../../shared/services/confirmation';
 import { Toast } from '../../../../shared/services/toast';
@@ -105,7 +110,11 @@ export class ClienteLista implements OnInit {
 
   readonly totalPJ = computed(
     () =>
-      this.clientes().filter((c) => (c.tipoDescricao ?? '').toLowerCase().includes('jur')).length,
+      this.clientes().filter(
+        (c) =>
+          isClientePessoaJuridica(c.tipo) ||
+          (c.tipoDescricao ?? '').toLowerCase().includes('jur'),
+      ).length,
   );
 
   fetchClientes(): void {
@@ -119,6 +128,10 @@ export class ClienteLista implements OnInit {
           this.clientes.set(
             items.map((item: any) => ({
               ...item,
+              tipo: Number(item.tipo) === ClienteTipo.PessoaJuridica
+                ? ClienteTipo.PessoaJuridica
+                : ClienteTipo.PessoaFisica,
+              tipoDescricao: getClienteTipoLabel(item.tipo, item.tipoDescricao),
               statusDescricao: item.statusDescricao || 'Ativo',
             })),
           );
@@ -153,8 +166,12 @@ export class ClienteLista implements OnInit {
     return colors[Math.abs(hash) % colors.length];
   }
 
-  getTipoClass(tipo: string): string {
-    return (tipo ?? '').toLowerCase().includes('jur') ? 'tipo-pj' : 'tipo-pf';
+  getTipoClass(tipo?: number | string, tipoDescricao?: string): string {
+    if (isClientePessoaJuridica(tipo)) return 'tipo-pj';
+    if (Number(tipo) === ClienteTipo.PessoaFisica) return 'tipo-pf';
+    return (tipoDescricao ?? String(tipo ?? '')).toLowerCase().includes('jur')
+      ? 'tipo-pj'
+      : 'tipo-pf';
   }
 
   navigateTo(id: number): void {

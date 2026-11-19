@@ -55,128 +55,56 @@
 
     <main class="content-area">
       <div class="toolbar">
-        <div class="search-wrap">
-          <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
-          </svg>
-          <input class="search" type="text" placeholder="Buscar por nome, código ou SKU..."
-            [(ngModel)]="filterText" (ngModelChange)="first = 0" />
+        <div>
+          <h2 style="margin: 0; font-size: 1.1rem; color: #f8fafc;">Peças e Insumos</h2>
         </div>
         <button class="cta primary" routerLink="/estoque/novo">+ Nova peça</button>
       </div>
 
-      <div class="table-scroll">
-        <table class="data-table">
-        <thead>
-          <tr>
-            <th class="w-produto">Produto</th>
-            <th>Preço Venda</th>
-            <th class="hide-sm">Fabricante</th>
-            <th class="hide-sm">Localização</th>
-            <th>Estoque</th>
-            <th class="action-th">Ações</th>
-          </tr>
-        </thead>
-        <tbody>
-          @if (filtered.length === 0) {
-            <tr>
-              <td colspan="6" class="empty-cell">
-                @if (filterText) { Nenhum item encontrado para "{{ filterText }}". }
-                @else { Nenhum item em estoque. }
-              </td>
-            </tr>
-          }
-          @for (item of filtered.slice(first, first + rows); track item.id) {
-            <tr class="data-row">
-              <td class="w-produto">
-                <div class="produto">
-                  <div class="thumb"></div>
-                  <div>
-                    <a class="prod-name prod-link" [routerLink]="['/estoque', item.id]">{{ item.descricao }}</a>
-                    <p class="sku">SKU: {{ item.codigo }} · {{ getCategoria(item.categoriaId) }}</p>
-                  </div>
-                </div>
-              </td>
-              <td>R$ {{ item.precoUnitario | number : '1.0-2' }}</td>
-              <td class="hide-sm">{{ getFabricante(item.fabricanteId) }}</td>
-              <td class="hide-sm"><span class="location">{{ getLocalizacao(item.localizacaoId) }}</span></td>
-              <td>
-                <div class="stock-cell">
-                  <span class="stock" [class.low]="isCritico(item)">
-                    @if (isCritico(item)) {⚠}
-                    {{ item.quantidade }} {{ (item.unidade || 'un').toLowerCase() }}
-                  </span>
-                  @if (isCritico(item)) {
-                    <span class="badge-critico">Crítico</span>
-                  }
-                </div>
-              </td>
-              <td class="action-cell">
-                <button class="icon-btn view-btn" title="Visualizar" [routerLink]="['/estoque', item.id]" (click)="$event.stopPropagation()">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                    <circle cx="12" cy="12" r="3"/>
-                  </svg>
-                </button>
-                @if (canDeleteItem()) {
-                  <button class="icon-btn delete-btn" title="Excluir" (click)="confirmDelete(item.id); $event.stopPropagation()">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <polyline points="3 6 5 6 21 6"/>
-                      <path d="m19 6-.867 14.142A2 2 0 0 1 16.138 22H7.862a2 2 0 0 1-1.995-1.858L5 6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
-                    </svg>
-                  </button>
-                }
-              </td>
-            </tr>
-          }
-        </tbody>
-      </table>
-      </div>
-
-      <!-- Visão Mobile -->
-      <div class="mobile-cards" aria-label="Itens de estoque">
-        @if (filtered.length === 0) {
-          <div class="mobile-empty">
-            @if (filterText) { Nenhum item encontrado para "{{ filterText }}". }
-            @else { Nenhum item em estoque. }
-          </div>
-        }
-        @for (item of filtered.slice(first, first + rows); track item.id) {
-          <article class="mobile-card">
-            <div class="mobile-card-head">
-              <div>
-                <a class="prod-name mobile-prod-link" [routerLink]="['/estoque', item.id]">{{ item.descricao }}</a>
-                <p class="sku">SKU: {{ item.codigo }} · {{ getCategoria(item.categoriaId) }}</p>
-              </div>
-              <div class="stock-cell">
-                <span class="stock" [class.low]="isCritico(item)">
-                  @if (isCritico(item)) {⚠}
-                  {{ item.quantidade }} {{ (item.unidade || 'un').toLowerCase() }}
-                </span>
-              </div>
-            </div>
-            <div class="mobile-card-grid">
-              <div><span class="mobile-label">Preço</span><span>R$ {{ item.precoUnitario | number : '1.0-2' }}</span></div>
-              <div><span class="mobile-label">Fabricante</span><span>{{ getFabricante(item.fabricanteId) }}</span></div>
-              <div><span class="mobile-label">Localização</span><span>{{ getLocalizacao(item.localizacaoId) }}</span></div>
-            </div>
-            <div class="mobile-card-actions">
-              <button type="button" class="ghost mobile-action-btn" [routerLink]="['/estoque', item.id]">Visualizar</button>
-              @if (canDeleteItem()) {
-                <button type="button" class="ghost delete-btn mobile-action-btn" (click)="confirmDelete(item.id)">Excluir</button>
-              }
-            </div>
-          </article>
-        }
-      </div>
-
-      @if (filtered.length > rows) {
-        <div class="pagination">
-          <button class="pg-btn" [disabled]="first === 0" (click)="prevPage()">← Anterior</button>
-          <span class="pg-info">{{ first + 1 }}–{{ pageEnd }} de {{ filtered.length }}</span>
-          <button class="pg-btn" [disabled]="first + rows >= filtered.length" (click)="nextPage()">Próximo →</button>
-        </div>
-      }
+      <app-datatable
+        [data]="tableRows"
+        [columns]="columns"
+        [actions]="actions"
+        [loading]="loading"
+        [selectable]="canDeleteItem()"
+        [exportable]="true"
+        searchPlaceholder="Buscar por nome, código ou SKU..."
+        emptyTitle="Nenhum item em estoque."
+        emptyDescription="Não encontramos peças correspondentes aos filtros aplicados."
+        (rowClick)="openDetalhe($event.id)"
+      />
     </main>
   </div>
+
+  <ng-template #produtoTpl let-item>
+    <div class="produto">
+      <div class="thumb"></div>
+      <div>
+        <a class="prod-name prod-link" [routerLink]="['/estoque', item.id]" (click)="$event.stopPropagation()">
+          {{ item.descricao }}
+        </a>
+        <p class="sku">SKU: {{ item.codigo }} · {{ item.categoriaNome }}</p>
+      </div>
+    </div>
+  </ng-template>
+
+  <ng-template #precoTpl let-item>
+    R$ {{ item.precoUnitario | number : '1.0-2' }}
+  </ng-template>
+
+  <ng-template #localizacaoTpl let-item>
+    <span class="location">{{ item.localizacaoNome }}</span>
+  </ng-template>
+
+  <ng-template #estoqueTpl let-item>
+    <div class="stock-cell">
+      <span class="stock" [class.low]="isCritico(item)">
+        @if (isCritico(item)) {⚠}
+        {{ item.quantidade }} {{ (item.unidade || 'un').toLowerCase() }}
+      </span>
+      @if (isCritico(item)) {
+        <span class="badge-critico">Crítico</span>
+      }
+    </div>
+  </ng-template>
 </section>

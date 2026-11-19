@@ -10,6 +10,7 @@ import {
   Validators,
 } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
+import { ClienteTipo, isClientePessoaFisica } from '../../../../core/models/cliente';
 import { ClientesService } from '../../../../core/services/clientes.service';
 import { Toast } from '../../../../shared/services/toast';
 import {
@@ -56,7 +57,7 @@ export class ClienteCadastro implements OnInit {
   ngOnInit(): void {
     this.form = this.fb.group({
       // ── Perfil ──────────────────────────────────────────────
-      tipo: ['pf'],
+      tipo: [ClienteTipo.PessoaFisica, Validators.required],
       nome: ['', [Validators.required, Validators.minLength(3)]],
       nomeExibicao: [''],
       status: [1, Validators.required],
@@ -99,10 +100,12 @@ export class ClienteCadastro implements OnInit {
       lgpdTermos: [false],
       lgpdMarketing: [false],
     });
+    this.applyTipoValidators(ClienteTipo.PessoaFisica);
   }
 
   get isPessoaFisica(): boolean {
-    return this.form.get('tipo')?.value === 'pf';
+    const val = this.form.get('tipo')?.value;
+    return val === 'pf' || isClientePessoaFisica(val);
   }
 
   get contatos(): FormArray {
@@ -117,14 +120,39 @@ export class ClienteCadastro implements OnInit {
     this.activeTab = tab;
   }
 
-  setTipo(tipo: 'pf' | 'pj'): void {
-    this.form.patchValue({ tipo });
-    // Clear cross-type validation when switching
-    if (tipo === 'pf') {
+  setTipo(tipo: ClienteTipo | 'pf' | 'pj'): void {
+    const tipoNum =
+      tipo === 'pj' || Number(tipo) === ClienteTipo.PessoaJuridica
+        ? ClienteTipo.PessoaJuridica
+        : ClienteTipo.PessoaFisica;
+
+    this.form.patchValue({ tipo: tipoNum });
+    if (tipoNum === ClienteTipo.PessoaFisica) {
       this.form.patchValue({ cnpj: '', razaoSocial: '' });
     } else {
       this.form.patchValue({ cpf: '', rg: '' });
     }
+    this.applyTipoValidators(tipoNum);
+  }
+
+  private applyTipoValidators(tipo: ClienteTipo): void {
+    const cpfCtrl = this.form.get('cpf');
+    const cnpjCtrl = this.form.get('cnpj');
+    const razaoCtrl = this.form.get('razaoSocial');
+
+    if (tipo === ClienteTipo.PessoaFisica) {
+      cpfCtrl?.setValidators([Validators.required, cpfValidator()]);
+      cnpjCtrl?.setValidators([cnpjValidator()]);
+      razaoCtrl?.clearValidators();
+    } else {
+      cpfCtrl?.setValidators([cpfValidator()]);
+      cnpjCtrl?.setValidators([Validators.required, cnpjValidator()]);
+      razaoCtrl?.setValidators([Validators.required]);
+    }
+
+    cpfCtrl?.updateValueAndValidity({ emitEvent: false });
+    cnpjCtrl?.updateValueAndValidity({ emitEvent: false });
+    razaoCtrl?.updateValueAndValidity({ emitEvent: false });
   }
 
   onTabSelect(event: Event): void {
@@ -272,10 +300,22 @@ export class ClienteCadastro implements OnInit {
     this.saving = true;
     this.saveError = null;
 
+    const tipoCliente = this.isPessoaFisica
+      ? ClienteTipo.PessoaFisica
+      : ClienteTipo.PessoaJuridica;
+    const documentoPrincipal = this.isPessoaFisica ? v.cpf : v.cnpj;
+
     this.clientesService
       .create({
         nome: v.nome,
-        cpf: this.isPessoaFisica ? v.cpf : '',
+        nomeExibicao: v.nomeExibicao || v.nome,
+        tipo: tipoCliente,
+        documento: documentoPrincipal ?? '',
+        cpf: documentoPrincipal ?? '',
+        status: v.status ?? 1,
+        vip: Boolean(v.vip),
+        observacoes: v.observacoes || null,
+        origemId: v.origemId || null,
         email: v.email ?? '',
         telefone: v.telefone ?? '',
       })

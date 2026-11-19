@@ -1,5 +1,13 @@
 import { CommonModule, DatePipe, DecimalPipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, OnInit, computed, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit,
+  TemplateRef,
+  ViewChild,
+  computed,
+  signal,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { catchError, forkJoin, of } from 'rxjs';
@@ -12,6 +20,7 @@ import {
 } from '../../../../core/models';
 import { FinanceiroService } from '../../../../core/services/financeiro.service';
 import { FornecedoresService } from '../../../../core/services/fornecedores.service';
+import { DatatableColumn, DatatableComponent } from '../../../../shared/ui/datatable';
 import {
   BaixaPagamentoModalComponent,
   BaixaPagamentoResult,
@@ -19,6 +28,7 @@ import {
 
 export type ContaPagarStatusEfetivo = 'PENDENTE' | 'VENCIDO' | 'PAGO' | 'CANCELADO';
 export type ContaPagarStatusFiltro = 'TODOS' | ContaPagarStatusEfetivo;
+export type ContaPagarTableRow = FinanceiroContaPagar & Record<string, unknown>;
 
 export interface ContaPagarKpi {
   label: string;
@@ -37,6 +47,7 @@ export interface ContaPagarKpi {
     FormsModule,
     RouterLink,
     BaixaPagamentoModalComponent,
+    DatatableComponent,
   ],
   templateUrl: './contas-pagar-lista.html',
   styleUrl: './contas-pagar-lista.scss',
@@ -181,7 +192,35 @@ export class ContasPagarListaComponent implements OnInit {
     private readonly fornecedoresService: FornecedoresService,
   ) {}
 
+  @ViewChild('vencimentoTpl', { static: true }) vencimentoTpl?: TemplateRef<{ $implicit: ContaPagarTableRow }>;
+  @ViewChild('fornecedorTpl', { static: true }) fornecedorTpl?: TemplateRef<{ $implicit: ContaPagarTableRow }>;
+  @ViewChild('descricaoTpl', { static: true }) descricaoTpl?: TemplateRef<{ $implicit: ContaPagarTableRow }>;
+  @ViewChild('metodoTpl', { static: true }) metodoTpl?: TemplateRef<{ $implicit: ContaPagarTableRow }>;
+  @ViewChild('statusTpl', { static: true }) statusTpl?: TemplateRef<{ $implicit: ContaPagarTableRow }>;
+  @ViewChild('pagamentoTpl', { static: true }) pagamentoTpl?: TemplateRef<{ $implicit: ContaPagarTableRow }>;
+  @ViewChild('valorTpl', { static: true }) valorTpl?: TemplateRef<{ $implicit: ContaPagarTableRow }>;
+  @ViewChild('acoesTpl', { static: true }) acoesTpl?: TemplateRef<{ $implicit: ContaPagarTableRow }>;
+
+  columns: DatatableColumn<ContaPagarTableRow>[] = [];
+
+  readonly tableRows = computed<ContaPagarTableRow[]>(() =>
+    this.filteredContas().map((c) => ({ ...c })),
+  );
+
+  readonly getRowClass = (conta: ContaPagarTableRow): string =>
+    this.isVencida(conta) ? 'row-vencida' : '';
+
   ngOnInit(): void {
+    this.columns = [
+      { field: 'vencimento', header: 'Vencimento', cellTemplate: this.vencimentoTpl },
+      { field: 'fornecedorId', header: 'Fornecedor', cellTemplate: this.fornecedorTpl },
+      { field: 'descricao', header: 'Descrição', subField: 'observacao', cellTemplate: this.descricaoTpl },
+      { field: 'metodoId', header: 'Método', cellTemplate: this.metodoTpl },
+      { field: 'status', header: 'Status', cellTemplate: this.statusTpl },
+      { field: 'dataPagamento', header: 'Pagamento', cellTemplate: this.pagamentoTpl },
+      { field: 'valor', header: 'Valor', align: 'right', cellTemplate: this.valorTpl },
+      { field: 'id', header: 'Ações', sortable: false, align: 'right', cellTemplate: this.acoesTpl },
+    ];
     this.carregarDados();
   }
 

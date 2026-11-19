@@ -11,6 +11,11 @@ import {
 } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { forkJoin } from 'rxjs';
+import {
+  ClienteTipo,
+  isClientePessoaFisica,
+  isClientePessoaJuridica,
+} from '../../../../core/models/cliente';
 import { ClientesService } from '../../../../core/services/clientes.service';
 import { Toast } from '../../../../shared/services/toast';
 import { Confirmation } from '../../../../shared/services/confirmation';
@@ -80,7 +85,7 @@ export class ClienteEditar implements OnInit {
 
   private buildForm(): void {
     this.form = this.fb.group({
-      tipo: ['pf'],
+      tipo: [ClienteTipo.PessoaFisica, Validators.required],
       nome: ['', [Validators.required, Validators.minLength(3)]],
       nomeExibicao: [''],
       status: [1, Validators.required],
@@ -133,13 +138,21 @@ export class ClienteEditar implements OnInit {
   }
 
   private populateForm(c: any): void {
-    const isPf = !!c.pessoaFisica;
+    const tipoNum = isClientePessoaJuridica(c.tipo)
+      ? ClienteTipo.PessoaJuridica
+      : isClientePessoaFisica(c.tipo)
+        ? ClienteTipo.PessoaFisica
+        : c.pessoaJuridica
+          ? ClienteTipo.PessoaJuridica
+          : ClienteTipo.PessoaFisica;
+    const isPf = tipoNum === ClienteTipo.PessoaFisica;
+
     this.pfId = c.pessoaFisica?.id ?? null;
     this.pjId = c.pessoaJuridica?.id ?? null;
     this.financeiroId = c.financeiro?.id ?? null;
 
     this.form.patchValue({
-      tipo: isPf ? 'pf' : 'pj',
+      tipo: tipoNum,
       nome: c.nome || '',
       nomeExibicao: c.nomeExibicao || '',
       status: c.status ?? 1,
@@ -149,7 +162,7 @@ export class ClienteEditar implements OnInit {
       email: c.email || '',
       telefone: c.telefone || '',
       // PF
-      cpf: c.pessoaFisica?.cpf || '',
+      cpf: c.pessoaFisica?.cpf || (isPf ? c.documento || '' : ''),
       rg: c.pessoaFisica?.rg || '',
       dataNascimento: c.pessoaFisica?.dataNascimento
         ? c.pessoaFisica.dataNascimento.substring(0, 10)
@@ -158,7 +171,7 @@ export class ClienteEditar implements OnInit {
       estadoCivil: c.pessoaFisica?.estadoCivil || '',
       profissao: c.pessoaFisica?.profissao || '',
       // PJ
-      cnpj: c.pessoaJuridica?.cnpj || '',
+      cnpj: c.pessoaJuridica?.cnpj || (!isPf ? c.documento || '' : ''),
       razaoSocial: c.pessoaJuridica?.razaoSocial || '',
       nomeFantasia: c.pessoaJuridica?.nomeFantasia || '',
       inscricaoEstadual: c.pessoaJuridica?.inscricaoEstadual || '',
@@ -170,6 +183,8 @@ export class ClienteEditar implements OnInit {
       bloqueado: c.financeiro?.bloqueado || false,
       financeiroObservacoes: c.financeiro?.observacoes || '',
     });
+
+    this.applyTipoValidators(tipoNum);
 
     // Endereços
     (c.enderecos || []).forEach((e: any) => {
@@ -211,7 +226,8 @@ export class ClienteEditar implements OnInit {
   // ── Getters ──────────────────────────────────────────────────────────────────
 
   get isPessoaFisica(): boolean {
-    return this.form.get('tipo')?.value === 'pf';
+    const val = this.form.get('tipo')?.value;
+    return val === 'pf' || isClientePessoaFisica(val);
   }
 
   get contatos(): FormArray {
@@ -233,10 +249,40 @@ export class ClienteEditar implements OnInit {
     if (value) this.setTab(value);
   }
 
-  setTipo(tipo: 'pf' | 'pj'): void {
-    this.form.patchValue({ tipo });
-    if (tipo === 'pf') this.form.patchValue({ cnpj: '', razaoSocial: '' });
-    else this.form.patchValue({ cpf: '', rg: '' });
+  setTipo(tipo: ClienteTipo | 'pf' | 'pj'): void {
+    const tipoNum =
+      tipo === 'pj' || Number(tipo) === ClienteTipo.PessoaJuridica
+        ? ClienteTipo.PessoaJuridica
+        : ClienteTipo.PessoaFisica;
+
+    const currentTipo = Number(this.form.get('tipo')?.value);
+    if (this.cliente && currentTipo && currentTipo !== tipoNum) {
+      return;
+    }
+
+    this.form.patchValue({ tipo: tipoNum });
+    if (tipoNum === ClienteTipo.PessoaFisica) {
+      this.form.patchValue({ cnpj: '', razaoSocial: '' });
+    } else {
+      this.form.patchValue({ cpf: '', rg: '' });
+    }
+    this.applyTipoValidators(tipoNum);
+  }
+
+  private applyTipoValidators(tipo: ClienteTipo): void {
+    const cpfCtrl = this.form.get('cpf');
+    const cnpjCtrl = this.form.get('cnpj');
+
+    if (tipo === ClienteTipo.PessoaFisica) {
+      cpfCtrl?.setValidators([cpfValidator()]);
+      cnpjCtrl?.setValidators([cnpjValidator()]);
+    } else {
+      cpfCtrl?.setValidators([cpfValidator()]);
+      cnpjCtrl?.setValidators([cnpjValidator()]);
+    }
+
+    cpfCtrl?.updateValueAndValidity({ emitEvent: false });
+    cnpjCtrl?.updateValueAndValidity({ emitEvent: false });
   }
 
   // ── FormArray helpers ────────────────────────────────────────────────────────
@@ -364,14 +410,23 @@ export class ClienteEditar implements OnInit {
     this.saving = true;
     this.saveError = null;
 
+    const tipoCliente = this.isPessoaFisica
+      ? ClienteTipo.PessoaFisica
+      : ClienteTipo.PessoaJuridica;
+    const documentoPrincipal =
+      (this.isPessoaFisica ? v.cpf : v.cnpj) || this.cliente?.documento || '';
+
     this.clientesService.update(this.clienteId, {
       nome: v.nome,
-      nomeExibicao: v.nomeExibicao || null,
+      nomeExibicao: v.nomeExibicao || v.nome,
+      documento: documentoPrincipal,
+      tipo: tipoCliente,
       email: v.email || '',
       telefone: v.telefone || '',
       status: v.status,
       vip: v.vip || false,
       observacoes: v.observacoes || null,
+      origemCadastroId: this.cliente?.origemCadastroId || 1,
       origemId: v.origemId || null,
     }).subscribe({
       next: () => this.runSubUpdates(v),

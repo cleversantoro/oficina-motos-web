@@ -62,8 +62,22 @@
       </div>
 
       <div class="toggle">
-        <button type="button" [class.active]="isPessoaFisica"  (click)="setTipo('pf')">Pessoa Física</button>
-        <button type="button" [class.active]="!isPessoaFisica" (click)="setTipo('pj')">Pessoa Jurídica</button>
+        <button
+          type="button"
+          [class.active]="isPessoaFisica"
+          [disabled]="!isPessoaFisica"
+          (click)="setTipo(1)"
+        >
+          Pessoa Física
+        </button>
+        <button
+          type="button"
+          [class.active]="!isPessoaFisica"
+          [disabled]="isPessoaFisica"
+          (click)="setTipo(2)"
+        >
+          Pessoa Jurídica
+        </button>
       </div>
 
       <div class="grid">

@@ -32,187 +32,78 @@
   </div>
 
   @if (activeTab === 'pagar') {
-  <div class="list-area">
-    <div class="list-head">
-      <h2>Contas a Pagar (Em aberto)</h2>
-      <div class="head-right">
-        <div class="search-wrap">
-          <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
-          </svg>
-          <input class="search-input" type="text" placeholder="Buscar..."
-            [(ngModel)]="filterPagar" (ngModelChange)="firstPagar = 0" />
-        </div>
-        <div class="filters">
-          <a class="ghost" routerLink="/financeiro/contas-pagar">Ver listagem completa</a>
-          <button class="ghost">Filtrar vencimento</button>
-          <button class="ghost">Fornecedor</button>
+    <div class="list-area">
+      <div class="list-head">
+        <h2>Contas a Pagar (Em aberto)</h2>
+        <div class="head-right">
+          <div class="filters">
+            <a class="ghost" routerLink="/financeiro/contas-pagar">Ver listagem completa</a>
+          </div>
         </div>
       </div>
+      <app-datatable
+        [data]="pagarRows"
+        [columns]="columnsPagar"
+        [loading]="loading"
+        [selectable]="false"
+        [exportable]="true"
+        searchPlaceholder="Buscar por descrição, fornecedor ou status..."
+        emptyTitle="Nenhuma conta a pagar cadastrada."
+      />
     </div>
-    <table class="data-table">
-      <thead>
-        <tr>
-          <th class="w-date">Vencimento</th>
-          <th class="hide-sm">Fornecedor</th>
-          <th>Descrição</th>
-          <th>Status</th>
-          <th class="right">Valor</th>
-        </tr>
-      </thead>
-      <tbody>
-        @if (filteredPagar.length === 0) {
-          <tr><td colspan="5" class="empty-cell">
-            @if (filterPagar) { Nenhum resultado para "{{ filterPagar }}". }
-            @else { Nenhuma conta a pagar cadastrada. }
-          </td></tr>
-        }
-        @for (c of filteredPagar.slice(firstPagar, firstPagar + rows); track c.id) {
-          <tr class="data-row">
-            <td class="w-date">{{ c.vencimento | date:'dd/MM/yyyy' }}</td>
-            <td class="hide-sm">{{ c.fornecedorId ? 'Fornecedor #' + c.fornecedorId : '-' }}</td>
-            <td>{{ c.descricao }}</td>
-            <td><span class="status" [class.vencido]="c.status === 'vencido'" [class.pago]="c.status === 'pago'">{{ c.status }}</span></td>
-            <td class="right valor saida">R$ {{ c.valor | number:'1.2-2' }}</td>
-          </tr>
-        }
-      </tbody>
-    </table>
-    @if (filteredPagar.length > rows) {
-      <div class="pagination">
-        <button class="pg-btn" [disabled]="firstPagar === 0" (click)="prevPagePagar()">← Anterior</button>
-        <span class="pg-info">{{ firstPagar + 1 }}–{{ firstPagar + rows > filteredPagar.length ? filteredPagar.length : firstPagar + rows }} de {{ filteredPagar.length }}</span>
-        <button class="pg-btn" [disabled]="firstPagar + rows >= filteredPagar.length" (click)="nextPagePagar()">Próximo →</button>
-      </div>
-    }
-  </div>
   }
 
   @if (activeTab === 'receber') {
-  <div class="list-area">
-    <div class="list-head">
-      <h2>Contas a Receber</h2>
-      <div class="head-right">
-        <div class="search-wrap">
-          <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
-          </svg>
-          <input class="search-input" type="text" placeholder="Buscar..."
-            [(ngModel)]="filterReceber" (ngModelChange)="firstReceber = 0" />
-        </div>
-        <div class="filters">
-          <a class="ghost" routerLink="/financeiro/contas-receber">Ver listagem completa</a>
-          <button class="ghost">Filtrar cliente</button>
-          <button class="ghost">Status</button>
+    <div class="list-area">
+      <div class="list-head">
+        <h2>Contas a Receber</h2>
+        <div class="head-right">
+          <div class="filters">
+            <a class="ghost" routerLink="/financeiro/contas-receber">Ver listagem completa</a>
+          </div>
         </div>
       </div>
+      <app-datatable
+        [data]="receberRows"
+        [columns]="columnsReceber"
+        [loading]="loading"
+        [selectable]="false"
+        [exportable]="true"
+        searchPlaceholder="Buscar por descrição, cliente ou status..."
+        emptyTitle="Nenhuma conta a receber cadastrada."
+      />
     </div>
-    <table class="data-table">
-      <thead>
-        <tr>
-          <th class="w-date">Vencimento</th>
-          <th class="hide-sm">Cliente</th>
-          <th>Descrição</th>
-          <th>Status</th>
-          <th class="right">Valor</th>
-        </tr>
-      </thead>
-      <tbody>
-        @if (filteredReceber.length === 0) {
-          <tr><td colspan="5" class="empty-cell">
-            @if (filterReceber) { Nenhum resultado para "{{ filterReceber }}". }
-            @else { Nenhuma conta a receber cadastrada. }
-          </td></tr>
-        }
-        @for (c of filteredReceber.slice(firstReceber, firstReceber + rows); track c.id) {
-          <tr class="data-row">
-            <td class="w-date">{{ c.vencimento | date:'dd/MM/yyyy' }}</td>
-            <td class="hide-sm">{{ c.clienteId ? 'Cliente #' + c.clienteId : '-' }}</td>
-            <td>{{ c.descricao }}</td>
-            <td><span class="status" [class.pago]="c.status === 'pago'">{{ c.status }}</span></td>
-            <td class="right valor entrada">R$ {{ c.valor | number:'1.2-2' }}</td>
-          </tr>
-        }
-      </tbody>
-    </table>
-    @if (filteredReceber.length > rows) {
-      <div class="pagination">
-        <button class="pg-btn" [disabled]="firstReceber === 0" (click)="prevPageReceber()">← Anterior</button>
-        <span class="pg-info">{{ firstReceber + 1 }}–{{ firstReceber + rows > filteredReceber.length ? filteredReceber.length : firstReceber + rows }} de {{ filteredReceber.length }}</span>
-        <button class="pg-btn" [disabled]="firstReceber + rows >= filteredReceber.length" (click)="nextPageReceber()">Próximo →</button>
-      </div>
-    }
-  </div>
   }
 
   @if (activeTab === 'lancamentos') {
-  <div class="list-area">
-    <div class="list-head">
-      <h2>Lançamentos (Conciliação)</h2>
-      <div class="head-right">
-        <div class="search-wrap">
-          <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
-          </svg>
-          <input class="search-input" type="text" placeholder="Buscar..."
-            [(ngModel)]="filterLancamentos" (ngModelChange)="firstLancamentos = 0" />
-        </div>
-        <div class="filters">
-          <button class="ghost">Importar extrato</button>
-          <button class="ghost">Filtrar conta</button>
-        </div>
+    <div class="list-area">
+      <div class="list-head">
+        <h2>Lançamentos (Conciliação)</h2>
       </div>
+      <app-datatable
+        [data]="lancamentosRows"
+        [columns]="columnsLancamentos"
+        [loading]="loading"
+        [selectable]="false"
+        [exportable]="true"
+        searchPlaceholder="Buscar por descrição ou tipo..."
+        emptyTitle="Nenhum lançamento cadastrado."
+      />
     </div>
-    <table class="data-table">
-      <thead>
-        <tr>
-          <th class="w-date">Data</th>
-          <th class="hide-sm">Tipo</th>
-          <th>Descrição</th>
-          <th>Status</th>
-          <th class="right">Valor</th>
-        </tr>
-      </thead>
-      <tbody>
-        @if (filteredLancamentos.length === 0) {
-          <tr><td colspan="5" class="empty-cell">
-            @if (filterLancamentos) { Nenhum resultado para "{{ filterLancamentos }}". }
-            @else { Nenhum lançamento cadastrado. }
-          </td></tr>
-        }
-        @for (c of filteredLancamentos.slice(firstLancamentos, firstLancamentos + rows); track c.id) {
-          <tr class="data-row">
-            <td class="w-date">{{ c.dataLancamento | date:'dd/MM/yyyy' }}</td>
-            <td class="hide-sm">{{ c.tipo }}</td>
-            <td>{{ c.descricao }}</td>
-            <td>-</td>
-            <td class="right valor">R$ {{ c.valor | number:'1.2-2' }}</td>
-          </tr>
-        }
-      </tbody>
-    </table>
-    @if (filteredLancamentos.length > rows) {
-      <div class="pagination">
-        <button class="pg-btn" [disabled]="firstLancamentos === 0" (click)="prevPageLancamentos()">← Anterior</button>
-        <span class="pg-info">{{ firstLancamentos + 1 }}–{{ firstLancamentos + rows > filteredLancamentos.length ? filteredLancamentos.length : firstLancamentos + rows }} de {{ filteredLancamentos.length }}</span>
-        <button class="pg-btn" [disabled]="firstLancamentos + rows >= filteredLancamentos.length" (click)="nextPageLancamentos()">Próximo →</button>
-      </div>
-    }
-  </div>
   }
 
   @if (activeTab === 'metodos') {
-  <div class="list-area">
-    <div class="list-head">
-      <h2>Métodos de Pagamento</h2>
-      <button class="ghost">+ Adicionar método</button>
+    <div class="list-area">
+      <div class="list-head">
+        <h2>Métodos de Pagamento</h2>
+        <button class="ghost">+ Adicionar método</button>
+      </div>
+      <div class="tags">
+        @for (m of metodos; track m.id) {
+          <span class="tag">{{ m.nome }}</span>
+        }
+      </div>
+      <p class="muted">Vincule baixas/recebimentos a um método para facilitar conciliação.</p>
     </div>
-    <div class="tags">
-      @for (m of metodos; track m.id) {
-        <span class="tag">{{ m.nome }}</span>
-      }
-    </div>
-    <p class="muted">Vincule baixas/recebimentos a um método para facilitar conciliação.</p>
-  </div>
   }
 </section>

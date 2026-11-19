@@ -114,6 +114,7 @@
     cursor: pointer;
     transition: background 140ms ease, color 140ms ease;
     &.active { background: rgba(249, 115, 22, 0.18); color: #f8fafc; }
+    &:disabled { opacity: 0.45; cursor: not-allowed; }
   }
 }
 

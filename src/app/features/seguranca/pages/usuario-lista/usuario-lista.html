@@ -7,94 +7,68 @@
 
     <div class="header-actions">
       <a routerLink="/seguranca/perfis" class="p-button p-button-outlined p-button-sm nav-btn">
-        <i class="fa-solid fa-shield-halved"></i>
+        <i class="fa-solid fa-shield-halved" aria-hidden="true"></i>
         <span>Perfis de Acesso</span>
       </a>
       <a routerLink="/seguranca/usuarios/novo" class="p-button p-button-primary p-button-sm nav-btn" data-testid="btn-novo-usuario">
-        <i class="fa-solid fa-plus"></i>
+        <i class="fa-solid fa-plus" aria-hidden="true"></i>
         <span>Novo Usuário</span>
       </a>
     </div>
   </header>
 
-  <div class="toolbar">
-    <div class="search-box">
-      <i class="fa-solid fa-magnifying-glass"></i>
-      <input
-        type="search"
-        placeholder="Buscar por nome, login, e-mail ou perfil..."
-        [ngModel]="busca()"
-        (ngModelChange)="busca.set($event)"
-        aria-label="Buscar usuários"
-      />
-    </div>
-    <span class="counter-badge">{{ usuariosFiltrados().length }} usuário(s)</span>
-  </div>
-
-  @if (loading()) {
-    <div class="state-box">
-      <i class="fa-solid fa-spin fa-spinner"></i>
-      <p>Carregando usuários...</p>
-    </div>
-  } @else if (error(); as message) {
+  @if (error(); as message) {
     <div class="state-box error" role="alert">
-      <i class="fa-solid fa-triangle-exclamation"></i>
+      <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
       <p>{{ message }}</p>
       <button pButton type="button" label="Tentar novamente" class="p-button-outlined p-button-sm" (click)="carregarUsuarios()"></button>
     </div>
-  } @else if (usuariosFiltrados().length === 0) {
-    <div class="state-box">
-      <i class="fa-solid fa-users"></i>
-      <p>Nenhum usuário encontrado.</p>
-    </div>
   } @else {
-    <div class="table-card">
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th>Nome</th>
-            <th>Login</th>
-            <th>E-mail</th>
-            <th>Perfis</th>
-            <th>Status</th>
-            <th>Último Login</th>
-            <th class="actions-col">Ações</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (usuario of usuariosFiltrados(); track usuario.id) {
-            <tr>
-              <td class="font-semibold">{{ usuario.nome }}</td>
-              <td><code>{{ usuario.login }}</code></td>
-              <td>{{ usuario.email }}</td>
-              <td>{{ usuario.perfis || '-' }}</td>
-              <td>
-                <p-tag [value]="usuario.statusDescricao || 'Ativo'" [severity]="getStatusSeverity(usuario.status)"></p-tag>
-              </td>
-              <td>{{ usuario.ultimoLogin ? (usuario.ultimoLogin | date: 'dd/MM/yyyy HH:mm') : 'Nunca' }}</td>
-              <td class="actions-col">
-                <a
-                  [routerLink]="['/seguranca/usuarios', usuario.id, 'editar']"
-                  class="p-button p-button-text p-button-sm"
-                  title="Editar usuário"
-                >
-                  <i class="fa-solid fa-pencil"></i>
-                </a>
-                <button
-                  pButton
-                  type="button"
-                  icon="fa-solid fa-trash"
-                  class="p-button-text p-button-danger p-button-sm"
-                  title="Excluir usuário"
-                  [disabled]="deletingId() === usuario.id"
-                  [loading]="deletingId() === usuario.id"
-                  (click)="confirmarExclusao(usuario)"
-                ></button>
-              </td>
-            </tr>
-          }
-        </tbody>
-      </table>
-    </div>
+    <app-datatable
+      [data]="tableRows()"
+      [columns]="columns"
+      [loading]="loading()"
+      [selectable]="false"
+      [exportable]="true"
+      statusField="statusDescricao"
+      [statusOptions]="statusOptions"
+      searchPlaceholder="Buscar por nome, login, e-mail ou perfil..."
+      emptyTitle="Nenhum usuário encontrado."
+      emptyDescription="Não encontramos usuários correspondentes aos filtros atuais."
+    />
   }
+
+  <ng-template #loginTpl let-usuario>
+    <code>{{ usuario.login }}</code>
+  </ng-template>
+
+  <ng-template #statusTpl let-usuario>
+    <p-tag [value]="usuario.statusDescricao || 'Ativo'" [severity]="getStatusSeverity(usuario.status)"></p-tag>
+  </ng-template>
+
+  <ng-template #ultimoLoginTpl let-usuario>
+    {{ usuario.ultimoLogin ? (usuario.ultimoLogin | date: 'dd/MM/yyyy HH:mm') : 'Nunca' }}
+  </ng-template>
+
+  <ng-template #acoesTpl let-usuario>
+    <div class="actions-col">
+      <a
+        [routerLink]="['/seguranca/usuarios', usuario.id, 'editar']"
+        class="p-button p-button-text p-button-sm"
+        title="Editar usuário"
+      >
+        <i class="fa-solid fa-pencil" aria-hidden="true"></i>
+      </a>
+      <button
+        pButton
+        type="button"
+        icon="fa-solid fa-trash"
+        class="p-button-text p-button-danger p-button-sm"
+        title="Excluir usuário"
+        [disabled]="deletingId() === usuario.id"
+        [loading]="deletingId() === usuario.id"
+        (click)="confirmarExclusao(usuario)"
+      ></button>
+    </div>
+  </ng-template>
 </section>

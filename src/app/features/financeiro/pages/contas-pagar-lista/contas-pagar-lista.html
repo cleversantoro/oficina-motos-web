@@ -88,122 +88,91 @@
   </div>
 
   <div class="list-area">
-    @if (loading()) {
-      <div class="state-box loading-state" role="status">
-        <p>Carregando contas a pagar...</p>
-      </div>
-    } @else if (error()) {
+    @if (error()) {
       <div class="state-box error-state" role="alert">
         <p>{{ error() }}</p>
         <button type="button" class="btn-retry" (click)="carregarDados()">Tentar novamente</button>
       </div>
     } @else {
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th class="w-date">Vencimento</th>
-            <th>Fornecedor</th>
-            <th>Descrição</th>
-            <th class="hide-sm">Método</th>
-            <th>Status</th>
-            <th class="hide-sm w-date">Pagamento</th>
-            <th class="right">Valor</th>
-            <th class="right">Ações</th>
-          </tr>
-        </thead>
-        <tbody>
-          @if (filteredContas().length === 0) {
-            <tr>
-              <td colspan="8" class="empty-cell">
-                @if (periodoInvalido()) {
-                  A data inicial não pode ser posterior à data final.
-                } @else if (hasActiveFilters()) {
-                  Nenhuma conta a pagar encontrada para os filtros selecionados.
-                } @else {
-                  Nenhuma conta a pagar cadastrada.
-                }
-              </td>
-            </tr>
-          }
-          @for (conta of paginatedContas(); track conta.id) {
-            @let statusEfetivo = getEffectiveStatus(conta);
-            @let vencida = isVencida(conta);
-            <tr class="data-row" [class.row-vencida]="vencida">
-              <td class="w-date" [class.vencimento-atrasado]="vencida">
-                <span class="date-text">{{ conta.vencimento | date:'dd/MM/yyyy' }}</span>
-                @if (vencida) {
-                  <span class="overdue-pill" title="Conta vencida e pendente de baixa">⚠ Em atraso</span>
-                }
-              </td>
-              <td class="fornecedor-cell">{{ getFornecedorNome(conta.fornecedorId) }}</td>
-              <td>
-                <div class="desc-primary">{{ conta.descricao }}</div>
-                @if (conta.observacao) {
-                  <div class="desc-obs">{{ conta.observacao }}</div>
-                }
-              </td>
-              <td class="hide-sm">{{ getMetodoNome(conta.metodoId) }}</td>
-              <td>
-                <span
-                  class="status-badge"
-                  [class.status-vencido]="statusEfetivo === 'VENCIDO'"
-                  [class.status-pendente]="statusEfetivo === 'PENDENTE'"
-                  [class.status-pago]="statusEfetivo === 'PAGO'"
-                  [class.status-cancelado]="statusEfetivo === 'CANCELADO'"
-                >
-                  {{ getStatusLabel(conta) }}
-                </span>
-              </td>
-              <td class="hide-sm w-date">
-                {{ conta.dataPagamento ? (conta.dataPagamento | date:'dd/MM/yyyy') : '-' }}
-              </td>
-              <td class="right valor saida" [class.valor-vencido]="vencida">
-                R$ {{ conta.valor | number:'1.2-2' }}
-              </td>
-              <td class="right actions-cell">
-                @if (statusEfetivo === 'PENDENTE' || statusEfetivo === 'VENCIDO') {
-                  <button
-                    type="button"
-                    class="btn-baixa-conta"
-                    (click)="abrirModalBaixa(conta)"
-                  >
-                    Baixar
-                  </button>
-                }
-                <a class="btn-edit-conta" [routerLink]="['/financeiro/contas-pagar', conta.id, 'editar']">
-                  Editar
-                </a>
-              </td>
-            </tr>
-          }
-        </tbody>
-      </table>
-
-      @if (filteredContas().length > rows) {
-        <div class="pagination">
-          <button
-            type="button"
-            class="pg-btn"
-            [disabled]="first() === 0"
-            (click)="prevPage()"
-          >
-            ← Anterior
-          </button>
-          <span class="pg-info">
-            {{ first() + 1 }}–{{ pageEnd() }} de {{ filteredContas().length }}
-          </span>
-          <button
-            type="button"
-            class="pg-btn"
-            [disabled]="first() + rows >= filteredContas().length"
-            (click)="nextPage()"
-          >
-            Próximo →
-          </button>
-        </div>
-      }
+      <app-datatable
+        [data]="tableRows()"
+        [columns]="columns"
+        [loading]="loading()"
+        [selectable]="false"
+        [showToolbar]="false"
+        [initialPageSize]="8"
+        [rowClass]="getRowClass"
+        emptyTitle="Nenhuma conta a pagar encontrada"
+        emptyDescription="Nenhuma conta a pagar encontrada para os filtros selecionados."
+      />
     }
   </div>
+
+  <ng-template #vencimentoTpl let-conta>
+    @let vencida = isVencida(conta);
+    <div [class.vencimento-atrasado]="vencida">
+      <span class="date-text">{{ conta.vencimento | date:'dd/MM/yyyy' }}</span>
+      @if (vencida) {
+        <span class="overdue-pill" title="Conta vencida e pendente de baixa">⚠ Em atraso</span>
+      }
+    </div>
+  </ng-template>
+
+  <ng-template #fornecedorTpl let-conta>
+    <span class="fornecedor-cell">{{ getFornecedorNome(conta.fornecedorId) }}</span>
+  </ng-template>
+
+  <ng-template #descricaoTpl let-conta>
+    <div class="desc-primary">{{ conta.descricao }}</div>
+    @if (conta.observacao) {
+      <div class="desc-obs">{{ conta.observacao }}</div>
+    }
+  </ng-template>
+
+  <ng-template #metodoTpl let-conta>
+    {{ getMetodoNome(conta.metodoId) }}
+  </ng-template>
+
+  <ng-template #statusTpl let-conta>
+    @let statusEfetivo = getEffectiveStatus(conta);
+    <span
+      class="status-badge"
+      [class.status-vencido]="statusEfetivo === 'VENCIDO'"
+      [class.status-pendente]="statusEfetivo === 'PENDENTE'"
+      [class.status-pago]="statusEfetivo === 'PAGO'"
+      [class.status-cancelado]="statusEfetivo === 'CANCELADO'"
+    >
+      {{ getStatusLabel(conta) }}
+    </span>
+  </ng-template>
+
+  <ng-template #pagamentoTpl let-conta>
+    {{ conta.dataPagamento ? (conta.dataPagamento | date:'dd/MM/yyyy') : '-' }}
+  </ng-template>
+
+  <ng-template #valorTpl let-conta>
+    <span class="valor saida" [class.valor-vencido]="isVencida(conta)">
+      R$ {{ conta.valor | number:'1.2-2' }}
+    </span>
+  </ng-template>
+
+  <ng-template #acoesTpl let-conta>
+    @let statusEfetivo = getEffectiveStatus(conta);
+    <div class="actions-cell">
+      @if (statusEfetivo === 'PENDENTE' || statusEfetivo === 'VENCIDO') {
+        <button
+          type="button"
+          class="btn-baixa-conta"
+          (click)="abrirModalBaixa(conta)"
+        >
+          Baixar
+        </button>
+      }
+      <a class="btn-edit-conta" [routerLink]="['/financeiro/contas-pagar', conta.id, 'editar']">
+        Editar
+      </a>
+    </div>
+  </ng-template>
 
   <app-baixa-pagamento-modal
     [visible]="modalBaixaVisivel()"

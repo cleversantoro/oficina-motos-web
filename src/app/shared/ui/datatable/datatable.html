@@ -1,5 +1,6 @@
 <div class="dt-card">
   <!-- Barra de ferramentas: busca, filtro de status, ações em lote e exportação -->
+  @if (showToolbar()) {
   <div class="dt-toolbar">
     <div class="dt-toolbar-filters">
       <div class="dt-search-wrap">
@@ -61,6 +62,7 @@
       }
     </div>
   </div>
+  }
 
   <!-- Estado de carregamento -->
   @if (loading()) {
@@ -130,8 +132,9 @@
         <tbody>
           @for (row of paginatedData(); track getRowKey(row)) {
             <tr
-              class="dt-row"
+              class="dt-row data-row"
               [class.selected]="isRowSelected(row)"
+              [ngClass]="getCustomRowClass(row)"
               (click)="rowClick.emit(row)"
             >
               @if (selectable()) {

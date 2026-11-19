@@ -1,5 +1,13 @@
 import { CommonModule, DatePipe, DecimalPipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, OnInit, computed, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit,
+  TemplateRef,
+  ViewChild,
+  computed,
+  signal,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { catchError, forkJoin, of } from 'rxjs';
@@ -12,6 +20,7 @@ import {
 } from '../../../../core/models';
 import { ClientesService } from '../../../../core/services/clientes.service';
 import { FinanceiroService } from '../../../../core/services/financeiro.service';
+import { DatatableColumn, DatatableComponent } from '../../../../shared/ui/datatable';
 import {
   BaixaPagamentoModalComponent,
   BaixaPagamentoResult,
@@ -19,6 +28,7 @@ import {
 
 export type ContaReceberStatusEfetivo = 'PENDENTE' | 'VENCIDO' | 'RECEBIDO' | 'CANCELADO';
 export type ContaReceberStatusFiltro = 'TODOS' | ContaReceberStatusEfetivo;
+export type ContaReceberTableRow = FinanceiroContaReceber & Record<string, unknown>;
 
 export interface ContaReceberKpi {
   label: string;
@@ -37,6 +47,7 @@ export interface ContaReceberKpi {
     FormsModule,
     RouterLink,
     BaixaPagamentoModalComponent,
+    DatatableComponent,
   ],
   templateUrl: './contas-receber-lista.html',
   styleUrl: './contas-receber-lista.scss',
@@ -185,7 +196,37 @@ export class ContasReceberListaComponent implements OnInit {
     private readonly clientesService: ClientesService,
   ) {}
 
+  @ViewChild('vencimentoTpl', { static: true }) vencimentoTpl?: TemplateRef<{ $implicit: ContaReceberTableRow }>;
+  @ViewChild('clienteTpl', { static: true }) clienteTpl?: TemplateRef<{ $implicit: ContaReceberTableRow }>;
+  @ViewChild('descricaoTpl', { static: true }) descricaoTpl?: TemplateRef<{ $implicit: ContaReceberTableRow }>;
+  @ViewChild('osOrigemTpl', { static: true }) osOrigemTpl?: TemplateRef<{ $implicit: ContaReceberTableRow }>;
+  @ViewChild('metodoTpl', { static: true }) metodoTpl?: TemplateRef<{ $implicit: ContaReceberTableRow }>;
+  @ViewChild('statusTpl', { static: true }) statusTpl?: TemplateRef<{ $implicit: ContaReceberTableRow }>;
+  @ViewChild('recebimentoTpl', { static: true }) recebimentoTpl?: TemplateRef<{ $implicit: ContaReceberTableRow }>;
+  @ViewChild('valorTpl', { static: true }) valorTpl?: TemplateRef<{ $implicit: ContaReceberTableRow }>;
+  @ViewChild('acoesTpl', { static: true }) acoesTpl?: TemplateRef<{ $implicit: ContaReceberTableRow }>;
+
+  columns: DatatableColumn<ContaReceberTableRow>[] = [];
+
+  readonly tableRows = computed<ContaReceberTableRow[]>(() =>
+    this.filteredContas().map((c) => ({ ...c })),
+  );
+
+  readonly getRowClass = (conta: ContaReceberTableRow): string =>
+    this.isVencida(conta) ? 'row-vencida' : '';
+
   ngOnInit(): void {
+    this.columns = [
+      { field: 'vencimento', header: 'Vencimento', cellTemplate: this.vencimentoTpl },
+      { field: 'clienteId', header: 'Cliente', cellTemplate: this.clienteTpl },
+      { field: 'descricao', header: 'Descrição', subField: 'observacao', cellTemplate: this.descricaoTpl },
+      { field: 'ordemServicoId', header: 'OS Origem', cellTemplate: this.osOrigemTpl },
+      { field: 'metodoId', header: 'Método', cellTemplate: this.metodoTpl },
+      { field: 'status', header: 'Status', cellTemplate: this.statusTpl },
+      { field: 'dataRecebimento', header: 'Recebimento', cellTemplate: this.recebimentoTpl },
+      { field: 'valor', header: 'Valor', align: 'right', cellTemplate: this.valorTpl },
+      { field: 'id', header: 'Ações', sortable: false, align: 'right', cellTemplate: this.acoesTpl },
+    ];
     this.carregarDados();
   }
 

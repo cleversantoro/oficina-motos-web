@@ -37,6 +37,8 @@ export class DatatableComponent<T extends Record<string, unknown> = Record<strin
   readonly loading = input(false);
   readonly selectable = input(true);
   readonly exportable = input(false);
+  readonly showToolbar = input(true);
+  readonly rowClass = input<((row: T) => string) | null>(null);
   readonly rowKey = input<keyof T | string>('id');
   readonly searchPlaceholder = input('Buscar...');
   readonly emptyTitle = input('Nenhum registro encontrado');
@@ -349,6 +351,11 @@ export class DatatableComponent<T extends Record<string, unknown> = Record<strin
 
   isActionDisabled(action: DatatableAction<T>, row: T): boolean {
     return action.disabled ? action.disabled(row) : false;
+  }
+
+  getCustomRowClass(row: T): string {
+    const fn = this.rowClass();
+    return fn ? fn(row) : '';
   }
 
   getRowKey(row: T): string | number {

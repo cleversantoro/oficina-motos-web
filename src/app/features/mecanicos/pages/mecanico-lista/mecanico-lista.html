@@ -5,144 +5,69 @@
       <span class="count-pill">{{ filtered.length }} registros</span>
     </div>
     <div class="header-actions">
-      <div class="search-wrap">
-        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
-        </svg>
-        <input
-          class="search-input"
-          type="text"
-          placeholder="Buscar por nome, nível, status..."
-          [(ngModel)]="filterText"
-          (ngModelChange)="first = 0"
-        />
-      </div>
       @if (canCreateMecanico()) {
         <button class="btn-cta" routerLink="/mecanicos/novo">+ Novo Mecânico</button>
       }
     </div>
   </header>
 
-  @if (loading) {
-    <div class="state-card">
-      <div class="spinner"></div>
-      <p>Carregando mecânicos...</p>
-    </div>
-  }
+  <app-datatable
+    [data]="filtered"
+    [columns]="columns"
+    [loading]="loading"
+    [selectable]="canDeleteMecanico()"
+    [exportable]="true"
+    searchPlaceholder="Buscar por nome, nível, status..."
+    emptyTitle="Nenhum mecânico encontrado"
+    emptyDescription="Não encontramos mecânicos correspondentes aos filtros aplicados."
+  />
 
-  @if (!loading) {
-    <div class="table-card">
-      <div class="table-scroll">
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th>Nome</th>
-            <th>Nível</th>
-            <th>Status</th>
-            <th class="hide-sm">Documento</th>
-            <th class="hide-sm">Valor/Hora</th>
-            <th class="action-th">Ações</th>
-          </tr>
-        </thead>
-        <tbody>
-          @if (filtered.length === 0) {
-            <tr>
-              <td colspan="6" class="empty-cell">
-                @if (filterText) { Nenhum mecânico encontrado para "{{ filterText }}". }
-                @else { Nenhum mecânico cadastrado. }
-              </td>
-            </tr>
-          }
-          @for (m of filtered.slice(first, first + rows); track m.id) {
-            <tr class="data-row">
-              <td>
-                <div class="nome-cell">
-                  <span class="avatar">{{ (m.nome ?? '?')[0] }}</span>
-                  <div>
-                    <a class="name name-link" [routerLink]="['/mecanicos', m.id]">{{ m.nome }} {{ m.sobrenome }}</a>
-                    <p class="sub">{{ m.nivel }}</p>
-                  </div>
-                </div>
-              </td>
-              <td>{{ m.nivel ?? '—' }}</td>
-              <td>
-                <span class="status-pill" [class.ativo]="m.status === 'ATIVO'" [class.inativo]="m.status !== 'ATIVO'">
-                  {{ m.status ?? '—' }}
-                </span>
-              </td>
-              <td class="hide-sm mono">{{ m.documentoPrincipal ?? '—' }}</td>
-              <td class="hide-sm">{{ m.valorHora !== null && m.valorHora !== undefined ? 'R$ ' + m.valorHora.toFixed(2) : '—' }}</td>
-              <td class="action-cell">
-                <a class="icon-btn view-btn" [routerLink]="['/mecanicos', m.id]" (click)="openDetails(m); $event.stopPropagation()" title="Visualizar">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                    <circle cx="12" cy="12" r="3"/>
-                  </svg>
-                </a>
-                @if (canDeleteMecanico()) {
-                  <button class="icon-btn delete-btn" (click)="confirmDelete(m.id); $event.stopPropagation()" title="Excluir">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <polyline points="3 6 5 6 21 6"/>
-                      <path d="m19 6-.867 14.142A2 2 0 0 1 16.138 22H7.862a2 2 0 0 1-1.995-1.858L5 6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
-                    </svg>
-                  </button>
-                }
-              </td>
-            </tr>
-          }
-        </tbody>
-      </table>
-      </div>
-
-      <div class="mobile-cards" aria-label="Lista de mecânicos">
-        @if (filtered.length === 0) {
-          <div class="mobile-empty">
-            @if (filterText) { Nenhum mecânico encontrado para "{{ filterText }}". }
-            @else { Nenhum mecânico cadastrado. }
-          </div>
-        }
-        @for (m of filtered.slice(first, first + rows); track m.id) {
-          <article class="mobile-card">
-            <div class="mobile-card-head">
-              <div class="nome-cell">
-                <span class="avatar">{{ (m.nome ?? '?')[0] }}</span>
-                <div>
-                  <a class="name mobile-name-link" [routerLink]="['/mecanicos', m.id]">{{ m.nome }} {{ m.sobrenome }}</a>
-                  <p class="sub">{{ m.nivel ?? '—' }}</p>
-                </div>
-              </div>
-              <span class="status-pill" [class.ativo]="m.status === 'ATIVO'" [class.inativo]="m.status !== 'ATIVO'">
-                {{ m.status ?? '—' }}
-              </span>
-            </div>
-            <div class="mobile-card-grid">
-              <div><span class="mobile-label">Documento</span><span class="mono">{{ m.documentoPrincipal ?? '—' }}</span></div>
-              <div><span class="mobile-label">Valor/Hora</span><span>{{ m.valorHora !== null && m.valorHora !== undefined ? 'R$ ' + m.valorHora.toFixed(2) : '—' }}</span></div>
-            </div>
-            <div class="mobile-card-actions">
-              <a class="pg-btn mobile-action-btn" [routerLink]="['/mecanicos', m.id]" (click)="openDetails(m); $event.stopPropagation()">Visualizar</a>
-              @if (canDeleteMecanico()) {
-                <button type="button" class="pg-btn delete-btn mobile-action-btn" (click)="confirmDelete(m.id)">Excluir</button>
-              }
-            </div>
-          </article>
-        }
+  <ng-template #nomeTpl let-m>
+    <div class="nome-cell">
+      <span class="avatar">{{ (m.nome ?? '?')[0] }}</span>
+      <div>
+        <a class="name name-link" [routerLink]="['/mecanicos', m.id]">{{ m.nome }} {{ m.sobrenome }}</a>
+        <p class="sub">{{ m.nivel }}</p>
       </div>
     </div>
+  </ng-template>
 
-    @if (filtered.length > rows) {
-      <div class="pagination">
-        <button class="pg-btn" [disabled]="first === 0" (click)="prevPage()">← Anterior</button>
-        <span class="pg-info">{{ first + 1 }}–{{ pageEnd }} de {{ filtered.length }}</span>
-        <button class="pg-btn" [disabled]="first + rows >= filtered.length" (click)="nextPage()">Próximo →</button>
-      </div>
-    }
-  }
+  <ng-template #statusTpl let-m>
+    <span class="status-pill" [class.ativo]="m.status === 'ATIVO'" [class.inativo]="m.status !== 'ATIVO'">
+      {{ m.status ?? '—' }}
+    </span>
+  </ng-template>
+
+  <ng-template #valorHoraTpl let-m>
+    {{ m.valorHora !== null && m.valorHora !== undefined ? 'R$ ' + m.valorHora.toFixed(2) : '—' }}
+  </ng-template>
+
+  <ng-template #acoesTpl let-m>
+    <div class="action-cell">
+      <a
+        class="icon-btn view-btn"
+        [routerLink]="['/mecanicos', m.id]"
+        (click)="openDetails(m); $event.stopPropagation()"
+        title="Visualizar"
+      >
+        <i class="fa-solid fa-eye" aria-hidden="true"></i>
+      </a>
+      @if (canDeleteMecanico()) {
+        <button
+          type="button"
+          class="icon-btn delete-btn"
+          (click)="confirmDelete(m.id); $event.stopPropagation()"
+          title="Excluir"
+        >
+          <i class="fa-solid fa-trash" aria-hidden="true"></i>
+        </button>
+      }
+    </div>
+  </ng-template>
 
   <app-mecanico-detalhe
     [mecanico]="selected"
-    [visible]="selected !== null"
-    (closed)="closeDetails()">
-  </app-mecanico-detalhe>
+    [visible]="!!selected"
+    (closed)="closeDetails()"
+  />
 </section>
-

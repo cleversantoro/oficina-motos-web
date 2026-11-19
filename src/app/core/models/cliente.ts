@@ -10,12 +10,28 @@ export enum ClienteTipo {
   PessoaJuridica = 2,
 }
 
+export function isClientePessoaFisica(tipo?: number | string | null): boolean {
+  return Number(tipo) === ClienteTipo.PessoaFisica;
+}
+
+export function isClientePessoaJuridica(tipo?: number | string | null): boolean {
+  return Number(tipo) === ClienteTipo.PessoaJuridica;
+}
+
+export function getClienteTipoLabel(tipo?: number | string | null, descricao?: string | null): string {
+  if (Number(tipo) === ClienteTipo.PessoaJuridica) return 'Pessoa Jurídica';
+  if (Number(tipo) === ClienteTipo.PessoaFisica) return 'Pessoa Física';
+  return descricao || '—';
+}
+
 export enum ClienteStatus {
   Inativo = 0,
   Ativo = 1,
   Suspenso = 2,
   Bloqueado = 3,
 }
+
+
 
 // ---- Response: sub-recursos ----
 
@@ -173,7 +189,14 @@ export interface ClienteTableRow {
 
 export interface CreateClienteRequest {
   nome: string;
+  nomeExibicao?: string;
   cpf: string;
+  documento?: string;
+  tipo?: ClienteTipo;
+  status?: number;
+  vip?: boolean;
+  observacoes?: string | null;
+  origemId?: number | null;
   email: string;
   telefone: string;
 }
