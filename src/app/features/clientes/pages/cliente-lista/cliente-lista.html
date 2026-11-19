@@ -3,10 +3,10 @@
   <header class="page-header">
     <div class="title-block">
       <p class="eyebrow">Gestão de clientes</p>
-      <h1>Carteira de clientes</h1>
+      <h1>{{ tituloPagina() }}</h1>
     </div>
     <div class="header-actions">
-      <span class="count-badge">{{ clientes().length }} registros</span>
+      <span class="count-badge">{{ clientesFiltrados().length }} registros</span>
       <a routerLink="/clientes/novo">
         <button type="button" class="cta-btn">
           <i class="fa-solid fa-plus" aria-hidden="true"></i>
@@ -50,7 +50,7 @@
 
   <!-- ── Tabela com app-datatable ───────────────────────────── -->
   <app-datatable
-    [data]="clientes()"
+    [data]="clientesFiltrados()"
     [columns]="columns()"
     [actions]="actions"
     [loading]="loading()"

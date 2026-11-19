@@ -28,8 +28,10 @@ describe('PerfilListaComponent', () => {
   };
 
   const mockPermissoes = [
-    { id: 10, moduloId: 1, moduloNome: 'ordens', acao: 'visualizar', codigo: 'ordens:visualizar' },
-    { id: 11, moduloId: 1, moduloNome: 'ordens', acao: 'criar', codigo: 'ordens:criar' },
+    { id: 10, moduloId: 1, nomeModulo: 'Ordens de Serviço', acao: 'visualizar', codigo: 'ordens:visualizar' },
+    { id: 11, moduloId: 1, nomeModulo: 'Ordens de Serviço', acao: 'criar', codigo: 'ordens:criar' },
+    { id: 20, moduloId: 2, nomeModulo: 'Clientes', acao: 'visualizar', codigo: 'clientes:visualizar' },
+    { id: 21, moduloId: 2, nomeModulo: 'Clientes', acao: 'excluir', codigo: 'clientes:excluir' },
   ];
 
   beforeEach(async () => {
@@ -73,5 +75,25 @@ describe('PerfilListaComponent', () => {
 
     component.salvarPermissoes();
     expect(segurancaMock.atualizarPermissoesPerfil).toHaveBeenCalledWith(1, { permissaoIds: [10, 11] });
+  });
+
+  it('deve agrupar permissões em cards separados por nomeModulo e permitir marcar/desmarcar todas do módulo', () => {
+    component.selecionarPerfil(mockPerfil);
+    fixture.detectChanges();
+
+    const grupos = component.permissoesAgrupadas();
+    expect(grupos.map(g => g.modulo)).toEqual(['Clientes', 'Ordens de Serviço']);
+
+    const cards = fixture.nativeElement.querySelectorAll('.modulo-card');
+    expect(cards.length).toBe(2);
+    expect(fixture.nativeElement.textContent).toContain('Clientes');
+    expect(fixture.nativeElement.textContent).toContain('Ordens de Serviço');
+
+    component.alternarTodasNoModulo(grupos[0].items, true);
+    expect(component.todosSelecionadosNoModulo(grupos[0].items)).toBe(true);
+    expect(component.permissoesSelecionadasIds()).toEqual(expect.arrayContaining([10, 20, 21]));
+
+    component.alternarTodasNoModulo(grupos[0].items, false);
+    expect(component.contarSelecionadasNoModulo(grupos[0].items)).toBe(0);
   });
 });

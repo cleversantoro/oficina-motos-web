@@ -47,4 +47,10 @@ describe('MainLayout', () => {
     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
     expect(component.menuOpen()).toBe(false);
   });
+
+  it('deve renderizar cabeçalho, navbar lateral e rodapé fixo', () => {
+    expect(fixture.nativeElement.querySelector('app-header')).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('app-sidebar')).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('app-footer')).not.toBeNull();
+  });
 });

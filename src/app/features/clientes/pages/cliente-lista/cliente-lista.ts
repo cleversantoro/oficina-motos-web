@@ -10,7 +10,7 @@ import {
   viewChild,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { canPerformBusinessAction } from '../../../../core/auth/rbac-access.helper';
 import {
@@ -40,6 +40,7 @@ export class ClienteLista implements OnInit {
   private readonly clientesService = inject(ClientesService);
   private readonly toast = inject(Toast);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
   private readonly authService = inject(AuthService);
   private readonly destroyRef = inject(DestroyRef);
 
@@ -48,9 +49,29 @@ export class ClienteLista implements OnInit {
   private readonly vipTpl = viewChild<TemplateRef<{ $implicit: any }>>('vipTpl');
 
   readonly clientes = signal<any[]>([]);
+  readonly filtroTipo = signal<'pf' | 'pj' | null>(null);
   readonly loading = signal(false);
   mostrarModal = false;
   itemParaDeletarId: number | null = null;
+
+  readonly clientesFiltrados = computed(() => {
+    const tipo = this.filtroTipo();
+    const list = this.clientes();
+    if (tipo === 'pf') {
+      return list.filter((c) => !isClientePessoaJuridica(c.tipo));
+    }
+    if (tipo === 'pj') {
+      return list.filter((c) => isClientePessoaJuridica(c.tipo));
+    }
+    return list;
+  });
+
+  readonly tituloPagina = computed(() => {
+    const tipo = this.filtroTipo();
+    if (tipo === 'pf') return 'Clientes — Pessoa Física';
+    if (tipo === 'pj') return 'Clientes — Pessoa Jurídica';
+    return 'Carteira de clientes';
+  });
 
   readonly statusOptions: readonly DatatableStatusOption[] = [
     { label: 'Ativo', value: 'Ativo' },
@@ -100,6 +121,12 @@ export class ClienteLista implements OnInit {
   ];
 
   ngOnInit(): void {
+    this.route.queryParamMap
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((params) => {
+        const tipo = params.get('tipo')?.toLowerCase();
+        this.filtroTipo.set(tipo === 'pf' || tipo === 'pj' ? tipo : null);
+      });
     this.fetchClientes();
   }
 

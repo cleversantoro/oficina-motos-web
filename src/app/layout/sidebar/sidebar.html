@@ -4,6 +4,7 @@
     <button
       #closeBtn
       type="button"
+      mat-icon-button
       class="drawer-close"
       aria-label="Fechar menu"
       (click)="onNavigate()"
@@ -14,19 +15,72 @@
 
   <nav class="nav">
     @for (item of navItems; track item.route) {
-      <a
-        [routerLink]="item.route"
-        routerLinkActive="active"
-        class="nav-link"
-        (click)="onNavigate()"
-      >
-        <span class="fa-solid" [class]="item.icon" aria-hidden="true"></span>
-        <div class="nav-copy">
-          <span class="label">{{ item.label }}</span>
-          <small class="hint">{{ item.hint }}</small>
+      <div class="nav-group" [class.expanded]="isExpanded(item.route)">
+        <div class="nav-item-row">
+          <a
+            [routerLink]="item.route"
+            routerLinkActive="active"
+            [routerLinkActiveOptions]="{ exact: !item.children?.length }"
+            class="nav-link"
+            matRipple
+            (click)="onParentNavigate(item)"
+          >
+            <span class="fa-solid" [class]="item.icon" aria-hidden="true"></span>
+            <div class="nav-copy">
+              <span class="label">{{ item.label }}</span>
+              @if (item.hint) {
+                <small class="hint">{{ item.hint }}</small>
+              }
+            </div>
+            @if (!item.children?.length) {
+              <span class="caret fa-solid fa-chevron-right" aria-hidden="true"></span>
+            }
+          </a>
+
+          @if (item.children?.length) {
+            <button
+              type="button"
+              class="submenu-toggle"
+              matRipple
+              [attr.aria-expanded]="isExpanded(item.route)"
+              [attr.aria-label]="'Alternar submenu de ' + item.label"
+              (click)="toggleSubmenu(item.route, $event)"
+            >
+              <span
+                class="fa-solid fa-chevron-down toggle-icon"
+                [class.rotated]="isExpanded(item.route)"
+                aria-hidden="true"
+              ></span>
+            </button>
+          }
         </div>
-        <span class="caret fa-solid fa-chevron-right" aria-hidden="true"></span>
-      </a>
+
+        @if (item.children?.length && isExpanded(item.route)) {
+          <div class="submenu" role="group" [attr.aria-label]="'Submenu de ' + item.label">
+            @for (sub of item.children; track sub.label) {
+              <a
+                [routerLink]="sub.route"
+                [queryParams]="sub.queryParams"
+                routerLinkActive="active"
+                [routerLinkActiveOptions]="
+                  sub.exact
+                    ? { exact: true }
+                    : { paths: 'exact', queryParams: 'exact', matrixParams: 'ignored', fragment: 'ignored' }
+                "
+                class="subnav-link"
+                matRipple
+                (click)="onNavigate()"
+              >
+                <span class="sub-dot" aria-hidden="true"></span>
+                @if (sub.icon) {
+                  <span class="fa-solid sub-icon" [class]="sub.icon" aria-hidden="true"></span>
+                }
+                <span class="sub-label">{{ sub.label }}</span>
+              </a>
+            }
+          </div>
+        }
+      </div>
     }
   </nav>
 </aside>

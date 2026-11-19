@@ -1,14 +1,28 @@
-.header-shell {
-  position: sticky;
-  top: 0;
+:host {
+  display: block;
+  width: 100%;
+  flex-shrink: 0;
   z-index: 20;
+}
+
+.header-wrapper {
+  width: 100%;
+}
+
+.header-shell {
+  width: 100%;
+  min-height: 64px;
+  height: auto;
   display: grid;
   grid-template-columns: 1fr auto;
   align-items: center;
-  gap: 1.5rem;
-  padding: 1rem 1.5rem;
-  background: rgba(12, 20, 35, 0.85);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  gap: 1.25rem;
+  padding: 0.7rem 1.25rem;
+  background: rgba(12, 20, 35, 0.92);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  color: #f8fafc;
+  font-family: inherit;
+  font-size: inherit;
   backdrop-filter: blur(14px);
 }
 

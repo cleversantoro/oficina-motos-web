@@ -2,12 +2,12 @@
   <header class="page-header">
     <div>
       <h1>Perfis de Acesso e Permissões</h1>
-      <p class="subtitle">Consulte os níveis de acesso RBAC e configure permissões por módulo.</p>
+      <p class="subtitle">Consulte os níveis de acesso RBAC e configure permissões separadas por módulo.</p>
     </div>
 
     <div class="header-actions">
-      <a routerLink="/seguranca/usuarios" class="p-button p-button-outlined p-button-sm nav-btn">
-        <i class="fa-solid fa-users"></i>
+      <a routerLink="/seguranca/usuarios" mat-stroked-button class="nav-btn">
+        <i class="fa-solid fa-users" aria-hidden="true"></i>
         <span>Usuários</span>
       </a>
     </div>
@@ -15,79 +15,119 @@
 
   @if (loading()) {
     <div class="state-box">
-      <i class="fa-solid fa-spin fa-spinner"></i>
+      <i class="fa-solid fa-spin fa-spinner" aria-hidden="true"></i>
       <p>Carregando perfis...</p>
     </div>
   } @else if (error(); as message) {
     <div class="state-box error" role="alert">
-      <i class="fa-solid fa-triangle-exclamation"></i>
+      <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
       <p>{{ message }}</p>
-      <button pButton type="button" label="Tentar novamente" class="p-button-outlined p-button-sm" (click)="carregarDados()"></button>
+      <button mat-stroked-button type="button" (click)="carregarDados()">Tentar novamente</button>
     </div>
   } @else {
     <div class="perfis-grid">
-      <div class="perfis-list-card">
-        <h2>Perfis Cadastrados ({{ perfis().length }})</h2>
-        <ul class="perfil-items">
-          @for (perfil of perfis(); track perfil.id) {
-            <li
-              class="perfil-item"
-              tabindex="0"
-              role="button"
-              [class.active]="perfilSelecionado()?.id === perfil.id"
-              (click)="selecionarPerfil(perfil)"
-              (keydown.enter)="selecionarPerfil(perfil)"
-            >
-              <div class="perfil-main">
-                <span class="perfil-nome">{{ perfil.nome }}</span>
-                <span class="perfil-desc">{{ perfil.descricao || 'Sem descrição' }}</span>
-              </div>
-              <div class="perfil-meta">
-                <p-tag [value]="'Nível ' + perfil.nivel" severity="info"></p-tag>
-                <span class="perm-count">{{ perfil.permissoes.length || 0 }} perm.</span>
-              </div>
-            </li>
-          }
-        </ul>
-      </div>
+      <mat-card class="perfis-list-card">
+        <mat-card-header>
+          <mat-card-title>Perfis Cadastrados ({{ perfis().length }})</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <ul class="perfil-items">
+            @for (perfil of perfis(); track perfil.id) {
+              <li
+                class="perfil-item"
+                matRipple
+                tabindex="0"
+                role="button"
+                [class.active]="perfilSelecionado()?.id === perfil.id"
+                (click)="selecionarPerfil(perfil)"
+                (keydown.enter)="selecionarPerfil(perfil)"
+              >
+                <div class="perfil-main">
+                  <span class="perfil-nome">{{ perfil.nome }}</span>
+                  <span class="perfil-desc">{{ perfil.descricao || 'Sem descrição' }}</span>
+                </div>
+                <div class="perfil-meta">
+                  <p-tag [value]="'Nível ' + perfil.nivel" severity="info"></p-tag>
+                  <span class="perm-count">{{ perfil.permissoes.length || 0 }} perm.</span>
+                </div>
+              </li>
+            }
+          </ul>
+        </mat-card-content>
+      </mat-card>
 
-      <div class="permissoes-card">
+      <mat-card class="permissoes-card">
         @if (perfilSelecionado(); as selecionado) {
           <div class="perm-header">
             <div>
               <h2>Permissões: {{ selecionado.nome }}</h2>
-              <p class="subtitle">{{ permissoesSelecionadasIds().length }} permissão(ões) selecionada(s)</p>
+              <p class="subtitle">
+                {{ permissoesSelecionadasIds().length }} permissão(ões) selecionada(s) em
+                {{ permissoesAgrupadas().length }} módulo(s)
+              </p>
             </div>
             <button
-              pButton
+              mat-flat-button
               type="button"
-              label="Salvar Permissões"
-              icon="fa-solid fa-floppy-disk"
-              class="p-button-primary p-button-sm"
+              class="save-btn"
               [disabled]="savingPermissoes()"
-              [loading]="savingPermissoes()"
               (click)="salvarPermissoes()"
-            ></button>
+            >
+              @if (savingPermissoes()) {
+                <i class="fa-solid fa-spin fa-spinner" aria-hidden="true"></i>
+              } @else {
+                <i class="fa-solid fa-floppy-disk" aria-hidden="true"></i>
+              }
+              <span>Salvar Permissões</span>
+            </button>
           </div>
 
           @if (permissoesAgrupadas().length > 0) {
             <div class="modulos-grid">
               @for (grupo of permissoesAgrupadas(); track grupo.modulo) {
-                <div class="modulo-box">
-                  <h3>{{ grupo.modulo }}</h3>
+                <mat-card class="modulo-card">
+                  <div class="modulo-header">
+                    <div class="modulo-title-row">
+                      <span class="modulo-icon" aria-hidden="true">
+                        <i class="fa-solid fa-cubes"></i>
+                      </span>
+                      <div class="modulo-heading">
+                        <h3>{{ grupo.modulo }}</h3>
+                        <span class="modulo-count">
+                          {{ contarSelecionadasNoModulo(grupo.items) }} / {{ grupo.items.length }}
+                        </span>
+                      </div>
+                    </div>
+
+                    <mat-checkbox
+                      class="modulo-select-all"
+                      [checked]="todosSelecionadosNoModulo(grupo.items)"
+                      [indeterminate]="parcialmenteSelecionadoNoModulo(grupo.items)"
+                      [attr.aria-label]="'Selecionar todas as permissões do módulo ' + grupo.modulo"
+                      (change)="alternarTodasNoModulo(grupo.items, $event.checked)"
+                    >
+                      Todas
+                    </mat-checkbox>
+                  </div>
+
+                  <mat-divider class="modulo-divider"></mat-divider>
+
                   <div class="perm-checks">
                     @for (perm of grupo.items; track perm.id) {
-                      <label class="perm-check">
-                        <input
-                          type="checkbox"
+                      <div class="perm-check-item">
+                        <mat-checkbox
                           [checked]="possuiPermissao(perm.id)"
                           (change)="alternarPermissao(perm.id)"
-                        />
-                        <span>{{ perm.acao }}</span>
-                      </label>
+                        >
+                          <span class="perm-acao">{{ perm.acao }}</span>
+                          @if (perm.descricao) {
+                            <small class="perm-desc">{{ perm.descricao }}</small>
+                          }
+                        </mat-checkbox>
+                      </div>
                     }
                   </div>
-                </div>
+                </mat-card>
               }
             </div>
           } @else {
@@ -95,11 +135,11 @@
           }
         } @else {
           <div class="empty-selection">
-            <i class="fa-solid fa-shield-halved"></i>
-            <p>Selecione um perfil à esquerda para visualizar ou editar suas permissões.</p>
+            <i class="fa-solid fa-shield-halved" aria-hidden="true"></i>
+            <p>Selecione um perfil à esquerda para visualizar ou editar suas permissões por módulo.</p>
           </div>
         }
-      </div>
+      </mat-card>
     </div>
   }
 </section>

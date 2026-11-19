@@ -4,13 +4,14 @@ import { Confirmation } from '../../shared/services/confirmation';
 import { ConfirmModalComponent } from '../../shared/ui/confirm-modal';
 import { LoadingSpinner } from '../../shared/ui/loading-spinner/loading-spinner';
 import { ToastComponent } from '../../shared/ui/toast/toast';
+import { AppFooter } from '../footer/footer';
 import { AppHeader } from '../header/header';
 import { AppSidebar } from '../sidebar/sidebar';
 
 @Component({
   selector: 'app-main-layout',
   standalone: true,
-  imports: [RouterOutlet, AppHeader, AppSidebar, ToastComponent, LoadingSpinner, ConfirmModalComponent],
+  imports: [RouterOutlet, AppHeader, AppSidebar, AppFooter, ToastComponent, LoadingSpinner, ConfirmModalComponent],
   templateUrl: './main-layout.html',
   styleUrl: './main-layout.scss',
   host: {

@@ -1,66 +1,69 @@
-<header class="header-shell">
-  <div class="brand">
-    <button
-      #menuToggleBtn
-      type="button"
-      class="cta ghost menu-toggle-btn"
-      [attr.aria-expanded]="menuOpen()"
-      aria-label="Alternar menu de navegação"
-      (click)="menuToggle.emit()"
-    >
-      <span class="fa-solid" [class.fa-bars]="!menuOpen()" [class.fa-xmark]="menuOpen()" aria-hidden="true"></span>
-    </button>
-    <div class="brand-mark" aria-hidden="true">OM</div>
-    <div>
-      <p class="brand-title">Oficina MotoPro</p>
-      <p class="brand-subtitle">Painel operacional</p>
-    </div>
-  </div>
-
-  <div class="header-actions">
-    <form class="search" (ngSubmit)="onSearch()" role="search">
-      <span class="fa-solid fa-magnifying-glass" aria-hidden="true"></span>
-      <input
-        type="search"
-        name="globalSearch"
-        placeholder="Buscar por cliente, placa ou OS"
-        aria-label="Buscar por cliente, placa ou OS"
-        [ngModel]="searchTerm()"
-        (ngModelChange)="searchTerm.set($event)"
-      />
-    </form>
-
-    @if (canCreateOrdem()) {
-      <button type="button" class="cta strong" (click)="novaOrdem()">
-        <span class="fa-solid fa-bolt" aria-hidden="true"></span>
-        Nova OS
+<header class="header-wrapper">
+  <mat-toolbar class="header-shell">
+    <div class="brand">
+      <button
+        #menuToggleBtn
+        type="button"
+        class="cta ghost menu-toggle-btn"
+        matRipple
+        [attr.aria-expanded]="menuOpen()"
+        aria-label="Alternar menu de navegação"
+        (click)="menuToggle.emit()"
+      >
+        <span class="fa-solid" [class.fa-bars]="!menuOpen()" [class.fa-xmark]="menuOpen()" aria-hidden="true"></span>
       </button>
-    }
-
-    <button
-      #menuToggleBtn
-      type="button"
-      class="cta ghost"
-      (click)="sincronizar()"
-      aria-label="Sincronizar"
-      title="Sincronizar"
-    >
-      <span class="fa-solid fa-rotate" aria-hidden="true"></span>
-    </button>
-
-    @if (currentUser(); as user) {
-      <div class="user-info">
-        <span class="user-name">{{ user.name }}</span>
-        <span class="user-role">{{ user.role }}</span>
+      <div class="brand-mark" aria-hidden="true">OM</div>
+      <div>
+        <p class="brand-title">Oficina MotoPro</p>
+        <p class="brand-subtitle">Painel operacional</p>
       </div>
-    }
-
-    <div class="avatar" [title]="currentUser()?.name ?? ''" aria-hidden="true">
-      {{ initials() }}
     </div>
 
-    <button type="button" class="cta ghost logout-btn" (click)="logout()" aria-label="Sair" title="Sair">
-      <span class="fa-solid fa-right-from-bracket" aria-hidden="true"></span>
-    </button>
-  </div>
+    <div class="header-actions">
+      <form class="search" (ngSubmit)="onSearch()" role="search">
+        <span class="fa-solid fa-magnifying-glass" aria-hidden="true"></span>
+        <input
+          type="search"
+          name="globalSearch"
+          placeholder="Buscar por cliente, placa ou OS"
+          aria-label="Buscar por cliente, placa ou OS"
+          [ngModel]="searchTerm()"
+          (ngModelChange)="searchTerm.set($event)"
+        />
+      </form>
+
+      @if (canCreateOrdem()) {
+        <button type="button" class="cta strong" matRipple (click)="novaOrdem()">
+          <span class="fa-solid fa-bolt" aria-hidden="true"></span>
+          Nova OS
+        </button>
+      }
+
+      <button
+        type="button"
+        class="cta ghost"
+        matRipple
+        (click)="sincronizar()"
+        aria-label="Sincronizar"
+        title="Sincronizar"
+      >
+        <span class="fa-solid fa-rotate" aria-hidden="true"></span>
+      </button>
+
+      @if (currentUser(); as user) {
+        <div class="user-info">
+          <span class="user-name">{{ user.name }}</span>
+          <span class="user-role">{{ user.role }}</span>
+        </div>
+      }
+
+      <div class="avatar" [title]="currentUser()?.name ?? ''" aria-hidden="true">
+        {{ initials() }}
+      </div>
+
+      <button type="button" class="cta ghost logout-btn" matRipple (click)="logout()" aria-label="Sair" title="Sair">
+        <span class="fa-solid fa-right-from-bracket" aria-hidden="true"></span>
+      </button>
+    </div>
+  </mat-toolbar>
 </header>

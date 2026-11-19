@@ -1,14 +1,18 @@
-<footer class="footer glass-panel">
-  <div class="footer-left">
-    <div class="brand-mark">OM</div>
-    <div>
-      <p class="brand-title">Oficina MotoPro</p>
-      <p class="brand-subtitle">Operacao em alta performance</p>
+<footer class="footer-wrapper">
+  <mat-toolbar class="footer-toolbar">
+    <div class="footer-left">
+      <div class="brand-mark" aria-hidden="true">OM</div>
+      <div class="brand-copy">
+        <span class="brand-title">Oficina MotoPro</span>
+        <span class="brand-sep" aria-hidden="true">•</span>
+        <span class="brand-subtitle">Operação em alta performance</span>
+      </div>
     </div>
-  </div>
 
-  <div class="footer-meta">
-    <span class="fa-solid fa-bolt"></span>
-    <p>Sistema ativo • Sincronizado ha 2 minutos</p>
-  </div>
+    <div class="footer-meta">
+      <span class="status-dot" aria-hidden="true"></span>
+      <span class="fa-solid fa-bolt" aria-hidden="true"></span>
+      <span class="meta-text">Sistema ativo • © {{ currentYear }} Oficina MotoPro</span>
+    </div>
+  </mat-toolbar>
 </footer>

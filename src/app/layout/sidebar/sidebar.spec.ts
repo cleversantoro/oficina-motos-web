@@ -32,4 +32,23 @@ describe('AppSidebar', () => {
     firstLink.click();
     expect(spy).toHaveBeenCalledTimes(1);
   });
+
+  it('deve expandir e recolher submenus de Clientes e Financeiro', () => {
+    expect(component.isExpanded('/clientes')).toBe(false);
+    component.toggleSubmenu('/clientes');
+    fixture.detectChanges();
+
+    expect(component.isExpanded('/clientes')).toBe(true);
+    expect(fixture.nativeElement.textContent).toContain('Pessoa Física');
+    expect(fixture.nativeElement.textContent).toContain('Pessoa Jurídica');
+
+    component.toggleSubmenu('/financeiro');
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).toContain('Contas a Pagar');
+    expect(fixture.nativeElement.textContent).toContain('Contas a Receber');
+
+    component.toggleSubmenu('/clientes');
+    fixture.detectChanges();
+    expect(component.isExpanded('/clientes')).toBe(false);
+  });
 });

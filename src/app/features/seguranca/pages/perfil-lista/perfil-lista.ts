@@ -1,19 +1,34 @@
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatRippleModule } from '@angular/material/core';
+import { MatDividerModule } from '@angular/material/divider';
 import { RouterLink } from '@angular/router';
 import { SegPerfil, SegPermissao } from '../../../../core/models';
 import { SegurancaService } from '../../../../core/services/seguranca.service';
 import { Toast } from '../../../../shared/services/toast';
-import {
-  SIMPLE_BUTTON_IMPORTS,
-  SimpleTagComponent,
-} from '../../../../shared/ui/simple-primitives';
+import { SimpleTagComponent } from '../../../../shared/ui/simple-primitives';
+
+export interface ModuloPermissoesGrupo {
+  modulo: string;
+  items: SegPermissao[];
+}
 
 @Component({
   selector: 'app-perfil-lista',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, ...SIMPLE_BUTTON_IMPORTS, SimpleTagComponent],
+  imports: [
+    FormsModule,
+    RouterLink,
+    MatCardModule,
+    MatCheckboxModule,
+    MatButtonModule,
+    MatDividerModule,
+    MatRippleModule,
+    SimpleTagComponent,
+  ],
   templateUrl: './perfil-lista.html',
   styleUrl: './perfil-lista.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -30,15 +45,20 @@ export class PerfilListaComponent implements OnInit {
   readonly savingPermissoes = signal(false);
   readonly error = signal<string | null>(null);
 
-  readonly permissoesAgrupadas = computed(() => {
+  readonly permissoesAgrupadas = computed<ModuloPermissoesGrupo[]>(() => {
     const grupos = new Map<string, SegPermissao[]>();
     for (const perm of this.permissoes()) {
-      const modulo = perm.moduloNome || 'Geral';
+      const modulo = (perm.nomeModulo || perm.moduloNome || 'Geral').trim();
       const lista = grupos.get(modulo) ?? [];
       lista.push(perm);
       grupos.set(modulo, lista);
     }
-    return Array.from(grupos.entries()).map(([modulo, items]) => ({ modulo, items }));
+    return Array.from(grupos.entries())
+      .sort(([a], [b]) => a.localeCompare(b, 'pt-BR'))
+      .map(([modulo, items]) => ({
+        modulo,
+        items: [...items].sort((a, b) => a.acao.localeCompare(b.acao, 'pt-BR')),
+      }));
   });
 
   ngOnInit(): void {
@@ -89,6 +109,32 @@ export class PerfilListaComponent implements OnInit {
         ? ids.filter(id => id !== permissaoId)
         : [...ids, permissaoId],
     );
+  }
+
+  contarSelecionadasNoModulo(items: SegPermissao[]): number {
+    const selecionadas = new Set(this.permissoesSelecionadasIds());
+    return items.filter(item => selecionadas.has(item.id)).length;
+  }
+
+  todosSelecionadosNoModulo(items: SegPermissao[]): boolean {
+    return items.length > 0 && this.contarSelecionadasNoModulo(items) === items.length;
+  }
+
+  parcialmenteSelecionadoNoModulo(items: SegPermissao[]): boolean {
+    const count = this.contarSelecionadasNoModulo(items);
+    return count > 0 && count < items.length;
+  }
+
+  alternarTodasNoModulo(items: SegPermissao[], selecionar: boolean): void {
+    const moduloIds = new Set(items.map(item => item.id));
+    this.permissoesSelecionadasIds.update(ids => {
+      if (selecionar) {
+        const merged = new Set(ids);
+        moduloIds.forEach(id => merged.add(id));
+        return Array.from(merged);
+      }
+      return ids.filter(id => !moduloIds.has(id));
+    });
   }
 
   salvarPermissoes(): void {

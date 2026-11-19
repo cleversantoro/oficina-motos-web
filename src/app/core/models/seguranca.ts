@@ -51,9 +51,10 @@ export interface UpdateSegUsuarioRequest {
 export interface SegPermissao {
   id: number;
   moduloId: number;
-  moduloNome: string;
+  nomeModulo?: string;
+  moduloNome?: string;
   acao: string;
-  codigo: string;
+  codigo?: string;
   descricao?: string | null;
 }
 
