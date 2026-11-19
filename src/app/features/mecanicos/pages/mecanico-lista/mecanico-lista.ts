@@ -8,13 +8,14 @@ import { Mecanico } from '../../../../core/models';
 import { MecanicosService } from '../../../../core/services/mecanicos.service';
 import { Confirmation } from '../../../../shared/services/confirmation';
 import { Toast } from '../../../../shared/services/toast';
+import { ConfirmModalComponent } from '../../../../shared/ui/confirm-modal';
 import { DatatableColumn, DatatableComponent } from '../../../../shared/ui/datatable';
 import { MecanicoDetalhe } from '../mecanico-detalhe/mecanico-detalhe';
 
 @Component({
   selector: 'app-mecanico-lista',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, MecanicoDetalhe, DatatableComponent],
+  imports: [CommonModule, FormsModule, RouterLink, MecanicoDetalhe, DatatableComponent, ConfirmModalComponent],
   templateUrl: './mecanico-lista.html',
   styleUrl: './mecanico-lista.scss',
 })
@@ -27,6 +28,8 @@ export class MecanicoLista implements OnInit {
   mecanicos: any[] = [];
   loading = false;
   selected: Mecanico | null = null;
+  mostrarModal = false;
+  itemParaDeletarId: number | null = null;
 
   filterText = '';
   first = 0;
@@ -37,7 +40,7 @@ export class MecanicoLista implements OnInit {
   constructor(
     private mecanicosService: MecanicosService,
     private authService: AuthService,
-    private confirmation: Confirmation,
+    private _confirmation: Confirmation,
     private toast: Toast,
     @Optional() private router?: Router,
   ) {}
@@ -110,19 +113,35 @@ export class MecanicoLista implements OnInit {
     return canPerformBusinessAction(this.authService.currentRole(), 'mecanicos', 'delete');
   }
 
-  async confirmDelete(id: number): Promise<void> {
-    const mec = this.mecanicos.find((m) => m.id === id);
-    const nome = mec ? [mec.nome, mec.sobrenome].filter(Boolean).join(' ') : `Mecânico #${id}`;
-    const confirmado = await this.confirmation.confirmDelete(nome);
-    if (!confirmado) return;
-    this.mecanicosService.delete(id).subscribe({
-      next: () => {
-        this.mecanicos = this.mecanicos.filter((m) => m.id !== id);
-        this.toast.success('Mecânico excluído', `"${nome}" foi removido com sucesso.`);
-      },
-      error: () =>
-        this.toast.error('Erro ao excluir', 'Não foi possível excluir o mecânico.'),
-    });
+  abrirModal(id: number): void {
+    this.itemParaDeletarId = id;
+    this.mostrarModal = true;
+  }
+
+  fecharModal(): void {
+    this.mostrarModal = false;
+    this.itemParaDeletarId = null;
+  }
+
+  executarExclusao(): void {
+    if (this.itemParaDeletarId !== null) {
+      const id = this.itemParaDeletarId;
+      const mec = this.mecanicos.find((m) => m.id === id);
+      const nome = mec ? [mec.nome, mec.sobrenome].filter(Boolean).join(' ') : `Mecânico #${id}`;
+      this.mecanicosService.delete(id).subscribe({
+        next: () => {
+          this.mecanicos = this.mecanicos.filter((m) => m.id !== id);
+          this.toast.success('Mecânico excluído', `"${nome}" foi removido com sucesso.`);
+        },
+        error: () =>
+          this.toast.error('Erro ao excluir', 'Não foi possível excluir o mecânico.'),
+      });
+    }
+    this.fecharModal();
+  }
+
+  confirmDelete(id: number): void {
+    this.abrirModal(id);
   }
 }
 

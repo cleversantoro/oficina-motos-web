@@ -56,7 +56,7 @@
         <button
           type="button"
           class="icon-btn delete-btn"
-          (click)="confirmDelete(m.id); $event.stopPropagation()"
+          (click)="abrirModal(m.id); $event.stopPropagation()"
           title="Excluir"
         >
           <i class="fa-solid fa-trash" aria-hidden="true"></i>
@@ -70,4 +70,11 @@
     [visible]="!!selected"
     (closed)="closeDetails()"
   />
+
+  <app-confirm-modal
+    [isOpen]="mostrarModal"
+    message="Deseja realmente apagar este registro?"
+    (confirm)="executarExclusao()"
+    (cancel)="fecharModal()">
+  </app-confirm-modal>
 </section>

@@ -17,6 +17,7 @@ import { canPerformBusinessAction } from '../../../../core/auth/rbac-access.help
 import { VeiculosService } from '../../../../core/services/veiculos.service';
 import { Confirmation } from '../../../../shared/services/confirmation';
 import { Toast } from '../../../../shared/services/toast';
+import { ConfirmModalComponent } from '../../../../shared/ui/confirm-modal';
 import {
   DatatableAction,
   DatatableColumn,
@@ -77,7 +78,7 @@ const COR_HEX_MAP: Record<string, string> = {
 @Component({
   selector: 'app-veiculo-lista',
   standalone: true,
-  imports: [RouterLink, DatatableComponent],
+  imports: [RouterLink, DatatableComponent, ConfirmModalComponent],
   templateUrl: './veiculo-lista.html',
   styleUrl: './veiculo-lista.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -100,6 +101,8 @@ export class VeiculoLista implements OnInit {
   readonly modelos = signal<ModeloApiItem[]>([]);
   readonly loading = signal(false);
   readonly error = signal('');
+  mostrarModal = false;
+  itemParaDeletarId: number | null = null;
 
   readonly statusOptions: readonly DatatableStatusOption[] = [
     { label: 'Ativo', value: 'Ativo' },
@@ -163,7 +166,7 @@ export class VeiculoLista implements OnInit {
       variant: 'delete',
       visible: () => this.canDeleteVeiculo(),
       onClick: (row) => {
-        void this.confirmDelete(row.id);
+        this.abrirModal(row.id);
       },
     },
   ];
@@ -208,22 +211,37 @@ export class VeiculoLista implements OnInit {
     return canPerformBusinessAction(this.authService.currentRole(), 'veiculos', 'delete');
   }
 
-  async confirmDelete(id: number): Promise<void> {
-    const veiculo = this.veiculos().find((v) => v.id === id);
-    const label = veiculo?.placa ? `Veículo ${veiculo.placa}` : `Veículo #${id}`;
-    const confirmado = await this.confirmation.confirmDelete(label);
-    if (!confirmado) return;
+  abrirModal(id: number): void {
+    this.itemParaDeletarId = id;
+    this.mostrarModal = true;
+  }
 
-    this.svc
-      .delete(id)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: () => {
-          this.veiculos.update((list) => list.filter((v) => v.id !== id));
-          this.toast.success('Veículo excluído', `"${label}" foi removido com sucesso.`);
-        },
-        error: () => this.toast.error('Erro ao excluir', 'Não foi possível excluir o veículo.'),
-      });
+  fecharModal(): void {
+    this.mostrarModal = false;
+    this.itemParaDeletarId = null;
+  }
+
+  executarExclusao(): void {
+    if (this.itemParaDeletarId !== null) {
+      const id = this.itemParaDeletarId;
+      const veiculo = this.veiculos().find((v) => v.id === id);
+      const label = veiculo?.placa ? `Veículo ${veiculo.placa}` : `Veículo #${id}`;
+      this.svc
+        .delete(id)
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe({
+          next: () => {
+            this.veiculos.update((list) => list.filter((v) => v.id !== id));
+            this.toast.success('Veículo excluído', `"${label}" foi removido com sucesso.`);
+          },
+          error: () => this.toast.error('Erro ao excluir', 'Não foi possível excluir o veículo.'),
+        });
+    }
+    this.fecharModal();
+  }
+
+  confirmDelete(id: number): void {
+    this.abrirModal(id);
   }
 
   async confirmBulkDelete(rows: VeiculoTableRow[]): Promise<void> {

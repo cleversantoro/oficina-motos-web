@@ -26,23 +26,13 @@
   <app-loading-spinner></app-loading-spinner>
 
   <!-- Dialog de confirmação global -->
-  @if (confirmation.activeDialog(); as dlg) {
-    <div class="confirm-backdrop" role="dialog" aria-modal="true" [attr.aria-label]="dlg.header">
-      <div class="confirm-dialog">
-        <div class="confirm-header">
-          <i [class]="dlg.icon" aria-hidden="true"></i>
-          <h3>{{ dlg.header }}</h3>
-        </div>
-        <p class="confirm-message">{{ dlg.message }}</p>
-        <div class="confirm-actions">
-          <button type="button" class="confirm-btn confirm-reject" (click)="confirmation.reject()">
-            {{ dlg.rejectLabel }}
-          </button>
-          <button type="button" class="confirm-btn confirm-accept" (click)="confirmation.accept()">
-            {{ dlg.acceptLabel }}
-          </button>
-        </div>
-      </div>
-    </div>
-  }
+  <app-confirm-modal
+    [isOpen]="!!confirmation.activeDialog()"
+    [title]="confirmation.activeDialog()?.header || 'Confirmar Exclusão'"
+    [message]="confirmation.activeDialog()?.message || 'Tem certeza que deseja excluir este item?'"
+    [confirmLabel]="confirmation.activeDialog()?.acceptLabel || 'Excluir'"
+    [cancelLabel]="confirmation.activeDialog()?.rejectLabel || 'Cancelar'"
+    (confirm)="confirmation.accept()"
+    (cancel)="confirmation.reject()">
+  </app-confirm-modal>
 </div>

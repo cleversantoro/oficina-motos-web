@@ -19,8 +19,8 @@ import {
   isClientePessoaJuridica,
 } from '../../../../core/models/cliente';
 import { ClientesService } from '../../../../core/services/clientes.service';
-import { Confirmation } from '../../../../shared/services/confirmation';
 import { Toast } from '../../../../shared/services/toast';
+import { ConfirmModalComponent } from '../../../../shared/ui/confirm-modal';
 import {
   DatatableAction,
   DatatableColumn,
@@ -31,7 +31,7 @@ import {
 @Component({
   selector: 'app-cliente-lista',
   standalone: true,
-  imports: [RouterLink, DatatableComponent],
+  imports: [RouterLink, DatatableComponent, ConfirmModalComponent],
   templateUrl: './cliente-lista.html',
   styleUrl: './cliente-lista.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -39,7 +39,6 @@ import {
 export class ClienteLista implements OnInit {
   private readonly clientesService = inject(ClientesService);
   private readonly toast = inject(Toast);
-  private readonly confirmation = inject(Confirmation);
   private readonly router = inject(Router);
   private readonly authService = inject(AuthService);
   private readonly destroyRef = inject(DestroyRef);
@@ -50,6 +49,8 @@ export class ClienteLista implements OnInit {
 
   readonly clientes = signal<any[]>([]);
   readonly loading = signal(false);
+  mostrarModal = false;
+  itemParaDeletarId: number | null = null;
 
   readonly statusOptions: readonly DatatableStatusOption[] = [
     { label: 'Ativo', value: 'Ativo' },
@@ -93,7 +94,7 @@ export class ClienteLista implements OnInit {
       variant: 'delete',
       visible: () => this.canDeleteCliente(),
       onClick: (c) => {
-        void this.confirmDelete(c.id);
+        this.abrirModal(c.id);
       },
     },
   ];
@@ -186,10 +187,19 @@ export class ClienteLista implements OnInit {
     return canPerformBusinessAction(this.authService.currentRole(), 'clientes', 'delete');
   }
 
-  async confirmDelete(id: number): Promise<void> {
-    const cliente = this.clientes().find((c) => c.id === id);
-    const confirmado = await this.confirmation.confirmDelete(cliente?.nome || 'este cliente');
-    if (confirmado) {
+  abrirModal(id: number): void {
+    this.itemParaDeletarId = id;
+    this.mostrarModal = true;
+  }
+
+  fecharModal(): void {
+    this.mostrarModal = false;
+    this.itemParaDeletarId = null;
+  }
+
+  executarExclusao(): void {
+    if (this.itemParaDeletarId !== null) {
+      const id = this.itemParaDeletarId;
       this.clientesService.delete(id).subscribe({
         next: () => {
           this.clientes.update((list) => list.filter((c) => c.id !== id));
@@ -198,5 +208,10 @@ export class ClienteLista implements OnInit {
         error: () => this.toast.error('Erro', 'Erro ao excluir cliente'),
       });
     }
+    this.fecharModal();
+  }
+
+  confirmDelete(id: number): void {
+    this.abrirModal(id);
   }
 }

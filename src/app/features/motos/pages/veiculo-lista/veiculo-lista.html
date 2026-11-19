@@ -63,4 +63,11 @@
       <span>{{ row.cor }}</span>
     </div>
   </ng-template>
+
+  <app-confirm-modal
+    [isOpen]="mostrarModal"
+    message="Deseja realmente apagar este registro?"
+    (confirm)="executarExclusao()"
+    (cancel)="fecharModal()">
+  </app-confirm-modal>
 </section>

@@ -1,6 +1,7 @@
 import { Component, inject, signal, viewChild } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { Confirmation } from '../../shared/services/confirmation';
+import { ConfirmModalComponent } from '../../shared/ui/confirm-modal';
 import { LoadingSpinner } from '../../shared/ui/loading-spinner/loading-spinner';
 import { ToastComponent } from '../../shared/ui/toast/toast';
 import { AppHeader } from '../header/header';
@@ -9,7 +10,7 @@ import { AppSidebar } from '../sidebar/sidebar';
 @Component({
   selector: 'app-main-layout',
   standalone: true,
-  imports: [RouterOutlet, AppHeader, AppSidebar, ToastComponent, LoadingSpinner],
+  imports: [RouterOutlet, AppHeader, AppSidebar, ToastComponent, LoadingSpinner, ConfirmModalComponent],
   templateUrl: './main-layout.html',
   styleUrl: './main-layout.scss',
   host: {

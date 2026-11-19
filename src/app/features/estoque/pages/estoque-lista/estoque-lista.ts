@@ -13,6 +13,7 @@ import {
 import { EstoqueService } from '../../../../core/services/estoque.service';
 import { Confirmation } from '../../../../shared/services/confirmation';
 import { Toast } from '../../../../shared/services/toast';
+import { ConfirmModalComponent } from '../../../../shared/ui/confirm-modal';
 import {
   DatatableAction,
   DatatableColumn,
@@ -31,7 +32,7 @@ export type EstoqueTableRow = EstoquePeca &
 @Component({
   selector: 'app-estoque-lista',
   standalone: true,
-  imports: [DecimalPipe, FormsModule, RouterLink, DatatableComponent],
+  imports: [DecimalPipe, FormsModule, RouterLink, DatatableComponent, ConfirmModalComponent],
   templateUrl: './estoque-lista.html',
   styleUrl: './estoque-lista.scss',
 })
@@ -46,6 +47,8 @@ export class EstoqueLista implements OnInit {
   fabricantes: EstoqueFabricante[] = [];
   localizacoes: EstoqueLocalizacao[] = [];
   loading = false;
+  mostrarModal = false;
+  itemParaDeletarId: number | null = null;
   filterText = '';
   selectedCategoriaIds: number[] = [];
   selectedFabricanteIds: number[] = [];
@@ -69,7 +72,7 @@ export class EstoqueLista implements OnInit {
       variant: 'delete',
       visible: () => this.canDeleteItem(),
       onClick: (item) => {
-        void this.confirmDelete(item.id);
+        this.abrirModal(item.id);
       },
     },
   ];
@@ -82,7 +85,7 @@ export class EstoqueLista implements OnInit {
   constructor(
     private estoqueService: EstoqueService,
     private authService: AuthService,
-    private confirmation: Confirmation,
+    private _confirmation: Confirmation,
     private toast: Toast,
     @Optional() private router?: Router,
   ) {}
@@ -244,18 +247,33 @@ export class EstoqueLista implements OnInit {
     void this.router?.navigate(['/estoque', id]);
   }
 
-  async confirmDelete(id: number): Promise<void> {
-    const item = this.itens.find((i) => i.id === id);
-    const confirmado = await this.confirmation.confirmDelete(item?.descricao || `Item #${id}`);
-    if (!confirmado) return;
-    this.estoqueService.removerPeca(id).subscribe({
-      next: () => {
-        this.itens = this.itens.filter((i) => i.id !== id);
-        this.toast.success('Item excluído', 'Item removido do estoque com sucesso.');
-      },
-      error: () =>
-        this.toast.error('Erro ao excluir', 'Não foi possível excluir o item do estoque.'),
-    });
+  abrirModal(id: number): void {
+    this.itemParaDeletarId = id;
+    this.mostrarModal = true;
+  }
+
+  fecharModal(): void {
+    this.mostrarModal = false;
+    this.itemParaDeletarId = null;
+  }
+
+  executarExclusao(): void {
+    if (this.itemParaDeletarId !== null) {
+      const id = this.itemParaDeletarId;
+      this.estoqueService.removerPeca(id).subscribe({
+        next: () => {
+          this.itens = this.itens.filter((i) => i.id !== id);
+          this.toast.success('Item excluído', 'Item removido do estoque com sucesso.');
+        },
+        error: () =>
+          this.toast.error('Erro ao excluir', 'Não foi possível excluir o item do estoque.'),
+      });
+    }
+    this.fecharModal();
+  }
+
+  confirmDelete(id: number): void {
+    this.abrirModal(id);
   }
 }
 

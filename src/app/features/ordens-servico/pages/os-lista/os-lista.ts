@@ -7,6 +7,7 @@ import { OrdemServico } from '../../../../core/models';
 import { OrdensService } from '../../../../core/services/ordens.service';
 import { Confirmation } from '../../../../shared/services/confirmation';
 import { Toast } from '../../../../shared/services/toast';
+import { ConfirmModalComponent } from '../../../../shared/ui/confirm-modal';
 import {
   DatatableAction,
   DatatableColumn,
@@ -20,7 +21,7 @@ type OrdemRow = OrdemServico & Record<string, unknown>;
 @Component({
   selector: 'app-os-lista',
   standalone: true,
-  imports: [...SIMPLE_BUTTON_IMPORTS, DatatableComponent],
+  imports: [...SIMPLE_BUTTON_IMPORTS, DatatableComponent, ConfirmModalComponent],
   templateUrl: './os-lista.html',
   styleUrl: './os-lista.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -31,6 +32,8 @@ export class OsListaComponent implements OnInit {
   readonly ordens = signal<OrdemServico[]>([]);
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
+  mostrarModal = false;
+  itemParaDeletarId: number | null = null;
 
   readonly tableRows = computed<OrdemRow[]>(() =>
     this.ordens().map((ordem) => ({ ...ordem })),
@@ -70,7 +73,7 @@ export class OsListaComponent implements OnInit {
       label: 'Excluir',
       variant: 'delete',
       onClick: (ordem) => {
-        void this.confirmDelete(ordem.id);
+        this.abrirModal(ordem.id);
       },
       visible: () => this.canDeleteOrdem(),
     },
@@ -129,17 +132,33 @@ export class OsListaComponent implements OnInit {
     void this.router.navigate(['/ordens', ordem.id]);
   }
 
-  async confirmDelete(id: number): Promise<void> {
+  abrirModal(id: number): void {
     if (!Number.isInteger(id) || id <= 0) return;
-    const confirmado = await this.confirmation.confirmDelete(`OS #${id}`);
-    if (!confirmado) return;
-    this.ordensService.delete(id).subscribe({
-      next: () => {
-        this.ordens.update((ordens) => ordens.filter((ordem) => ordem.id !== id));
-        this.toast.success('Ordem excluída', `OS #${id} removida com sucesso.`);
-      },
-      error: () => this.toast.error('Erro', 'Não foi possível excluir a ordem de serviço.'),
-    });
+    this.itemParaDeletarId = id;
+    this.mostrarModal = true;
+  }
+
+  fecharModal(): void {
+    this.mostrarModal = false;
+    this.itemParaDeletarId = null;
+  }
+
+  executarExclusao(): void {
+    if (this.itemParaDeletarId !== null) {
+      const id = this.itemParaDeletarId;
+      this.ordensService.delete(id).subscribe({
+        next: () => {
+          this.ordens.update((ordens) => ordens.filter((ordem) => ordem.id !== id));
+          this.toast.success('Ordem excluída', `OS #${id} removida com sucesso.`);
+        },
+        error: () => this.toast.error('Erro', 'Não foi possível excluir a ordem de serviço.'),
+      });
+    }
+    this.fecharModal();
+  }
+
+  confirmDelete(id: number): void {
+    this.abrirModal(id);
   }
 
   async confirmBulkDelete(rows: OrdemRow[]): Promise<void> {

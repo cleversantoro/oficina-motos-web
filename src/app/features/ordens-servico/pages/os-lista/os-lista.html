@@ -35,4 +35,11 @@
       (bulkDelete)="confirmBulkDelete($event)"
     />
   }
+
+  <app-confirm-modal
+    [isOpen]="mostrarModal"
+    message="Deseja realmente apagar este registro?"
+    (confirm)="executarExclusao()"
+    (cancel)="fecharModal()">
+  </app-confirm-modal>
 </section>
