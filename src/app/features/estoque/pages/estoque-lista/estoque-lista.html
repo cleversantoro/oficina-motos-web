@@ -9,50 +9,6 @@
   </div>
 
   <div class="main-layout">
-    <aside class="filters">
-      <div class="filter-group">
-        <p class="filter-title">Categorias</p>
-        @for (cat of categorias; track cat.id) {
-          <label class="checkbox-row">
-            <input
-              type="checkbox"
-              [checked]="selectedCategoriaIds.includes(cat.id)"
-              (change)="toggleCategoria(cat.id)"
-            />
-            <span>{{ cat.nome }}</span>
-          </label>
-        }
-      </div>
-
-      <div class="filter-group">
-        <p class="filter-title">Fabricantes</p>
-        @for (fab of fabricantes; track fab.id) {
-          <label class="checkbox-row">
-            <input
-              type="checkbox"
-              [checked]="selectedFabricanteIds.includes(fab.id)"
-              (change)="toggleFabricante(fab.id)"
-            />
-            <span>{{ fab.nome }}</span>
-          </label>
-        }
-      </div>
-
-      <div class="filter-group">
-        <p class="filter-title">Status</p>
-        @for (st of statusFiltros; track st.label) {
-          <label class="checkbox-row">
-            <input
-              type="checkbox"
-              [checked]="st.checked"
-              (change)="toggleStatusFiltro(st)"
-            />
-            <span>{{ st.label }}</span>
-          </label>
-        }
-      </div>
-    </aside>
-
     <main class="content-area">
       <div class="toolbar">
         <div>
