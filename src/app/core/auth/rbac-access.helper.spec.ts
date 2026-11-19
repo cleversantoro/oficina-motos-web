@@ -24,6 +24,10 @@ describe('rbac-access.helper', () => {
 
   it('validates canonical permissions by module and action', () => {
     expect(canPerformPermission(['ordens:visualizar'], 'ordens', 'visualizar')).toBe(true);
+    expect(canPerformPermission(['Ordens de Serviço:visualizar'], 'ordens', 'visualizar')).toBe(true);
+    expect(canPerformPermission(['Ordens de Serviço:criar'], 'ordens', 'criar')).toBe(true);
+    expect(canPerformPermission(['Veículos:visualizar'], 'veiculos', 'visualizar')).toBe(true);
+    expect(canPerformPermission(['Mecânicos:criar'], 'mecanicos', 'criar')).toBe(true);
     expect(canPerformPermission(['ordens:criar'], 'ordens', 'visualizar')).toBe(false);
     expect(canPerformPermission([], 'ordens', 'criar')).toBe(false);
   });

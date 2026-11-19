@@ -89,6 +89,16 @@ const ROLE_MATRIX: Record<BusinessModule, Record<BusinessAction, string[]>> = {
   },
 };
 
+const MODULE_PERMISSION_ALIASES: Record<BusinessModule, string[]> = {
+  clientes: ['clientes'],
+  veiculos: ['veiculos', 'motos'],
+  fornecedores: ['fornecedores'],
+  mecanicos: ['mecanicos'],
+  estoque: ['estoque'],
+  ordens: ['ordens', 'ordens de servico', 'ordem de servico'],
+  financeiro: ['financeiro'],
+};
+
 export function normalizeRole(role: RoleName): string {
   return (role ?? '')
     .toString()
@@ -121,9 +131,16 @@ export function canPerformPermission(
   action: PermissionAction,
   role?: RoleName,
 ): boolean {
-  const expected = `${module}:${action}`.toLowerCase();
   if (permissions?.length) {
-    return permissions.some(permission => permission.trim().toLowerCase() === expected);
+    const normalizedAction = normalizeRole(action);
+    const expectedValues = MODULE_PERMISSION_ALIASES[module].map(
+      alias => `${alias}:${normalizedAction}`,
+    );
+
+    return permissions.some(permission => {
+      const normalizedPermission = normalizeRole(permission);
+      return expectedValues.includes(normalizedPermission);
+    });
   }
 
   return hasAnyRole(role, PERMISSION_ROLE_MATRIX[module][action]);
